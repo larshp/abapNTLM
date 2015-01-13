@@ -231,7 +231,93 @@ ENDMETHOD.
 
 METHOD flags_encode.
 
-* todo
+  DATA: lv_c TYPE c LENGTH 1,
+        lv_x TYPE x LENGTH 1.
+
+  DEFINE _flag.
+    if is_flags-&1 = abap_true.
+      lv_c = '1'.
+    else.
+      lv_c = '0'.
+    endif.
+  END-OF-DEFINITION.
+
+
+  CLEAR lv_x.
+  _flag negotiate_unicode.
+  SET BIT 8 OF lv_x TO lv_c.
+  _flag negotiate_oem.
+  SET BIT 7 OF lv_x TO lv_c.
+  _flag request_target.
+  SET BIT 6 OF lv_x TO lv_c.
+  _flag r10.
+  SET BIT 5 OF lv_x TO lv_c.
+  _flag negotiate_sign.
+  SET BIT 4 OF lv_x TO lv_c.
+  _flag negotiate_seal.
+  SET BIT 3 OF lv_x TO lv_c.
+  _flag negotiate_datagram.
+  SET BIT 2 OF lv_x TO lv_c.
+  _flag negotiate_lm_key.
+  SET BIT 1 OF lv_x TO lv_c.
+  rv_hex(1) = lv_x.
+
+  CLEAR lv_x.
+  _flag r9.
+  SET BIT 8 OF lv_x TO lv_c.
+  _flag negotiate_ntlm.
+  SET BIT 7 OF lv_x TO lv_c.
+  _flag r8.
+  SET BIT 6 OF lv_x TO lv_c.
+  _flag anonymous.
+  SET BIT 5 OF lv_x TO lv_c.
+  _flag negotiate_oem_domain_supplied.
+  SET BIT 4 OF lv_x TO lv_c.
+  _flag negotiate_oem_workstation_sup.
+  SET BIT 3 OF lv_x TO lv_c.
+  _flag r7.
+  SET BIT 2 OF lv_x TO lv_c.
+  _flag negotiate_always_sign.
+  SET BIT 1 OF lv_x TO lv_c.
+  rv_hex+1(1) = lv_x.
+
+  CLEAR lv_x.
+  _flag target_type_domain.
+  SET BIT 8 OF lv_x TO lv_c.
+  _flag target_type_server.
+  SET BIT 7 OF lv_x TO lv_c.
+  _flag r6.
+  SET BIT 6 OF lv_x TO lv_c.
+  _flag negotiate_extended_session_sec.
+  SET BIT 5 OF lv_x TO lv_c.
+  _flag negotiate_identity.
+  SET BIT 4 OF lv_x TO lv_c.
+  _flag r5.
+  SET BIT 3 OF lv_x TO lv_c.
+  _flag request_non_nt_session_key.
+  SET BIT 2 OF lv_x TO lv_c.
+  _flag negotiate_target_info.
+  SET BIT 1 OF lv_x TO lv_c.
+  rv_hex+2(1) = lv_x.
+
+  CLEAR lv_x.
+  _flag r4.
+  SET BIT 1 OF lv_x TO lv_c.
+  _flag negotiate_version.
+  SET BIT 2 OF lv_x TO lv_c.
+  _flag r3.
+  SET BIT 3 OF lv_x TO lv_c.
+  _flag r2.
+  SET BIT 4 OF lv_x TO lv_c.
+  _flag r1.
+  SET BIT 5 OF lv_x TO lv_c.
+  _flag negotiate_128.
+  SET BIT 6 OF lv_x TO lv_c.
+  _flag negotiate_key_exch.
+  SET BIT 7 OF lv_x TO lv_c.
+  _flag negotiate_56.
+  SET BIT 8 OF lv_x TO lv_c.
+  rv_hex+3(1) = lv_x.
 
 ENDMETHOD.
 
