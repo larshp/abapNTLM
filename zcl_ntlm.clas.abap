@@ -7,6 +7,8 @@ public section.
 *"* public components of class ZCL_NTLM
 *"* do not include other source files here!!!
 
+  constants C_SIGNATURE type XSTRING value '4E544C4D53535000'. "#EC NOTEXT
+
   class-methods GET
     importing
       !IV_USERNAME type STRING
@@ -19,73 +21,30 @@ protected section.
 *"* protected components of class ZCL_NTLM
 *"* do not include other source files here!!!
 
-  types:
-    BEGIN OF ty_flags,
-           negotiate_56 TYPE abap_bool,
-           negotiate_key_exch TYPE abap_bool,
-           negotiate_128 TYPE abap_bool,
-           r1 TYPE abap_bool,
-           r2 TYPE abap_bool,
-           r3 TYPE abap_bool,
-           negotiate_version TYPE abap_bool,
-           r4 type abap_bool,
-           negotiate_target_info TYPE abap_bool,
-           request_non_nt_session_key TYPE abap_bool,
-           r5 TYPE abap_bool,
-           negotiate_identity TYPE abap_bool,
-           negotiate_extended_session_sec TYPE abap_bool,
-           r6 TYPE abap_bool,
-           target_type_server TYPE abap_bool,
-           target_type_domain TYPE abap_bool,
-           negotiate_always_sign TYPE abap_bool,
-           r7 TYPE abap_bool,
-           negotiate_oem_workstation_sup TYPE abap_bool,
-           negotiate_oem_domain_supplied TYPE abap_bool,
-           anonymous TYPE abap_bool,
-           r8 TYPE abap_bool,
-           negotiate_ntlm TYPE abap_bool,
-           r9 TYPE abap_bool,
-           negotiate_lm_key TYPE abap_bool,
-           negotiate_datagram TYPE abap_bool,
-           negotiate_seal TYPE abap_bool,
-           negotiate_sign TYPE abap_bool,
-           r10 TYPE abap_bool,
-           request_target TYPE abap_bool,
-           negotiate_oem TYPE abap_bool,
-           negotiate_unicode TYPE abap_bool,
-         END OF ty_flags .
-  types:
-    ty_byte4 TYPE x LENGTH 4 .
+  constants C_MESSAGE_TYPE_1 type XSTRING value '01000000'. "#EC NOTEXT
+  constants C_MESSAGE_TYPE_2 type XSTRING value '02000000'. "#EC NOTEXT
+  constants C_MESSAGE_TYPE_3 type XSTRING value '03000000'. "#EC NOTEXT
 
-  class-methods BASE64_DECODE
-    importing
-      !IV_STRING type STRING
-    returning
-      value(RV_XSTRING) type XSTRING .
-  class-methods BASE64_ENCODE
-    importing
-      !IV_XSTRING type XSTRING
-    returning
-      value(RV_STRING) type STRING .
-  class-methods FLAGS_DECODE
-    importing
-      !IV_HEX type TY_BYTE4
-    returning
-      value(RS_FLAGS) type TY_FLAGS .
-  class-methods FLAGS_ENCODE
-    importing
-      !IS_FLAGS type TY_FLAGS
-    returning
-      value(RV_HEX) type TY_BYTE4 .
-  class-methods TYPE_1
-    returning
-      value(RV_STRING) type STRING .
-  class-methods TYPE_2
+  class-methods TYPE_1_DECODE
     importing
       !IV_VALUE type STRING .
-  class-methods TYPE_3
+  class-methods TYPE_2_ENCODE
     returning
-      value(RV_STRING) type STRING .
+      value(RV_VALUE) type STRING .
+  class-methods TYPE_3_DECODE
+    importing
+      !IV_VALUE type STRING .
+  class-methods TYPE_1_ENCODE
+    returning
+      value(RV_VALUE) type STRING .
+  class-methods TYPE_2_DECODE
+    importing
+      !IV_VALUE type STRING
+    returning
+      value(RV_CHALLENGE) type XSTRING .
+  class-methods TYPE_3_ENCODE
+    returning
+      value(RV_VALUE) type STRING .
 private section.
 *"* private components of class ZCL_NTLM
 *"* do not include other source files here!!!
@@ -96,237 +55,13 @@ ENDCLASS.
 CLASS ZCL_NTLM IMPLEMENTATION.
 
 
-METHOD base64_decode.
-
-  CALL FUNCTION 'SSFC_BASE64_DECODE'
-    EXPORTING
-      b64data                  = iv_string
-    IMPORTING
-      bindata                  = rv_xstring
-    EXCEPTIONS
-      ssf_krn_error            = 1
-      ssf_krn_noop             = 2
-      ssf_krn_nomemory         = 3
-      ssf_krn_opinv            = 4
-      ssf_krn_input_data_error = 5
-      ssf_krn_invalid_par      = 6
-      ssf_krn_invalid_parlen   = 7
-      OTHERS                   = 8.
-  IF sy-subrc <> 0.
-    BREAK-POINT.
-  ENDIF.
-
-ENDMETHOD.
-
-
-METHOD base64_encode.
-
-  CALL FUNCTION 'SSFC_BASE64_ENCODE'
-    EXPORTING
-      bindata                  = iv_xstring
-    IMPORTING
-      b64data                  = rv_string
-    EXCEPTIONS
-      ssf_krn_error            = 1
-      ssf_krn_noop             = 2
-      ssf_krn_nomemory         = 3
-      ssf_krn_opinv            = 4
-      ssf_krn_input_data_error = 5
-      ssf_krn_invalid_par      = 6
-      ssf_krn_invalid_parlen   = 7
-      OTHERS                   = 8.
-  IF sy-subrc <> 0.
-    BREAK-POINT.
-  ENDIF.
-
-ENDMETHOD.
-
-
-METHOD flags_decode.
-
-  DATA: lv_c TYPE c LENGTH 1,
-        lv_x TYPE x LENGTH 1.
-
-  DEFINE _flag.
-    if lv_c = '1'.
-      rs_flags-&1 = abap_true.
-    endif.
-  END-OF-DEFINITION.
-
-
-  lv_x = iv_hex.
-  GET BIT 8 OF lv_x INTO lv_c.
-  _flag negotiate_unicode.
-  GET BIT 7 OF lv_x INTO lv_c.
-  _flag negotiate_oem.
-  GET BIT 6 OF lv_x INTO lv_c.
-  _flag request_target.
-  GET BIT 5 OF lv_x INTO lv_c.
-  _flag r10.
-  GET BIT 4 OF lv_x INTO lv_c.
-  _flag negotiate_sign.
-  GET BIT 3 OF lv_x INTO lv_c.
-  _flag negotiate_seal.
-  GET BIT 2 OF lv_x INTO lv_c.
-  _flag negotiate_datagram.
-  GET BIT 1 OF lv_x INTO lv_c.
-  _flag negotiate_lm_key.
-
-  lv_x = iv_hex+1.
-  GET BIT 8 OF lv_x INTO lv_c.
-  _flag r9.
-  GET BIT 7 OF lv_x INTO lv_c.
-  _flag negotiate_ntlm.
-  GET BIT 6 OF lv_x INTO lv_c.
-  _flag r8.
-  GET BIT 5 OF lv_x INTO lv_c.
-  _flag anonymous.
-  GET BIT 4 OF lv_x INTO lv_c.
-  _flag negotiate_oem_domain_supplied.
-  GET BIT 3 OF lv_x INTO lv_c.
-  _flag negotiate_oem_workstation_sup.
-  GET BIT 2 OF lv_x INTO lv_c.
-  _flag r7.
-  GET BIT 1 OF lv_x INTO lv_c.
-  _flag negotiate_always_sign.
-
-  lv_x = iv_hex+2.
-  GET BIT 8 OF lv_x INTO lv_c.
-  _flag target_type_domain.
-  GET BIT 7 OF lv_x INTO lv_c.
-  _flag target_type_server.
-  GET BIT 6 OF lv_x INTO lv_c.
-  _flag r6.
-  GET BIT 5 OF lv_x INTO lv_c.
-  _flag negotiate_extended_session_sec.
-  GET BIT 4 OF lv_x INTO lv_c.
-  _flag negotiate_identity.
-  GET BIT 3 OF lv_x INTO lv_c.
-  _flag r5.
-  GET BIT 2 OF lv_x INTO lv_c.
-  _flag request_non_nt_session_key.
-  GET BIT 1 OF lv_x INTO lv_c.
-  _flag negotiate_target_info.
-
-  lv_x = iv_hex+3.
-  GET BIT 1 OF lv_x INTO lv_c.
-  _flag r4.
-  GET BIT 2 OF lv_x INTO lv_c.
-  _flag negotiate_version.
-  GET BIT 3 OF lv_x INTO lv_c.
-  _flag r3.
-  GET BIT 4 OF lv_x INTO lv_c.
-  _flag r2.
-  GET BIT 5 OF lv_x INTO lv_c.
-  _flag r1.
-  GET BIT 6 OF lv_x INTO lv_c.
-  _flag negotiate_128.
-  GET BIT 7 OF lv_x INTO lv_c.
-  _flag negotiate_key_exch.
-  GET BIT 8 OF lv_x INTO lv_c.
-  _flag negotiate_56.
-
-ENDMETHOD.
-
-
-METHOD flags_encode.
-
-  DATA: lv_c TYPE c LENGTH 1,
-        lv_x TYPE x LENGTH 1.
-
-  DEFINE _flag.
-    if is_flags-&1 = abap_true.
-      lv_c = '1'.
-    else.
-      lv_c = '0'.
-    endif.
-  END-OF-DEFINITION.
-
-
-  CLEAR lv_x.
-  _flag negotiate_unicode.
-  SET BIT 8 OF lv_x TO lv_c.
-  _flag negotiate_oem.
-  SET BIT 7 OF lv_x TO lv_c.
-  _flag request_target.
-  SET BIT 6 OF lv_x TO lv_c.
-  _flag r10.
-  SET BIT 5 OF lv_x TO lv_c.
-  _flag negotiate_sign.
-  SET BIT 4 OF lv_x TO lv_c.
-  _flag negotiate_seal.
-  SET BIT 3 OF lv_x TO lv_c.
-  _flag negotiate_datagram.
-  SET BIT 2 OF lv_x TO lv_c.
-  _flag negotiate_lm_key.
-  SET BIT 1 OF lv_x TO lv_c.
-  rv_hex(1) = lv_x.
-
-  CLEAR lv_x.
-  _flag r9.
-  SET BIT 8 OF lv_x TO lv_c.
-  _flag negotiate_ntlm.
-  SET BIT 7 OF lv_x TO lv_c.
-  _flag r8.
-  SET BIT 6 OF lv_x TO lv_c.
-  _flag anonymous.
-  SET BIT 5 OF lv_x TO lv_c.
-  _flag negotiate_oem_domain_supplied.
-  SET BIT 4 OF lv_x TO lv_c.
-  _flag negotiate_oem_workstation_sup.
-  SET BIT 3 OF lv_x TO lv_c.
-  _flag r7.
-  SET BIT 2 OF lv_x TO lv_c.
-  _flag negotiate_always_sign.
-  SET BIT 1 OF lv_x TO lv_c.
-  rv_hex+1(1) = lv_x.
-
-  CLEAR lv_x.
-  _flag target_type_domain.
-  SET BIT 8 OF lv_x TO lv_c.
-  _flag target_type_server.
-  SET BIT 7 OF lv_x TO lv_c.
-  _flag r6.
-  SET BIT 6 OF lv_x TO lv_c.
-  _flag negotiate_extended_session_sec.
-  SET BIT 5 OF lv_x TO lv_c.
-  _flag negotiate_identity.
-  SET BIT 4 OF lv_x TO lv_c.
-  _flag r5.
-  SET BIT 3 OF lv_x TO lv_c.
-  _flag request_non_nt_session_key.
-  SET BIT 2 OF lv_x TO lv_c.
-  _flag negotiate_target_info.
-  SET BIT 1 OF lv_x TO lv_c.
-  rv_hex+2(1) = lv_x.
-
-  CLEAR lv_x.
-  _flag r4.
-  SET BIT 1 OF lv_x TO lv_c.
-  _flag negotiate_version.
-  SET BIT 2 OF lv_x TO lv_c.
-  _flag r3.
-  SET BIT 3 OF lv_x TO lv_c.
-  _flag r2.
-  SET BIT 4 OF lv_x TO lv_c.
-  _flag r1.
-  SET BIT 5 OF lv_x TO lv_c.
-  _flag negotiate_128.
-  SET BIT 6 OF lv_x TO lv_c.
-  _flag negotiate_key_exch.
-  SET BIT 7 OF lv_x TO lv_c.
-  _flag negotiate_56.
-  SET BIT 8 OF lv_x TO lv_c.
-  rv_hex+3(1) = lv_x.
-
-ENDMETHOD.
-
-
 METHOD get.
 
 * http://davenport.sourceforge.net/ntlm.html
 * http://blogs.msdn.com/b/chiranth/archive/2013/09/21/ntlm-want-to-know-how-it-works.aspx
 * http://www.innovation.ch/personal/ronald/ntlm.html
+
+* todo, endianness? detect via signature?
 
   DATA: li_client TYPE REF TO if_http_client,
         lv_value  TYPE string,
@@ -353,6 +88,7 @@ METHOD get.
       OTHERS                     = 4 ).
   IF sy-subrc <> 0.
 * todo
+    BREAK-POINT.
   ENDIF.
 
   li_client->response->get_header_fields( CHANGING fields = lt_fields ).
@@ -366,7 +102,7 @@ METHOD get.
 
 ***********************************************
 
-  lv_value = type_1( ).
+  lv_value = type_1_encode( ).
   CONCATENATE 'NTLM' lv_value INTO lv_value SEPARATED BY space.
   li_client->request->set_header_field(
       name  = 'authorization'
@@ -389,7 +125,8 @@ METHOD get.
     BREAK-POINT.
   ENDIF.
 
-  type_2( <ls_field>-value ).
+  lv_value = <ls_field>-value+5.
+  type_2_decode( lv_value ).
 
 * todo
 
@@ -398,113 +135,206 @@ METHOD get.
 ENDMETHOD.
 
 
-METHOD type_1.
+METHOD type_1_decode.
 
-* NEGOTIATE_MESSAGE
+  DATA: lv_xstr  TYPE xstring,
+        ls_target_name TYPE ty_fields,
+        ls_workst_name TYPE ty_fields,
+        ls_flags TYPE ty_flags.
 
-  DATA: lv_xstring TYPE xstring,
-        lv_flags   TYPE xstring,
-        lv_type    TYPE xstring.
 
+  lcl_read=>signature( EXPORTING iv_value = iv_value
+                                 iv_type = C_MESSAGE_TYPE_1
+                       CHANGING  cv_xstr = lv_xstr ) .
 
-* signature, NTLMSSP\0
-  lv_xstring = '4E544C4D53535000'.
+  lcl_read=>flags( IMPORTING es_flags = ls_flags
+                   CHANGING cv_xstr = lv_xstr ).
 
-  lv_type = '01000000'.
-  CONCATENATE lv_xstring lv_type INTO lv_xstring IN BYTE MODE.
+* domain/target name
+  lcl_read=>fields( IMPORTING es_fields = ls_target_name
+                    CHANGING cv_xstr = lv_xstr ).
 
-* minimal flags, Negotiate NTLM and Negotiate OEM
-  lv_flags = '02020000'.
-  CONCATENATE lv_xstring lv_flags INTO lv_xstring IN BYTE MODE.
+* workstation fields
+  lcl_read=>fields( IMPORTING es_fields = ls_workst_name
+                    CHANGING cv_xstr = lv_xstr ).
 
-  rv_string = base64_encode( lv_xstring ).
+* payload
+* todo
+
+* todo
+  BREAK-POINT.
 
 ENDMETHOD.
 
 
-METHOD type_2.
+METHOD type_1_encode.
 
-* CHALLENGE_MESSAGE
-
-  DATA: lv_str  TYPE string,
-        lv_target_name TYPE xstring,
-        lv_target_info TYPE xstring,
-        lv_challenge TYPE xstring,
-        lv_flags TYPE xstring,
-        lv_xstr TYPE xstring.
+  DATA: lv_xstr  TYPE xstring,
+        ls_flags TYPE ty_flags.
 
 
-  IF strlen( iv_value ) < 5 OR iv_value(4) <> 'NTLM'.
-    BREAK-POINT.
-  ENDIF.
+  lv_xstr = lcl_write=>signature( c_message_type_1 ).
 
-  lv_str = iv_value+5.
-  lv_xstr = base64_decode( lv_str ).
+* minimal flags, Negotiate NTLM and Negotiate OEM
+  ls_flags-negotiate_ntlm = abap_true.
+  ls_flags-negotiate_oem = abap_true.
 
-* signature
-  IF xstrlen( lv_xstr ) < 8 OR lv_xstr(8) <> '4E544C4D53535000'.
-    BREAK-POINT.
-  ENDIF.
-  lv_xstr = lv_xstr+8.
+  lcl_write=>flags( EXPORTING is_flags = ls_flags
+                    CHANGING  cv_xstr = lv_xstr ).
 
-* message type
-  IF xstrlen( lv_xstr ) < 4 OR lv_xstr(4) <> '02000000'.
-    BREAK-POINT.
-  ENDIF.
-  lv_xstr = lv_xstr+4.
+  rv_value = lcl_convert=>base64_encode( lv_xstr ).
+
+ENDMETHOD.
+
+
+METHOD type_2_decode.
+
+  DATA: ls_target_name TYPE ty_fields,
+        ls_target_info TYPE ty_fields,
+        ls_flags TYPE ty_flags,
+        lv_xstr  TYPE xstring.
+
+
+  lcl_read=>signature( EXPORTING iv_value = iv_value
+                                 iv_type = C_MESSAGE_TYPE_2
+                       CHANGING  cv_xstr = lv_xstr ) .
 
 * target name
-  lv_target_name = lv_xstr(8).
-  lv_xstr = lv_xstr+8.
+  lcl_read=>fields( IMPORTING es_fields = ls_target_name
+                    CHANGING cv_xstr = lv_xstr ).
 
 * flags
-  lv_flags = lv_xstr(4).
-  lv_xstr = lv_xstr+4.
+  lcl_read=>flags( IMPORTING es_flags = ls_flags
+                   CHANGING cv_xstr = lv_xstr ).
 
 * challenge
-  lv_challenge = lv_xstr(8).
+  rv_challenge = lv_xstr(8).
   lv_xstr = lv_xstr+8.
 
 * reserved
   lv_xstr = lv_xstr+8.
 
 * target info
-  lv_target_info = lv_xstr(8).
-  lv_xstr = lv_xstr+8.
+  lcl_read=>fields( IMPORTING es_fields = ls_target_info
+                    CHANGING cv_xstr = lv_xstr ).
 
   BREAK-POINT.
 
 ENDMETHOD.
 
 
-METHOD type_3.
+METHOD type_2_encode.
 
-* AUTHENTICATE_MESSAGE
-
-  DATA: lv_xstring TYPE xstring,
-        lv_type    TYPE xstring.
+  DATA: lv_xstr TYPE xstring.
 
 
-* signature, NTLMSSP\0
-  lv_xstring = '4E544C4D53535000'.
+  lv_xstr = lcl_write=>signature( c_message_type_2 ).
 
-* type
-  lv_type = '03000000'.
-  CONCATENATE lv_xstring lv_type INTO lv_xstring IN BYTE MODE.
-
-* LM
 * todo
 
-* NTLM
+ENDMETHOD.
 
-* target name
+
+METHOD type_3_decode.
+
+  DATA: lv_xstr        TYPE xstring,
+        ls_lm_resp     TYPE ty_fields,
+        ls_ntlm_resp   TYPE ty_fields,
+        ls_target_name TYPE ty_fields,
+        ls_user_name   TYPE ty_fields,
+        ls_workst_name TYPE ty_fields,
+        ls_session_key TYPE ty_fields,
+        ls_flags       TYPE ty_flags.
+
+
+  lcl_read=>signature( EXPORTING iv_value = iv_value
+                                 iv_type = C_MESSAGE_TYPE_3
+                       CHANGING  cv_xstr = lv_xstr ) .
+
+* LM challenge response
+  lcl_read=>fields( IMPORTING es_fields = ls_lm_resp
+                    CHANGING cv_xstr = lv_xstr ).
+
+* NTLM challenge response
+  lcl_read=>fields( IMPORTING es_fields = ls_ntlm_resp
+                    CHANGING cv_xstr = lv_xstr ).
+
+* domain/target name
+  lcl_read=>fields( IMPORTING es_fields = ls_target_name
+                    CHANGING cv_xstr = lv_xstr ).
 
 * user name
+  lcl_read=>fields( IMPORTING es_fields = ls_user_name
+                    CHANGING cv_xstr = lv_xstr ).
 
 * workstation name
+  lcl_read=>fields( IMPORTING es_fields = ls_workst_name
+                    CHANGING cv_xstr = lv_xstr ).
+
+* encrypted random session key
+  lcl_read=>fields( IMPORTING es_fields = ls_session_key
+                    CHANGING cv_xstr = lv_xstr ).
+
+* negotiate flags
+  lcl_read=>flags( IMPORTING es_flags = ls_flags
+                   CHANGING cv_xstr = lv_xstr ).
+
+* todo
+
+  BREAK-POINT.
+
+ENDMETHOD.
 
 
-  rv_string = base64_encode( lv_xstring ).
+METHOD type_3_encode.
+
+  DATA: lv_xstr        TYPE xstring,
+        ls_lm_resp     TYPE ty_fields,
+        ls_ntlm_resp   TYPE ty_fields,
+        ls_target_name TYPE ty_fields,
+        ls_user_name   TYPE ty_fields,
+        ls_workst_name TYPE ty_fields,
+        ls_session_key TYPE ty_fields,
+        ls_flags       TYPE ty_flags.
+
+
+  lv_xstr = lcl_write=>signature( c_message_type_2 ).
+
+* LM challenge response
+  lcl_write=>fields( EXPORTING is_fields = ls_lm_resp
+                     CHANGING  cv_xstr = lv_xstr ).
+
+* NTLM challenge response
+  lcl_write=>fields( EXPORTING is_fields = ls_ntlm_resp
+                     CHANGING  cv_xstr = lv_xstr ).
+
+* domain/target name
+  lcl_write=>fields( EXPORTING is_fields = ls_target_name
+                     CHANGING  cv_xstr = lv_xstr ).
+
+* user name
+  lcl_write=>fields( EXPORTING is_fields = ls_user_name
+                     CHANGING  cv_xstr = lv_xstr ).
+
+* workstation name
+  lcl_write=>fields( EXPORTING is_fields = ls_workst_name
+                     CHANGING  cv_xstr = lv_xstr ).
+
+* encrypted random session key
+  lcl_write=>fields( EXPORTING is_fields = ls_session_key
+                     CHANGING  cv_xstr = lv_xstr ).
+
+* negotiate flags
+  lcl_write=>flags( EXPORTING is_flags = ls_flags
+                    CHANGING  cv_xstr = lv_xstr ).
+
+* MIC?
+* todo
+
+* Payload
+* todo
+
+  rv_value = lcl_convert=>base64_encode( lv_xstr ).
 
 ENDMETHOD.
 ENDCLASS.
