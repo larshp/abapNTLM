@@ -41,7 +41,7 @@ protected section.
       !IV_B type TY_BYTE4
       !IV_C type TY_BYTE4
       !IV_D type TY_BYTE4
-      !IV_X type I
+      !IV_X type TY_BYTE4
       !IV_S type I
     returning
       value(RV_RES) type TY_BYTE4 .
@@ -51,7 +51,7 @@ protected section.
       !IV_B type TY_BYTE4
       !IV_C type TY_BYTE4
       !IV_D type TY_BYTE4
-      !IV_X type I
+      !IV_X type TY_BYTE4
       !IV_S type I
     returning
       value(RV_RES) type TY_BYTE4 .
@@ -61,7 +61,7 @@ protected section.
       !IV_B type TY_BYTE4
       !IV_C type TY_BYTE4
       !IV_D type TY_BYTE4
-      !IV_X type I
+      !IV_X type TY_BYTE4
       !IV_S type I
     returning
       value(RV_RES) type TY_BYTE4 .
@@ -227,43 +227,43 @@ METHOD hash.
         lv_cc TYPE x LENGTH 4,
         lv_dd TYPE x LENGTH 4.
 
-  DATA: lv_x TYPE x LENGTH 2,
+  DATA: lv_x TYPE ty_byte4,
         lv_offset TYPE i,
-        lv_bit TYPE i.
+        lv_index type i.
 
   DEFINE _ff.
-    get bit &5 + 1 of lv_x into lv_bit.
-    assert sy-subrc = 0.
+    lv_offset = ( ( lv_index - 1 ) * 16 + &5 ) * 4.
+    lv_x = lv_xstr+lv_offset(4).
     lv_a = func_ff(
       iv_a   = &1
       iv_b   = &2
       iv_c   = &3
       iv_d   = &4
-      iv_x   = lv_bit
+      iv_x   = lv_x
       iv_s   = &6 ).
   END-OF-DEFINITION.
 
   DEFINE _gg.
-    get bit &5 + 1 of lv_x into lv_bit.
-    assert sy-subrc = 0.
+    lv_offset = ( ( lv_index - 1 ) * 16 + &5 ) * 4.
+    lv_x = lv_xstr+lv_offset(4).
     lv_a = func_gg(
       iv_a   = &1
       iv_b   = &2
       iv_c   = &3
       iv_d   = &4
-      iv_x   = lv_bit
+      iv_x   = lv_x
       iv_s   = &6 ).
   END-OF-DEFINITION.
 
   DEFINE _hh.
-    get bit &5 + 1 of lv_x into lv_bit.
-    assert sy-subrc = 0.
+    lv_offset = ( ( lv_index - 1 ) * 16 + &5 ) * 4.
+    lv_x = lv_xstr+lv_offset(4).
     lv_a = func_hh(
       iv_a   = &1
       iv_b   = &2
       iv_c   = &3
       iv_d   = &4
-      iv_x   = lv_bit
+      iv_x   = lv_x
       iv_s   = &6 ).
   END-OF-DEFINITION.
 
@@ -271,15 +271,14 @@ METHOD hash.
   lv_xstr = to_utf8( iv_string ).
   lv_xstr = padding_length( lv_xstr ).
 
-  DO xstrlen( lv_xstr ) / 2 TIMES.
-    lv_offset = ( sy-index - 1 ) * 2.
+* 16 words = 64 byte
+  DO xstrlen( lv_xstr ) / 64 TIMES.
+    lv_index = sy-index.
 
     lv_aa = lv_a.
     lv_bb = lv_b.
     lv_cc = lv_c.
     lv_dd = lv_d.
-
-    lv_x = lv_xstr+lv_offset(2).
 
 * round 1
     _ff lv_a lv_b lv_c lv_d  0  3.
