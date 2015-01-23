@@ -45,7 +45,7 @@ protected section.
       value(RV_S) type TY_S .
   class-methods PRGA
     importing
-      value(IV_S) type TY_S
+      !IV_S type TY_S
       !IV_LENGTH type I
     returning
       value(RV_K) type XSTRING .
@@ -182,19 +182,22 @@ METHOD prga.
   DATA: lv_x      TYPE x,
         lv_j      TYPE i,
         lv_i      TYPE i,
+        lv_s      LIKE iv_s,
         lv_offset TYPE i.
 
 
+  lv_s = iv_s.
+
   DO iv_length TIMES.
     lv_i = ( lv_i + 1 ) MOD 256.
-    lv_j = ( lv_j + iv_s+lv_i(1) ) MOD 256.
+    lv_j = ( lv_j + lv_s+lv_i(1) ) MOD 256.
 
-    lv_x = iv_s+lv_i(1).
-    iv_s+lv_i(1) = iv_s+lv_j(1).
-    iv_s+lv_j(1) = lv_x.
+    lv_x = lv_s+lv_i(1).
+    lv_s+lv_i(1) = lv_s+lv_j(1).
+    lv_s+lv_j(1) = lv_x.
 
-    lv_offset = ( iv_s+lv_i(1) + iv_s+lv_j(1) ) MOD 256.
-    lv_x = iv_s+lv_offset(1).
+    lv_offset = ( lv_s+lv_i(1) + lv_s+lv_j(1) ) MOD 256.
+    lv_x = lv_s+lv_offset(1).
 
     CONCATENATE rv_k lv_x INTO rv_k IN BYTE MODE.
   ENDDO.
