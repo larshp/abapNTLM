@@ -1,6 +1,5 @@
 class ZCL_MD4 definition
   public
-  final
   create public .
 
 public section.
@@ -22,12 +21,24 @@ protected section.
 *"* protected components of class ZCL_MD4
 *"* do not include other source files here!!!
 
+  class-methods OVERFLOW
+    importing
+      !IV_F type F
+    returning
+      value(RV_RES) type TY_BYTE4 .
   class-methods SHIFT
     importing
       !IV_INPUT type TY_BYTE4
       !IV_PLACES type I
     returning
       value(RV_OUTPUT) type TY_BYTE4 .
+  class-methods X
+    importing
+      !IV_XSTR type XSTRING
+      !IV_BLOCK type I
+      !IV_WORD type I
+    returning
+      value(RV_WORD) type TY_BYTE4 .
   class-methods FUNC_F
     importing
       !IV_X type TY_BYTE4
@@ -119,8 +130,7 @@ METHOD func_ff.
             iv_y = iv_c
             iv_z = iv_d ) +
     iv_x.
-  lv_f = lv_f MOD ( ( 2 ** 31 ) - 1 ).
-  rv_res = lv_f.
+  rv_res = overflow( lv_f ).
   rv_res = shift( iv_input  = rv_res
                   iv_places = iv_s ).
 
@@ -151,8 +161,7 @@ METHOD func_gg.
             iv_y = iv_c
             iv_z = iv_d ) +
     iv_x + lc_add.
-  lv_f = lv_f MOD ( ( 2 ** 31 ) - 1 ).
-  rv_res = lv_f.
+  rv_res = overflow( lv_f ).
   rv_res = shift( iv_input  = rv_res
                   iv_places = iv_s ).
 
@@ -177,12 +186,11 @@ METHOD func_hh.
 * (a + H(b,c,d) + X[k] + 6ED9EBA1) <<< s
 
   lv_f = iv_a +
-    func_g( iv_x = iv_b
+    func_h( iv_x = iv_b
             iv_y = iv_c
             iv_z = iv_d ) +
     iv_x + lc_add.
-  lv_f = lv_f MOD ( ( 2 ** 31 ) - 1 ).
-  rv_res = lv_f.
+  rv_res = overflow( lv_f ).
   rv_res = shift( iv_input  = rv_res
                   iv_places = iv_s ).
 
@@ -217,10 +225,11 @@ METHOD hash.
 
   DATA: lv_xstr TYPE xstring.
 
-  DATA: lv_a TYPE x LENGTH 4 VALUE '01234567',
-        lv_b TYPE x LENGTH 4 VALUE '89ABCDEF',
-        lv_c TYPE x LENGTH 4 VALUE 'FEDCBA98',
-        lv_d TYPE x LENGTH 4 VALUE '76543210'.
+* big endian
+  DATA: lv_a TYPE x LENGTH 4 VALUE '67452301',
+        lv_b TYPE x LENGTH 4 VALUE 'EFCDAB89',
+        lv_c TYPE x LENGTH 4 VALUE '98BADCFE',
+        lv_d TYPE x LENGTH 4 VALUE '10325476'.
 
   DATA: lv_aa TYPE x LENGTH 4,
         lv_bb TYPE x LENGTH 4,
@@ -228,13 +237,15 @@ METHOD hash.
         lv_dd TYPE x LENGTH 4.
 
   DATA: lv_x TYPE ty_byte4,
-        lv_offset TYPE i,
-        lv_index type i.
+        lv_f TYPE f,
+        lv_block TYPE i.
 
   DEFINE _ff.
-    lv_offset = ( ( lv_index - 1 ) * 16 + &5 ) * 4.
-    lv_x = lv_xstr+lv_offset(4).
-    lv_a = func_ff(
+    lv_x = x(
+        iv_xstr  = lv_xstr
+        iv_block = lv_block
+        iv_word  = &5 ).
+    &1 = func_ff(
       iv_a   = &1
       iv_b   = &2
       iv_c   = &3
@@ -244,9 +255,11 @@ METHOD hash.
   END-OF-DEFINITION.
 
   DEFINE _gg.
-    lv_offset = ( ( lv_index - 1 ) * 16 + &5 ) * 4.
-    lv_x = lv_xstr+lv_offset(4).
-    lv_a = func_gg(
+    lv_x = x(
+        iv_xstr  = lv_xstr
+        iv_block = lv_block
+        iv_word  = &5 ).
+    &1 = func_gg(
       iv_a   = &1
       iv_b   = &2
       iv_c   = &3
@@ -256,9 +269,11 @@ METHOD hash.
   END-OF-DEFINITION.
 
   DEFINE _hh.
-    lv_offset = ( ( lv_index - 1 ) * 16 + &5 ) * 4.
-    lv_x = lv_xstr+lv_offset(4).
-    lv_a = func_hh(
+    lv_x = x(
+        iv_xstr  = lv_xstr
+        iv_block = lv_block
+        iv_word  = &5 ).
+    &1 = func_hh(
       iv_a   = &1
       iv_b   = &2
       iv_c   = &3
@@ -273,7 +288,7 @@ METHOD hash.
 
 * 16 words = 64 byte
   DO xstrlen( lv_xstr ) / 64 TIMES.
-    lv_index = sy-index.
+    lv_block = sy-index.
 
     lv_aa = lv_a.
     lv_bb = lv_b.
@@ -334,14 +349,40 @@ METHOD hash.
     _hh lv_c lv_d lv_a lv_b  7 11.
     _hh lv_b lv_c lv_d lv_a 15 15.
 
-    lv_a = ( lv_a + lv_aa ) MOD ( 2 ** 31 - 1 ).
-    lv_b = ( lv_b + lv_bb ) MOD ( 2 ** 31 - 1 ).
-    lv_c = ( lv_c + lv_cc ) MOD ( 2 ** 31 - 1 ).
-    lv_d = ( lv_d + lv_dd ) MOD ( 2 ** 31 - 1 ).
-
+    lv_f = lv_a + lv_aa.
+    lv_a = overflow( lv_f ).
+    lv_f = lv_b + lv_bb.
+    lv_b = overflow( lv_f ).
+    lv_f = lv_c + lv_cc.
+    lv_c = overflow( lv_f ).
+    lv_f = lv_d + lv_dd.
+    lv_d = overflow( lv_f ).
   ENDDO.
 
-  CONCATENATE lv_a lv_b lv_c lv_d INTO rv_hash IN BYTE MODE.
+  CONCATENATE
+    lv_a+3(1) lv_a+2(1) lv_a+1(1) lv_a(1)
+    lv_b+3(1) lv_b+2(1) lv_b+1(1) lv_b(1)
+    lv_c+3(1) lv_c+2(1) lv_c+1(1) lv_c(1)
+    lv_d+3(1) lv_d+2(1) lv_d+1(1) lv_d(1)
+    INTO rv_hash IN BYTE MODE.
+
+ENDMETHOD.
+
+
+METHOD overflow.
+
+  DATA: lv_f      TYPE f,
+        lv_maxint TYPE i.
+
+
+  lv_maxint = 2 ** 31 - 1.
+
+  lv_f = iv_f.
+  IF iv_f < - lv_maxint OR iv_f > lv_maxint.
+    lv_f = ( iv_f + ( lv_maxint + 1 ) ) MOD ( 2 * ( lv_maxint + 1 ) ) - lv_maxint - 1.
+  ENDIF.
+
+  rv_res = lv_f.
 
 ENDMETHOD.
 
@@ -351,7 +392,7 @@ METHOD padding_length.
   CONSTANTS: lc_x0 TYPE x LENGTH 1 VALUE '00',
              lc_x1 TYPE x LENGTH 1 VALUE '80'.
 
-  DATA: lv_length TYPE x LENGTH 8.
+  DATA: lv_length TYPE x LENGTH 8. " double word
 
 
   CONCATENATE iv_input lc_x1 INTO rv_xstring IN BYTE MODE.
@@ -360,8 +401,11 @@ METHOD padding_length.
     CONCATENATE rv_xstring lc_x0 INTO rv_xstring IN BYTE MODE.
   ENDWHILE.
 
-  lv_length = xstrlen( iv_input ) * 8.
-  CONCATENATE rv_xstring lv_length INTO rv_xstring IN BYTE MODE.
+  lv_length = xstrlen( iv_input ) * 8. " get number of bits
+  CONCATENATE rv_xstring
+    lv_length+7(1) lv_length+6(1) lv_length+5(1) lv_length+4(1)
+    lv_length+3(1) lv_length+2(1) lv_length+1(1) lv_length(1)
+    INTO rv_xstring IN BYTE MODE.
 
 ENDMETHOD.
 
@@ -398,6 +442,23 @@ METHOD to_utf8.
 
   lo_obj->convert( EXPORTING data = iv_string
                    IMPORTING buffer = rv_xstring ).
+
+ENDMETHOD.
+
+
+METHOD x.
+
+  DATA: lv_offset TYPE i,
+        lv_x      TYPE x.
+
+
+  lv_offset = ( ( iv_block - 1 ) * 16 + iv_word ) * 4.
+
+  DO 4 TIMES.
+    lv_x = iv_xstr+lv_offset(1).
+    CONCATENATE lv_x rv_word INTO rv_word IN BYTE MODE.
+    lv_offset = lv_offset + 1.
+  ENDDO.
 
 ENDMETHOD.
 ENDCLASS.

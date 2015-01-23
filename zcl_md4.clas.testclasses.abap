@@ -13,13 +13,15 @@ CLASS lcl_test DEFINITION FOR TESTING
 
   PRIVATE SECTION.
 * ================
-    METHODS: test1 FOR TESTING,
-             test2 FOR TESTING,
-             test3 FOR TESTING,
-             test4 FOR TESTING,
-             test5 FOR TESTING,
-             test6 FOR TESTING,
-             shift1 FOR TESTING.
+    METHODS: test1    FOR TESTING,
+             test2    FOR TESTING,
+             test3    FOR TESTING,
+             test4    FOR TESTING,
+             test5    FOR TESTING,
+             test6    FOR TESTING,
+             x        FOR TESTING,
+             shift1   FOR TESTING,
+             overflow FOR TESTING.
 
 ENDCLASS.       "lcl_Test
 
@@ -107,7 +109,8 @@ CLASS lcl_test IMPLEMENTATION.
     DATA: lv_hash TYPE zcl_md4=>ty_byte16.
 
 
-    lv_hash = zcl_md4=>hash( 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789' ).
+    lv_hash = zcl_md4=>hash(
+      'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789' ).
 
     cl_abap_unit_assert=>assert_equals(
         exp = '043F8582F241DB351CE627E153E7F0E4'
@@ -121,7 +124,7 @@ CLASS lcl_test IMPLEMENTATION.
     DATA: lv_byte4 TYPE zcl_md4=>ty_byte4.
 
 
-    lv_byte4 = zcl_md4=>shift(
+    lv_byte4 = zcl_md4=>SHIFT(
         iv_input  = 'FFAA0033'
         iv_places = 1 ).
 
@@ -130,5 +133,90 @@ CLASS lcl_test IMPLEMENTATION.
         act = lv_byte4 ).
 
   ENDMETHOD.                    "shift1
+
+  METHOD x.
+* ===========
+
+    DATA: lv_word TYPE zcl_md4=>ty_byte4,
+          lv_xstr TYPE xstring.
+
+
+    lv_xstr = zcl_md4=>padding_length( zcl_md4=>to_utf8( 'a' ) ).
+
+    lv_word = zcl_md4=>x(
+        iv_xstr  = lv_xstr
+        iv_block = 1
+        iv_word  = 0 ).
+    cl_abap_unit_assert=>assert_equals(
+      exp  = '00008061'
+      act  = lv_word
+      quit = if_aunit_constants=>no ).
+
+    lv_word = zcl_md4=>x(
+        iv_xstr  = lv_xstr
+        iv_block = 1
+        iv_word  = 14 ).
+    cl_abap_unit_assert=>assert_equals(
+      exp = '00000008'
+      act = lv_word
+      quit = if_aunit_constants=>no ).
+
+    lv_word = zcl_md4=>x(
+        iv_xstr  = lv_xstr
+        iv_block = 1
+        iv_word  = 15 ).
+    cl_abap_unit_assert=>assert_equals(
+      exp = '00000000'
+      act = lv_word
+      quit = if_aunit_constants=>no ).
+
+    lv_word = zcl_md4=>x(
+        iv_xstr  = 'FF0000FF'
+        iv_block = 1
+        iv_word  = 0 ).
+    cl_abap_unit_assert=>assert_equals(
+      exp  = 'FF0000FF'
+      act  = lv_word
+      quit = if_aunit_constants=>no ).
+
+  ENDMETHOD.                    "x1
+
+  METHOD overflow.
+* ===========
+
+    DATA: lv_word TYPE zcl_md4=>ty_byte4.
+
+
+    lv_word = zcl_md4=>overflow( 2147483647 ).
+    cl_abap_unit_assert=>assert_equals(
+      exp = '7FFFFFFF'
+      act = lv_word
+      quit = if_aunit_constants=>no ).
+
+    lv_word = zcl_md4=>overflow( -2147483648 ).
+    cl_abap_unit_assert=>assert_equals(
+      exp = '80000000'
+      act = lv_word
+      quit = if_aunit_constants=>no ).
+
+    lv_word = zcl_md4=>overflow( 2147483647 + 1 ).
+    cl_abap_unit_assert=>assert_equals(
+      exp = '80000000'
+      act = lv_word
+      quit = if_aunit_constants=>no ).
+
+    lv_word = zcl_md4=>overflow( -2147483648 - 1 ).
+    cl_abap_unit_assert=>assert_equals(
+      exp = '7FFFFFFF'
+      act = lv_word
+      quit = if_aunit_constants=>no ).
+
+    lv_word = zcl_md4=>overflow( 2 ).
+    cl_abap_unit_assert=>assert_equals(
+      exp = '00000002'
+      act = lv_word
+      quit = if_aunit_constants=>no ).
+
+  ENDMETHOD.                    "overflow1
 
 ENDCLASS.       "lcl_Test
