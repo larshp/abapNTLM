@@ -19,6 +19,7 @@ CLASS lcl_test DEFINITION FOR TESTING
              test4    FOR TESTING,
              test5    FOR TESTING,
              test6    FOR TESTING,
+             test7    FOR TESTING,
              x        FOR TESTING,
              shift1   FOR TESTING,
              overflow FOR TESTING.
@@ -118,13 +119,28 @@ CLASS lcl_test IMPLEMENTATION.
 
   ENDMETHOD.                    "test1
 
+  METHOD test7.
+* ===========
+
+    DATA: lv_hash TYPE zcl_md4=>ty_byte16.
+
+* 4103 = UTF-16LE Unicode
+    lv_hash = zcl_md4=>hash( iv_encoding = '4103'
+                             iv_string   = 'SecREt01' ).
+
+    cl_abap_unit_assert=>assert_equals(
+        exp = 'CD06CA7C7E10C99B1D33B7485A2ED808'
+        act = lv_hash ).
+
+  ENDMETHOD.                    "test7
+
   METHOD shift1.
 * ===========
 
     DATA: lv_byte4 TYPE zcl_md4=>ty_byte4.
 
 
-    lv_byte4 = zcl_md4=>SHIFT(
+    lv_byte4 = zcl_md4=>shift(
         iv_input  = 'FFAA0033'
         iv_places = 1 ).
 
@@ -141,7 +157,7 @@ CLASS lcl_test IMPLEMENTATION.
           lv_xstr TYPE xstring.
 
 
-    lv_xstr = zcl_md4=>padding_length( zcl_md4=>to_utf8( 'a' ) ).
+    lv_xstr = zcl_md4=>padding_length( zcl_md4=>codepage( 'a' ) ).
 
     lv_word = zcl_md4=>x(
         iv_xstr  = lv_xstr

@@ -11,10 +11,12 @@ public section.
   types:
     TY_BYTE16 type x length 16 .
 
+  type-pools ABAP .
   class ZCL_MD4 definition load .
   class-methods HASH
     importing
       !IV_STRING type STRING
+      !IV_ENCODING type ABAP_ENCODING default 'UTF-8'
     returning
       value(RV_HASH) type ZCL_MD4=>TY_BYTE16 .
 protected section.
@@ -95,8 +97,10 @@ protected section.
       !IV_INPUT type XSTRING
     returning
       value(RV_XSTRING) type XSTRING .
-  class-methods TO_UTF8
+  type-pools ABAP .
+  class-methods CODEPAGE
     importing
+      !IV_ENCODING type ABAP_ENCODING default 'UTF-8'
       !IV_STRING type STRING
     returning
       value(RV_XSTRING) type XSTRING .
@@ -108,6 +112,19 @@ ENDCLASS.
 
 
 CLASS ZCL_MD4 IMPLEMENTATION.
+
+
+METHOD codepage.
+
+  DATA: lo_obj TYPE REF TO cl_abap_conv_out_ce.
+
+
+  lo_obj = cl_abap_conv_out_ce=>create( encoding = iv_encoding ).
+
+  lo_obj->convert( EXPORTING data = iv_string
+                   IMPORTING buffer = rv_xstring ).
+
+ENDMETHOD.
 
 
 METHOD func_f.
@@ -283,7 +300,8 @@ METHOD hash.
   END-OF-DEFINITION.
 
 
-  lv_xstr = to_utf8( iv_string ).
+  lv_xstr = codepage( iv_encoding = iv_encoding
+                      iv_string   = iv_string ).
   lv_xstr = padding_length( lv_xstr ).
 
 * 16 words = 64 byte
@@ -429,19 +447,6 @@ METHOD shift.
     lv_bit = lv_bits+lv_offset(1).
     SET BIT lv_offset + 1 OF rv_output TO lv_bit.
   ENDDO.
-
-ENDMETHOD.
-
-
-METHOD to_utf8.
-
-  DATA: lo_obj TYPE REF TO cl_abap_conv_out_ce.
-
-
-  lo_obj = cl_abap_conv_out_ce=>create( encoding = 'UTF-8' ).
-
-  lo_obj->convert( EXPORTING data = iv_string
-                   IMPORTING buffer = rv_xstring ).
 
 ENDMETHOD.
 

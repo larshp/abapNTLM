@@ -18,7 +18,8 @@ CLASS lcl_test DEFINITION FOR TESTING
              type_2_decode FOR TESTING,
              type_2_encode FOR TESTING,
              type_3_decode FOR TESTING,
-             type_3_encode FOR TESTING.
+             type_3_encode FOR TESTING,
+             ntlm_response FOR TESTING.
 
 ENDCLASS.                    "lcl_test DEFINITION
 
@@ -28,6 +29,19 @@ ENDCLASS.                    "lcl_test DEFINITION
 *
 *----------------------------------------------------------------------*
 CLASS lcl_test IMPLEMENTATION.
+
+  METHOD ntlm_response.
+
+    DATA: lv_response TYPE zcl_ntlm=>ty_byte24.
+
+
+    lv_response = zcl_ntlm=>ntlm_response(
+        iv_password  = 'SecREt01'
+        iv_challenge = '0123456789ABCDEF' ).
+
+* todo
+
+  ENDMETHOD.                    "ntlm_response
 
   METHOD type_1_decode.
 

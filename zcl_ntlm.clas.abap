@@ -21,10 +21,21 @@ protected section.
 *"* protected components of class ZCL_NTLM
 *"* do not include other source files here!!!
 
+  types:
+    TY_BYTE8 type x length 8 .
+  types:
+    TY_BYTE24 type x length 24 .
+
   constants C_MESSAGE_TYPE_1 type XSTRING value '01000000'. "#EC NOTEXT
   constants C_MESSAGE_TYPE_2 type XSTRING value '02000000'. "#EC NOTEXT
   constants C_MESSAGE_TYPE_3 type XSTRING value '03000000'. "#EC NOTEXT
 
+  class-methods NTLM_RESPONSE
+    importing
+      !IV_PASSWORD type STRING
+      !IV_CHALLENGE type TY_BYTE8
+    returning
+      value(RV_RESPONSE) type TY_BYTE24 .
   class-methods TYPE_1_DECODE
     importing
       !IV_VALUE type STRING .
@@ -131,6 +142,25 @@ METHOD get.
 * todo
 
   li_client->close( ).
+
+ENDMETHOD.
+
+
+METHOD ntlm_response.
+
+  DATA: lv_hash  TYPE zcl_md4=>ty_byte16,
+        lv_rd1   TYPE x LENGTH 7,
+        lv_rd2   TYPE x LENGTH 7,
+        lv_rd3   TYPE x LENGTH 7.
+
+
+  lv_hash = zcl_md4=>hash( iv_encoding = '4103'
+                           iv_string   = 'SecREt01' ).
+
+  lv_rd1 = lv_hash.
+  lv_rd2 = lv_hash+7.
+  lv_rd3 = lv_hash+14.
+  BREAK-POINT.
 
 ENDMETHOD.
 
