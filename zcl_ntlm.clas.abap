@@ -11,10 +11,10 @@ public section.
 
   class-methods GET
     importing
-      !IV_USERNAME type STRING
-      !IV_PASSWORD type STRING
-      !IV_DOMAIN type STRING
-      !IV_URL type STRING
+      !IV_USERNAME type CLIKE
+      !IV_PASSWORD type CLIKE
+      !IV_DOMAIN type CLIKE
+      !IV_URL type CLIKE
     returning
       value(RV_RESULT) type XSTRING .
 protected section.
@@ -22,15 +22,63 @@ protected section.
 *"* do not include other source files here!!!
 
   types:
-    TY_BYTE8 type x length 8 .
+    ty_byte8 TYPE x LENGTH 8 .
   types:
-    TY_BYTE24 type x length 24 .
+    ty_byte24 TYPE x LENGTH 24 .
+  TYPES: ty_byte2 TYPE x LENGTH 2.
+  TYPES: ty_byte4 TYPE x LENGTH 4.
+  TYPES:
+    BEGIN OF ty_flags,
+           negotiate_56 TYPE abap_bool,
+           negotiate_key_exch TYPE abap_bool,
+           negotiate_128 TYPE abap_bool,
+           r1 TYPE abap_bool,
+           r2 TYPE abap_bool,
+           r3 TYPE abap_bool,
+           negotiate_version TYPE abap_bool,
+           r4 TYPE abap_bool,
+           negotiate_target_info TYPE abap_bool,
+           request_non_nt_session_key TYPE abap_bool,
+           r5 TYPE abap_bool,
+           negotiate_identity TYPE abap_bool,
+           negotiate_extended_session_sec TYPE abap_bool,
+           r6 TYPE abap_bool,
+           target_type_server TYPE abap_bool,
+           target_type_domain TYPE abap_bool,
+           negotiate_always_sign TYPE abap_bool,
+           r7 TYPE abap_bool,
+           negotiate_oem_workstation_sup TYPE abap_bool,
+           negotiate_oem_domain_supplied TYPE abap_bool,
+           anonymous TYPE abap_bool,
+           r8 TYPE abap_bool,
+           negotiate_ntlm TYPE abap_bool,
+           r9 TYPE abap_bool,
+           negotiate_lm_key TYPE abap_bool,
+           negotiate_datagram TYPE abap_bool,
+           negotiate_seal TYPE abap_bool,
+           negotiate_sign TYPE abap_bool,
+           r10 TYPE abap_bool,
+           request_target TYPE abap_bool,
+           negotiate_oem TYPE abap_bool,
+           negotiate_unicode TYPE abap_bool,
+         END OF ty_flags.
+  types:
+    BEGIN OF ty_type1,
+    flags type ty_flags,
+  target TYPE xstring,
+  workstation TYPE xstring,
+  END OF ty_type1 .
 
   constants C_MESSAGE_TYPE_1 type XSTRING value '01000000'. "#EC NOTEXT
   constants C_MESSAGE_TYPE_2 type XSTRING value '02000000'. "#EC NOTEXT
   constants C_MESSAGE_TYPE_3 type XSTRING value '03000000'. "#EC NOTEXT
 
-  class-methods LM_RESPONSE .
+  class-methods LMV1_RESPONSE
+    importing
+      !IV_PASSWORD type STRING
+      !IV_CHALLENGE type TY_BYTE8
+    returning
+      value(RV_RESPONSE) type XSTRING .
   class-methods NTLMV2_RESPONSE
     importing
       !IV_PASSWORD type STRING
@@ -42,7 +90,7 @@ protected section.
       value(RV_RESPONSE) type XSTRING
     raising
       CX_STATIC_CHECK .
-  class-methods NTLM_RESPONSE
+  class-methods NTLMV1_RESPONSE
     importing
       !IV_PASSWORD type STRING
       !IV_CHALLENGE type TY_BYTE8
@@ -50,7 +98,9 @@ protected section.
       value(RV_RESPONSE) type TY_BYTE24 .
   class-methods TYPE_1_DECODE
     importing
-      !IV_VALUE type STRING .
+      !IV_VALUE type STRING
+    returning
+      value(RS_DATA) type TY_TYPE1 .
   class-methods TYPE_2_ENCODE
     returning
       value(RV_VALUE) type STRING .
@@ -66,8 +116,13 @@ protected section.
     returning
       value(RV_CHALLENGE) type XSTRING .
   class-methods TYPE_3_ENCODE
+    importing
+      !IV_PASSWORD type STRING
+      !IV_CHALLENGE type TY_BYTE8
     returning
-      value(RV_VALUE) type STRING .
+      value(RV_VALUE) type STRING
+    raising
+      CX_STATIC_CHECK .
 private section.
 *"* private components of class ZCL_NTLM
 *"* do not include other source files here!!!
@@ -80,6 +135,29 @@ CLASS ZCL_NTLM IMPLEMENTATION.
 
 METHOD get.
 
+* The MIT License (MIT)
+*
+* Copyright (c) 2015 Lars Hvam
+*
+* Permission is hereby granted, free of charge, to any person obtaining a copy
+* of this software and associated documentation files (the "Software"), to deal
+* in the Software without restriction, including without limitation the rights
+* to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+* copies of the Software, and to permit persons to whom the Software is
+* furnished to do so, subject to the following conditions:
+*
+* The above copyright notice and this permission notice shall be included in all
+* copies or substantial portions of the Software.
+*
+* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+* FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+* AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+* LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+* OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+* SOFTWARE.
+
+* https://msdn.microsoft.com/en-us/library/cc236621.aspx
 * http://davenport.sourceforge.net/ntlm.html
 * http://blogs.msdn.com/b/chiranth/archive/2013/09/21/ntlm-want-to-know-how-it-works.aspx
 * http://www.innovation.ch/personal/ronald/ntlm.html
@@ -88,14 +166,16 @@ METHOD get.
 
   DATA: li_client TYPE REF TO if_http_client,
         lv_value  TYPE string,
+        lv_url    TYPE string,
         lt_fields TYPE tihttpnvp.
 
   FIELD-SYMBOLS: <ls_field> LIKE LINE OF lt_fields.
 
 
+  lv_url = iv_url. " convert type
   cl_http_client=>create_by_url(
     EXPORTING
-      url    = iv_url
+      url    = lv_url
       ssl_id = 'ANONYM' " todo, as optional input?
     IMPORTING
       client = li_client ).
@@ -155,16 +235,89 @@ METHOD get.
   type_2_decode( lv_value ).
 
 * todo
+*  BREAK-POINT.
 
   li_client->close( ).
 
 ENDMETHOD.
 
 
-METHOD lm_response.
+METHOD lmv1_response.
 
-* todo
-  RETURN.
+  CONSTANTS: lc_text TYPE xstring VALUE '4B47532140232425'. " KGS!@#$%
+
+  DATA: lv_pass TYPE xstring,
+        lv_lm_hash TYPE x LENGTH 21,
+        lv_rd1  TYPE x LENGTH 7,
+        lv_rd2  TYPE x LENGTH 7,
+        lv_rd3  TYPE x LENGTH 7,
+        lv_r1   TYPE x LENGTH 8,
+        lv_r2   TYPE x LENGTH 8,
+        lv_r3   TYPE x LENGTH 8.
+
+
+  lv_pass = lcl_convert=>codepage_utf_8( to_upper( iv_password ) ).
+* todo, special characters?
+  lv_rd1 = lv_pass.
+  lv_rd2 = lv_pass+7.
+
+  lv_r1 = zcl_des=>encrypt(
+      iv_key       = zcl_des=>parity_adjust( lv_rd1 )
+      iv_plaintext = lc_text ).
+  lv_r2 = zcl_des=>encrypt(
+      iv_key       = zcl_des=>parity_adjust( lv_rd2 )
+      iv_plaintext = lc_text ).
+
+  CONCATENATE lv_r1 lv_r2 INTO lv_lm_hash IN BYTE MODE.
+
+  lv_rd1 = lv_lm_hash.
+  lv_rd2 = lv_lm_hash+7.
+  lv_rd3 = lv_lm_hash+14.
+
+  lv_r1 = zcl_des=>encrypt(
+      iv_key       = zcl_des=>parity_adjust( lv_rd1 )
+      iv_plaintext = iv_challenge ).
+  lv_r2 = zcl_des=>encrypt(
+      iv_key       = zcl_des=>parity_adjust( lv_rd2 )
+      iv_plaintext = iv_challenge ).
+  lv_r3 = zcl_des=>encrypt(
+      iv_key       = zcl_des=>parity_adjust( lv_rd3 )
+      iv_plaintext = iv_challenge ).
+
+  CONCATENATE lv_r1 lv_r2 lv_r3 INTO rv_response IN BYTE MODE.
+
+ENDMETHOD.
+
+
+METHOD ntlmv1_response.
+
+  DATA: lv_hash TYPE zcl_md4=>ty_byte16,
+        lv_rd1  TYPE x LENGTH 7,
+        lv_rd2  TYPE x LENGTH 7,
+        lv_rd3  TYPE x LENGTH 7,
+        lv_r1   TYPE x LENGTH 8,
+        lv_r2   TYPE x LENGTH 8,
+        lv_r3   TYPE x LENGTH 8.
+
+
+  lv_hash = zcl_md4=>hash( iv_encoding = '4103'
+                           iv_string   = iv_password ).
+
+  lv_rd1 = lv_hash.
+  lv_rd2 = lv_hash+7.
+  lv_rd3 = lv_hash+14.
+
+  lv_r1 = zcl_des=>encrypt(
+      iv_key       = zcl_des=>parity_adjust( lv_rd1 )
+      iv_plaintext = iv_challenge ).
+  lv_r2 = zcl_des=>encrypt(
+      iv_key       = zcl_des=>parity_adjust( lv_rd2 )
+      iv_plaintext = iv_challenge ).
+  lv_r3 = zcl_des=>encrypt(
+      iv_key       = zcl_des=>parity_adjust( lv_rd3 )
+      iv_plaintext = iv_challenge ).
+
+  CONCATENATE lv_r1 lv_r2 lv_r3 INTO rv_response IN BYTE MODE.
 
 ENDMETHOD.
 
@@ -213,64 +366,23 @@ METHOD ntlmv2_response.
 ENDMETHOD.
 
 
-METHOD ntlm_response.
-
-  DATA: lv_hash TYPE zcl_md4=>ty_byte16,
-        lv_rd1  TYPE x LENGTH 7,
-        lv_rd2  TYPE x LENGTH 7,
-        lv_rd3  TYPE x LENGTH 7,
-        lv_r1   TYPE x LENGTH 8,
-        lv_r2   TYPE x LENGTH 8,
-        lv_r3   TYPE x LENGTH 8.
-
-
-  lv_hash = zcl_md4=>hash( iv_encoding = '4103'
-                           iv_string   = iv_password ).
-
-  lv_rd1 = lv_hash.
-  lv_rd2 = lv_hash+7.
-  lv_rd3 = lv_hash+14.
-
-  lv_r1 = zcl_des=>encrypt(
-      iv_key       = zcl_des=>parity_adjust( lv_rd1 )
-      iv_plaintext = iv_challenge ).
-  lv_r2 = zcl_des=>encrypt(
-      iv_key       = zcl_des=>parity_adjust( lv_rd2 )
-      iv_plaintext = iv_challenge ).
-  lv_r3 = zcl_des=>encrypt(
-      iv_key       = zcl_des=>parity_adjust( lv_rd3 )
-      iv_plaintext = iv_challenge ).
-
-  CONCATENATE lv_r1 lv_r2 lv_r3 INTO rv_response IN BYTE MODE.
-
-ENDMETHOD.
-
-
 METHOD type_1_decode.
 
-  DATA: lv_xstr  TYPE xstring,
-        ls_target_name TYPE ty_fields,
-        ls_workst_name TYPE ty_fields,
-        ls_flags TYPE ty_flags.
+  DATA: lo_reader TYPE REF TO lcl_reader.
 
 
-  lcl_read=>signature( EXPORTING iv_value = iv_value
-                                 iv_type = C_MESSAGE_TYPE_1
-                       CHANGING  cv_xstr = lv_xstr ) .
+  CREATE OBJECT lo_reader
+    EXPORTING
+      iv_value = iv_value
+      iv_type  = c_message_type_1.
 
-  lcl_read=>flags( IMPORTING es_flags = ls_flags
-                   CHANGING cv_xstr = lv_xstr ).
+  rs_data-flags = lo_reader->flags( ).
 
 * domain/target name
-  lcl_read=>fields( IMPORTING es_fields = ls_target_name
-                    CHANGING cv_xstr = lv_xstr ).
+  rs_data-target = lo_reader->fields( ).
 
 * workstation fields
-  lcl_read=>fields( IMPORTING es_fields = ls_workst_name
-                    CHANGING cv_xstr = lv_xstr ).
-
-* payload
-* todo
+  rs_data-workstation = lo_reader->fields( ).
 
 * todo
   BREAK-POINT.
@@ -280,172 +392,176 @@ ENDMETHOD.
 
 METHOD type_1_encode.
 
-  DATA: lv_xstr  TYPE xstring,
-        ls_flags TYPE ty_flags.
+  DATA: lo_writer TYPE REF TO lcl_writer,
+        ls_flags  TYPE ty_flags.
 
 
-  lv_xstr = lcl_write=>signature( c_message_type_1 ).
+  CREATE OBJECT lo_writer
+    EXPORTING
+      iv_type = c_message_type_1.
 
-* minimal flags, Negotiate NTLM and Negotiate OEM
+* minimal flags, Negotiate NTLM and Negotiate unicode
   ls_flags-negotiate_ntlm = abap_true.
-  ls_flags-negotiate_oem = abap_true.
+  ls_flags-negotiate_unicode = abap_true.
 
-  lcl_write=>flags( EXPORTING is_flags = ls_flags
-                    CHANGING  cv_xstr = lv_xstr ).
+  lo_writer->flags( ls_flags ).
 
-  rv_value = lcl_convert=>base64_encode( lv_xstr ).
+  rv_value = lo_writer->message( ).
 
 ENDMETHOD.
 
 
 METHOD type_2_decode.
 
-  DATA: ls_target_name TYPE ty_fields,
-        ls_target_info TYPE ty_fields,
-        ls_flags TYPE ty_flags,
-        lv_xstr  TYPE xstring.
+  DATA: ls_flags       TYPE ty_flags,
+        lv_tinfo       TYPE xstring,
+        lv_tname       TYPE xstring,
+        lo_reader      TYPE REF TO lcl_reader.
 
 
-  lcl_read=>signature( EXPORTING iv_value = iv_value
-                                 iv_type = C_MESSAGE_TYPE_2
-                       CHANGING  cv_xstr = lv_xstr ) .
+  CREATE OBJECT lo_reader
+    EXPORTING
+      iv_value = iv_value
+      iv_type  = c_message_type_2.
 
 * target name
-  lcl_read=>fields( IMPORTING es_fields = ls_target_name
-                    CHANGING cv_xstr = lv_xstr ).
+  lv_tname = lo_reader->fields( ).
 
 * flags
-  lcl_read=>flags( IMPORTING es_flags = ls_flags
-                   CHANGING cv_xstr = lv_xstr ).
+  ls_flags = lo_reader->flags( ).
 
 * challenge
-  rv_challenge = lv_xstr(8).
-  lv_xstr = lv_xstr+8.
+  rv_challenge = lo_reader->raw( 8 ).
 
 * reserved
-  lv_xstr = lv_xstr+8.
+  lo_reader->skip( 8 ).
 
 * target info
-  lcl_read=>fields( IMPORTING es_fields = ls_target_info
-                    CHANGING cv_xstr = lv_xstr ).
+  lv_tinfo = lo_reader->fields( ).
 
-  BREAK-POINT.
+*  BREAK-POINT.
 
 ENDMETHOD.
 
 
 METHOD type_2_encode.
 
-  DATA: lv_xstr TYPE xstring.
+  DATA: lo_writer TYPE REF TO lcl_writer.
 
 
-  lv_xstr = lcl_write=>signature( c_message_type_2 ).
+  CREATE OBJECT lo_writer
+    EXPORTING
+      iv_type = c_message_type_2.
 
 * todo
+
+  rv_value = lo_writer->message( ).
 
 ENDMETHOD.
 
 
 METHOD type_3_decode.
 
-  DATA: lv_xstr        TYPE xstring,
-        ls_lm_resp     TYPE ty_fields,
-        ls_ntlm_resp   TYPE ty_fields,
-        ls_target_name TYPE ty_fields,
-        ls_user_name   TYPE ty_fields,
-        ls_workst_name TYPE ty_fields,
-        ls_session_key TYPE ty_fields,
-        ls_flags       TYPE ty_flags.
+  DATA: lv_lm_resp     TYPE xstring,
+        lv_ntlm_resp   TYPE xstring,
+        lv_target_name TYPE xstring,
+        lv_user_name   TYPE xstring,
+        lv_workst_name TYPE xstring,
+        lv_session_key TYPE xstring,
+        ls_flags       TYPE ty_flags,
+        lo_reader      TYPE REF TO lcl_reader.
 
 
-  lcl_read=>signature( EXPORTING iv_value = iv_value
-                                 iv_type = C_MESSAGE_TYPE_3
-                       CHANGING  cv_xstr = lv_xstr ) .
+  CREATE OBJECT lo_reader
+    EXPORTING
+      iv_value = iv_value
+      iv_type  = c_message_type_3.
 
 * LM challenge response
-  lcl_read=>fields( IMPORTING es_fields = ls_lm_resp
-                    CHANGING cv_xstr = lv_xstr ).
+  lv_lm_resp = lo_reader->fields( ).
 
 * NTLM challenge response
-  lcl_read=>fields( IMPORTING es_fields = ls_ntlm_resp
-                    CHANGING cv_xstr = lv_xstr ).
+  lv_ntlm_resp = lo_reader->fields( ).
 
 * domain/target name
-  lcl_read=>fields( IMPORTING es_fields = ls_target_name
-                    CHANGING cv_xstr = lv_xstr ).
+  lv_target_name = lo_reader->fields( ).
 
 * user name
-  lcl_read=>fields( IMPORTING es_fields = ls_user_name
-                    CHANGING cv_xstr = lv_xstr ).
+  lv_user_name = lo_reader->fields( ).
 
 * workstation name
-  lcl_read=>fields( IMPORTING es_fields = ls_workst_name
-                    CHANGING cv_xstr = lv_xstr ).
+  lv_workst_name = lo_reader->fields( ).
 
 * encrypted random session key
-  lcl_read=>fields( IMPORTING es_fields = ls_session_key
-                    CHANGING cv_xstr = lv_xstr ).
+  lv_session_key = lo_reader->fields( ).
 
 * negotiate flags
-  lcl_read=>flags( IMPORTING es_flags = ls_flags
-                   CHANGING cv_xstr = lv_xstr ).
+  ls_flags = lo_reader->flags( ).
 
 * todo
 
-  BREAK-POINT.
+*  BREAK-POINT.
 
 ENDMETHOD.
 
 
 METHOD type_3_encode.
 
-  DATA: lv_xstr        TYPE xstring,
-        ls_lm_resp     TYPE ty_fields,
-        ls_ntlm_resp   TYPE ty_fields,
-        ls_target_name TYPE ty_fields,
-        ls_user_name   TYPE ty_fields,
-        ls_workst_name TYPE ty_fields,
-        ls_session_key TYPE ty_fields,
+  DATA: lv_lm_resp     TYPE xstring,
+        lv_session_key TYPE xstring,
+        lv_ntlm        TYPE xstring,
+        lo_writer      TYPE REF TO lcl_writer,
+        lv_data        TYPE xstring,
         ls_flags       TYPE ty_flags.
 
 
-  lv_xstr = lcl_write=>signature( c_message_type_2 ).
+  CREATE OBJECT lo_writer
+    EXPORTING
+      iv_type = c_message_type_2.
 
 * LM challenge response
-  lcl_write=>fields( EXPORTING is_fields = ls_lm_resp
-                     CHANGING  cv_xstr = lv_xstr ).
+  lv_lm_resp = lmv1_response(
+      iv_password  = iv_password
+      iv_challenge = iv_challenge ).
+  lo_writer->fields( lv_lm_resp ).
 
 * NTLM challenge response
-  lcl_write=>fields( EXPORTING is_fields = ls_ntlm_resp
-                     CHANGING  cv_xstr = lv_xstr ).
+  lv_ntlm = ntlmv1_response(
+      iv_password  = iv_password
+      iv_challenge = iv_challenge ).
+  lo_writer->fields( lv_ntlm ).
 
 * domain/target name
-  lcl_write=>fields( EXPORTING is_fields = ls_target_name
-                     CHANGING  cv_xstr = lv_xstr ).
+  lo_writer->fields( lv_data ).
 
 * user name
-  lcl_write=>fields( EXPORTING is_fields = ls_user_name
-                     CHANGING  cv_xstr = lv_xstr ).
+  lo_writer->fields( lv_data ).
 
 * workstation name
-  lcl_write=>fields( EXPORTING is_fields = ls_workst_name
-                     CHANGING  cv_xstr = lv_xstr ).
+  lo_writer->fields( lv_data ).
 
 * encrypted random session key
-  lcl_write=>fields( EXPORTING is_fields = ls_session_key
-                     CHANGING  cv_xstr = lv_xstr ).
+  lv_session_key = zcl_arc4=>encrypt_hex(
+    iv_key        = zcl_md4=>hash_hex(
+                      zcl_md4=>hash( iv_encoding = '4103'
+                                     iv_string = 'Password' ) )
+    iv_plaintext  = '55555555555555555555555555555555' ).
+  lo_writer->fields( lv_session_key ).
 
 * negotiate flags
-  lcl_write=>flags( EXPORTING is_flags = ls_flags
-                    CHANGING  cv_xstr = lv_xstr ).
+  lo_writer->flags( ls_flags ).
 
 * MIC?
 * todo
 
-* Payload
-* todo
+* fields
+*workstation name
+*username
+*target name
+*ntlm response
+*lm response
 
-  rv_value = lcl_convert=>base64_encode( lv_xstr ).
+  rv_value = lo_writer->message( ).
 
 ENDMETHOD.
 ENDCLASS.

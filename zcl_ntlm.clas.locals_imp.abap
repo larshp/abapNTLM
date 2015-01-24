@@ -3,51 +3,20 @@
 *"* declarations
 
   TYPES:
-    BEGIN OF ty_flags,
-           negotiate_56 TYPE abap_bool,
-           negotiate_key_exch TYPE abap_bool,
-           negotiate_128 TYPE abap_bool,
-           r1 TYPE abap_bool,
-           r2 TYPE abap_bool,
-           r3 TYPE abap_bool,
-           negotiate_version TYPE abap_bool,
-           r4 TYPE abap_bool,
-           negotiate_target_info TYPE abap_bool,
-           request_non_nt_session_key TYPE abap_bool,
-           r5 TYPE abap_bool,
-           negotiate_identity TYPE abap_bool,
-           negotiate_extended_session_sec TYPE abap_bool,
-           r6 TYPE abap_bool,
-           target_type_server TYPE abap_bool,
-           target_type_domain TYPE abap_bool,
-           negotiate_always_sign TYPE abap_bool,
-           r7 TYPE abap_bool,
-           negotiate_oem_workstation_sup TYPE abap_bool,
-           negotiate_oem_domain_supplied TYPE abap_bool,
-           anonymous TYPE abap_bool,
-           r8 TYPE abap_bool,
-           negotiate_ntlm TYPE abap_bool,
-           r9 TYPE abap_bool,
-           negotiate_lm_key TYPE abap_bool,
-           negotiate_datagram TYPE abap_bool,
-           negotiate_seal TYPE abap_bool,
-           negotiate_sign TYPE abap_bool,
-           r10 TYPE abap_bool,
-           request_target TYPE abap_bool,
-           negotiate_oem TYPE abap_bool,
-           negotiate_unicode TYPE abap_bool,
-         END OF ty_flags.
-
-  TYPES:
     BEGIN OF ty_fields,
            len TYPE i,
            maxlen TYPE i,
            offset TYPE i,
          END OF ty_fields .
 
-  TYPES: ty_byte2 TYPE x LENGTH 2.
-  TYPES: ty_byte4 TYPE x LENGTH 4.
-  TYPES: ty_byte8 TYPE x LENGTH 8.
+  CLASS lcl_convert DEFINITION DEFERRED.
+  CLASS zcl_ntlm DEFINITION LOCAL FRIENDS lcl_convert.
+
+    CLASS lcl_reader DEFINITION DEFERRED.
+  CLASS zcl_ntlm DEFINITION LOCAL FRIENDS lcl_reader.
+
+    CLASS lcl_writer DEFINITION DEFERRED.
+  CLASS zcl_ntlm DEFINITION LOCAL FRIENDS lcl_writer.
 
 *----------------------------------------------------------------------*
 *       CLASS lcl_time DEFINITION
@@ -174,14 +143,14 @@
     PUBLIC SECTION.
       CLASS-METHODS fields_decode
         IMPORTING
-          iv_byte8 TYPE ty_byte8
+          iv_byte8 TYPE zcl_ntlm=>ty_byte8
         RETURNING
           value(rs_fields) TYPE ty_fields .
       CLASS-METHODS fields_encode
         IMPORTING
           is_fields TYPE ty_fields
         RETURNING
-          value(rv_byte8) TYPE ty_byte8 .
+          value(rv_byte8) TYPE zcl_ntlm=>ty_byte8 .
       CLASS-METHODS base64_decode
         IMPORTING
           iv_string TYPE string
@@ -194,35 +163,40 @@
           value(rv_string) TYPE string .
       CLASS-METHODS flags_decode
         IMPORTING
-          iv_hex TYPE ty_byte4
+          iv_hex TYPE zcl_ntlm=>ty_byte4
         RETURNING
-          value(rs_flags) TYPE ty_flags .
+          value(rs_flags) TYPE zcl_ntlm=>ty_flags .
       CLASS-METHODS flags_encode
         IMPORTING
-          is_flags TYPE ty_flags
+          is_flags TYPE zcl_ntlm=>ty_flags
         RETURNING
-          value(rv_hex) TYPE ty_byte4 .
+          value(rv_hex) TYPE zcl_ntlm=>ty_byte4 .
       CLASS-METHODS byte2_to_int
         IMPORTING
-          iv_byte2 TYPE ty_byte2
+          iv_byte2 TYPE zcl_ntlm=>ty_byte2
         RETURNING
           value(rv_int) TYPE i .
       CLASS-METHODS byte4_to_int
         IMPORTING
-          iv_byte4 TYPE ty_byte4
+          iv_byte4 TYPE zcl_ntlm=>ty_byte4
         RETURNING
           value(rv_int) TYPE i .
       CLASS-METHODS int_to_byte2
         IMPORTING
           iv_int TYPE i
         RETURNING
-          value(rv_byte2) TYPE ty_byte2 .
+          value(rv_byte2) TYPE zcl_ntlm=>ty_byte2 .
       CLASS-METHODS int_to_byte4
         IMPORTING
           iv_int TYPE i
         RETURNING
-          value(rv_byte4) TYPE ty_byte4 .
+          value(rv_byte4) TYPE zcl_ntlm=>ty_byte4 .
       CLASS-METHODS codepage_4103
+        IMPORTING
+          iv_string TYPE string
+        RETURNING
+          value(rv_xstring) TYPE xstring.
+      CLASS-METHODS codepage_utf_8
         IMPORTING
           iv_string TYPE string
         RETURNING
@@ -236,6 +210,18 @@
 *
 *----------------------------------------------------------------------*
   CLASS lcl_convert IMPLEMENTATION.
+
+    METHOD codepage_utf_8.
+
+      DATA: lo_obj TYPE REF TO cl_abap_conv_out_ce.
+
+
+      lo_obj = cl_abap_conv_out_ce=>create( encoding = 'UTF-8' ).
+
+      lo_obj->convert( EXPORTING data = iv_string
+                       IMPORTING buffer = rv_xstring ).
+
+    ENDMETHOD.                    "codepage_UTF_8
 
     METHOD codepage_4103.
 
@@ -251,8 +237,8 @@
 
     METHOD fields_decode.
 
-      DATA: lv_byte2 TYPE ty_byte2,
-            lv_byte4 TYPE ty_byte4.
+      DATA: lv_byte2 TYPE zcl_ntlm=>ty_byte2,
+            lv_byte4 TYPE zcl_ntlm=>ty_byte4.
 
 
       lv_byte2 = iv_byte8(2).
@@ -498,7 +484,7 @@
 
     METHOD byte2_to_int.
 
-      DATA: lv_rev TYPE ty_byte2.
+      DATA: lv_rev TYPE zcl_ntlm=>ty_byte2.
 
 
       CONCATENATE iv_byte2+1(1) iv_byte2(1) INTO lv_rev IN BYTE MODE.
@@ -508,7 +494,7 @@
 
     METHOD byte4_to_int.
 
-      DATA: lv_rev TYPE ty_byte4.
+      DATA: lv_rev TYPE zcl_ntlm=>ty_byte4.
 
 
       CONCATENATE iv_byte4+3(1) iv_byte4+2(1) iv_byte4+1(1) iv_byte4(1)
@@ -519,7 +505,7 @@
 
     METHOD int_to_byte2.
 
-      DATA: lv_rev TYPE ty_byte2.
+      DATA: lv_rev TYPE zcl_ntlm=>ty_byte2.
 
 
       lv_rev = iv_int.
@@ -530,7 +516,7 @@
 
     METHOD int_to_byte4.
 
-      DATA: lv_rev TYPE ty_byte4.
+      DATA: lv_rev TYPE zcl_ntlm=>ty_byte4.
 
 
       lv_rev = iv_int.
@@ -548,27 +534,34 @@
 *----------------------------------------------------------------------*
 *
 *----------------------------------------------------------------------*
-  CLASS lcl_read DEFINITION FINAL.
+  CLASS lcl_reader DEFINITION FINAL.
 
     PUBLIC SECTION.
-      CLASS-METHODS flags
-        EXPORTING
-          es_flags TYPE ty_flags
-        CHANGING
-          cv_xstr TYPE xstring.
+      METHODS constructor
+        IMPORTING iv_value TYPE string
+                  iv_type TYPE xstring.
 
-      CLASS-METHODS fields
-        EXPORTING
-          es_fields TYPE ty_fields
-        CHANGING
-          cv_xstr TYPE xstring.
+      METHODS flags
+        RETURNING
+          value(rs_flags) TYPE zcl_ntlm=>ty_flags.
 
-      CLASS-METHODS signature
+      METHODS fields
+        RETURNING
+          value(rv_data) TYPE xstring.
+
+      METHODS skip
         IMPORTING
-          iv_value TYPE string
-          iv_type TYPE xstring
-        CHANGING
-          cv_xstr TYPE xstring.
+          iv_bytes TYPE i.
+
+      METHODS raw
+        IMPORTING
+          iv_bytes TYPE i
+        RETURNING
+          value(rv_raw) TYPE xstring.
+
+    PRIVATE SECTION.
+      DATA: mv_original TYPE xstring,
+            mv_current TYPE xstring.
 
   ENDCLASS.                    "lcl_read DEFINITION
 
@@ -577,45 +570,67 @@
 *----------------------------------------------------------------------*
 *
 *----------------------------------------------------------------------*
-  CLASS lcl_read IMPLEMENTATION.
+  CLASS lcl_reader IMPLEMENTATION.
+
+    METHOD raw.
+
+      rv_raw = mv_current(iv_bytes).
+      mv_current = mv_current+iv_bytes.
+
+    ENDMETHOD.                    "raw
+
+    METHOD skip.
+
+      mv_current = mv_current+iv_bytes.
+
+    ENDMETHOD.                    "skip
+
+    METHOD constructor.
+
+      mv_original = lcl_convert=>base64_decode( iv_value ).
+
+      IF xstrlen( mv_original ) < 8 OR mv_original(8) <> zcl_ntlm=>c_signature.
+        BREAK-POINT.
+      ENDIF.
+      mv_current = mv_original+8.
+
+      IF xstrlen( mv_current ) < 4 OR mv_current(4) <> iv_type.
+        BREAK-POINT.
+      ENDIF.
+      mv_current = mv_current+4.
+
+    ENDMETHOD.                    "constructor
 
     METHOD flags.
 
-      DATA: lv_byte4 TYPE ty_byte4.
+      DATA: lv_byte4 TYPE zcl_ntlm=>ty_byte4.
 
 
-      lv_byte4 = cv_xstr(4).
-      es_flags = lcl_convert=>flags_decode( lv_byte4 ).
-      cv_xstr = cv_xstr+4.
+      lv_byte4 = mv_current(4).
+      rs_flags = lcl_convert=>flags_decode( lv_byte4 ).
+      mv_current = mv_current+4.
 
     ENDMETHOD.                    "flags
 
     METHOD fields.
 
-      DATA: lv_byte8 TYPE ty_byte8.
+      DATA: lv_byte8 TYPE zcl_ntlm=>ty_byte8,
+            ls_fields TYPE ty_fields.
 
 
-      lv_byte8 = cv_xstr(8).
-      es_fields = lcl_convert=>fields_decode( lv_byte8 ).
-      cv_xstr = cv_xstr+8.
+      lv_byte8 = mv_current(8).
+      ls_fields = lcl_convert=>fields_decode( lv_byte8 ).
+      mv_current = mv_current+8.
+
+      IF ls_fields-len = 0.
+        RETURN.
+      ENDIF.
+      IF ls_fields-len <> ls_fields-maxlen.
+        BREAK-POINT.
+      ENDIF.
+      rv_data = mv_original+ls_fields-offset(ls_fields-len).
 
     ENDMETHOD.                    "fields
-
-    METHOD signature.
-
-      cv_xstr = lcl_convert=>base64_decode( iv_value ).
-
-      IF xstrlen( cv_xstr ) < 8 OR cv_xstr(8) <> zcl_ntlm=>c_signature.
-        BREAK-POINT.
-      ENDIF.
-      cv_xstr = cv_xstr+8.
-
-      IF xstrlen( cv_xstr ) < 4 OR cv_xstr(4) <> iv_type.
-        BREAK-POINT.
-      ENDIF.
-      cv_xstr = cv_xstr+4.
-
-    ENDMETHOD.                    "signature
 
   ENDCLASS.                    "lcl_read IMPLEMENTATION
 
@@ -624,26 +639,27 @@
 *----------------------------------------------------------------------*
 *
 *----------------------------------------------------------------------*
-  CLASS lcl_write DEFINITION FINAL.
+  CLASS lcl_writer DEFINITION FINAL.
 
     PUBLIC SECTION.
-      CLASS-METHODS flags
-        IMPORTING
-          is_flags TYPE ty_flags
-        CHANGING
-          cv_xstr TYPE xstring.
+      METHODS constructor
+        IMPORTING iv_type TYPE xstring.
 
-      CLASS-METHODS fields
+      METHODS flags
         IMPORTING
-          is_fields TYPE ty_fields
-        CHANGING
-          cv_xstr TYPE xstring.
+          is_flags TYPE zcl_ntlm=>ty_flags.
 
-      CLASS-METHODS signature
+      METHODS fields
         IMPORTING
-          iv_type TYPE xstring
+          iv_data TYPE xsequence.
+
+      METHODS message
         RETURNING
-          value(rv_xstr) TYPE xstring.
+          value(rv_msg) TYPE string.
+
+    PRIVATE SECTION.
+      DATA: mv_header TYPE xstring,
+            mv_payload TYPE xstring.
 
   ENDCLASS.                    "lcl_write DEFINITION
 
@@ -652,32 +668,46 @@
 *----------------------------------------------------------------------*
 *
 *----------------------------------------------------------------------*
-  CLASS lcl_write IMPLEMENTATION.
+  CLASS lcl_writer IMPLEMENTATION.
+
+    METHOD message.
+
+      DATA: lv_xstr TYPE xstring.
+
+
+      CONCATENATE mv_header mv_payload INTO lv_xstr IN BYTE MODE.
+
+      rv_msg = lcl_convert=>base64_encode( lv_xstr ).
+
+    ENDMETHOD.                    "message
+
+    METHOD constructor.
+
+      CONCATENATE zcl_ntlm=>c_signature iv_type INTO mv_header IN BYTE MODE.
+
+    ENDMETHOD.                    "constructor
 
     METHOD flags.
 
-      DATA: lv_byte4 TYPE ty_byte4.
+      DATA: lv_byte4 TYPE zcl_ntlm=>ty_byte4.
 
 
       lv_byte4 = lcl_convert=>flags_encode( is_flags ).
-      CONCATENATE cv_xstr lv_byte4 INTO cv_xstr IN BYTE MODE.
+      CONCATENATE mv_header lv_byte4 INTO mv_header IN BYTE MODE.
 
     ENDMETHOD.                    "flags
 
     METHOD fields.
 
-      DATA: lv_byte8 TYPE ty_byte8.
+      DATA: ls_fields TYPE ty_fields,
+            lv_byte8 TYPE zcl_ntlm=>ty_byte8.
 
 
-      lv_byte8 = lcl_convert=>fields_encode( is_fields ).
-      CONCATENATE cv_xstr lv_byte8 INTO cv_xstr IN BYTE MODE.
+      lv_byte8 = lcl_convert=>fields_encode( ls_fields ).
+      CONCATENATE mv_header lv_byte8 INTO mv_header IN BYTE MODE.
+
+* todo, write payload
 
     ENDMETHOD.                    "fields
-
-    METHOD signature.
-
-      CONCATENATE zcl_ntlm=>c_signature iv_type INTO rv_xstr IN BYTE MODE.
-
-    ENDMETHOD.                    "signature
 
   ENDCLASS.                    "lcl_write IMPLEMENTATION

@@ -19,6 +19,11 @@ public section.
       !IV_ENCODING type ABAP_ENCODING default 'UTF-8'
     returning
       value(RV_HASH) type ZCL_MD4=>TY_BYTE16 .
+  class-methods HASH_HEX
+    importing
+      !IV_XSTR type XSTRING
+    returning
+      value(RV_HASH) type ZCL_MD4=>TY_BYTE16 .
 protected section.
 *"* protected components of class ZCL_MD4
 *"* do not include other source files here!!!
@@ -242,6 +247,41 @@ METHOD hash.
 
   DATA: lv_xstr TYPE xstring.
 
+
+  lv_xstr = codepage( iv_encoding = iv_encoding
+                      iv_string   = iv_string ).
+
+  rv_hash = hash_hex( lv_xstr ).
+
+ENDMETHOD.
+
+
+METHOD hash_hex.
+
+* The MIT License (MIT)
+*
+* Copyright (c) 2015 Lars Hvam
+*
+* Permission is hereby granted, free of charge, to any person obtaining a copy
+* of this software and associated documentation files (the "Software"), to deal
+* in the Software without restriction, including without limitation the rights
+* to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+* copies of the Software, and to permit persons to whom the Software is
+* furnished to do so, subject to the following conditions:
+*
+* The above copyright notice and this permission notice shall be included in all
+* copies or substantial portions of the Software.
+*
+* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+* FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+* AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+* LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+* OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+* SOFTWARE.
+
+  DATA: lv_xstr TYPE xstring.
+
 * big endian
   DATA: lv_a TYPE x LENGTH 4 VALUE '67452301',
         lv_b TYPE x LENGTH 4 VALUE 'EFCDAB89',
@@ -300,9 +340,7 @@ METHOD hash.
   END-OF-DEFINITION.
 
 
-  lv_xstr = codepage( iv_encoding = iv_encoding
-                      iv_string   = iv_string ).
-  lv_xstr = padding_length( lv_xstr ).
+  lv_xstr = padding_length( iv_xstr ).
 
 * 16 words = 64 byte
   DO xstrlen( lv_xstr ) / 64 TIMES.

@@ -15,10 +15,26 @@ public section.
       value(RV_PLAINTEXT) type STRING
     raising
       CX_STATIC_CHECK .
+  class-methods DECRYPT_HEX
+    importing
+      !IV_KEY type XSTRING
+      !IV_CIPHERTEXT type XSTRING
+    returning
+      value(RV_PLAINTEXT) type XSTRING
+    raising
+      CX_STATIC_CHECK .
   class-methods ENCRYPT
     importing
       !IV_KEY type STRING
       !IV_PLAINTEXT type STRING
+    returning
+      value(RV_CIPHERTEXT) type XSTRING
+    raising
+      CX_STATIC_CHECK .
+  class-methods ENCRYPT_HEX
+    importing
+      !IV_KEY type XSTRING
+      !IV_PLAINTEXT type XSTRING
     returning
       value(RV_CIPHERTEXT) type XSTRING
     raising
@@ -32,7 +48,7 @@ protected section.
 
   class-methods KEYSTREAM
     importing
-      !IV_KEY type STRING
+      !IV_KEY type XSTRING
       !IV_LENGTH type I
     returning
       value(RV_KEYSTREAM) type XSTRING
@@ -81,19 +97,23 @@ CLASS ZCL_ARC4 IMPLEMENTATION.
 
 METHOD decrypt.
 
-  DATA: lv_xstr TYPE xstring,
-        lv_k    TYPE xstring.
+  DATA: lv_xstr TYPE xstring.
 
 
-  lv_k = keystream(
-      iv_key    = iv_key
-      iv_length = xstrlen( iv_ciphertext ) ).
-
-  lv_xstr = xor(
-      iv_val1 = lv_k
-      iv_val2 = iv_ciphertext ).
+  lv_xstr = decrypt_hex(
+              iv_key        = to_xstring( iv_key )
+              iv_ciphertext = iv_ciphertext ).
 
   rv_plaintext = to_string( lv_xstr ).
+
+ENDMETHOD.
+
+
+METHOD decrypt_hex.
+
+  rv_plaintext = encrypt_hex(
+                   iv_key       = iv_key
+                   iv_plaintext = iv_ciphertext ).
 
 ENDMETHOD.
 
@@ -122,16 +142,25 @@ METHOD encrypt.
 * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 * SOFTWARE.
 
+  rv_ciphertext = encrypt_hex(
+                    iv_key       = to_xstring( iv_key )
+                    iv_plaintext = to_xstring( iv_plaintext ) ).
+
+ENDMETHOD.
+
+
+METHOD encrypt_hex.
+
   DATA: lv_k TYPE xstring.
 
 
   lv_k = keystream(
       iv_key    = iv_key
-      iv_length = strlen( iv_plaintext ) ).
+      iv_length = xstrlen( iv_plaintext ) ).
 
   rv_ciphertext = xor(
       iv_val1 = lv_k
-      iv_val2 = to_xstring( iv_plaintext ) ).
+      iv_val2 = iv_plaintext ).
 
 ENDMETHOD.
 
@@ -141,7 +170,7 @@ METHOD keystream.
   DATA: lv_s TYPE ty_s.
 
 
-  lv_s = ksa( to_xstring( iv_key ) ).
+  lv_s = ksa( iv_key ).
 
   rv_keystream = prga( iv_s      = lv_s
                        iv_length = iv_length ).
