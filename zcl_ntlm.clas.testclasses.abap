@@ -13,13 +13,14 @@ CLASS lcl_test DEFINITION FOR TESTING
 
   PRIVATE SECTION.
 * ================
-    METHODS: type_1_decode FOR TESTING,
-             type_1_encode FOR TESTING,
-             type_2_decode FOR TESTING,
-             type_2_encode FOR TESTING,
-             type_3_decode FOR TESTING,
-             type_3_encode FOR TESTING,
-             ntlm_response FOR TESTING.
+    METHODS: type_1_decode   FOR TESTING,
+             type_1_encode   FOR TESTING,
+             type_2_decode   FOR TESTING,
+             type_2_encode   FOR TESTING,
+             type_3_decode   FOR TESTING,
+             type_3_encode   FOR TESTING,
+             ntlm_response   FOR TESTING,
+             ntlmv2_response FOR TESTING RAISING cx_static_check.
 
 ENDCLASS.                    "lcl_test DEFINITION
 
@@ -30,6 +31,31 @@ ENDCLASS.                    "lcl_test DEFINITION
 *----------------------------------------------------------------------*
 CLASS lcl_test IMPLEMENTATION.
 
+  METHOD ntlmv2_response.
+
+    DATA: lv_info     TYPE xstring,
+          lv_response TYPE xstring.
+
+
+    lv_info = '02000C0044004F004D00410049004E00' &&
+              '01000C00530045005200560045005200' &&
+              '0400140064006F006D00610069006E00' &&
+              '2E0063006F006D000300220073006500' &&
+              '72007600650072002E0064006F006D00' &&
+              '610069006E002E0063006F006D000000' &&
+              '0000'.
+
+    lv_response = zcl_ntlm=>ntlmv2_response(
+      iv_password  = 'SecREt01'
+      iv_username  = 'user'
+      iv_target    = 'DOMAIN'
+      iv_challenge = '0123456789ABCDEF'
+      iv_info      = lv_info ).
+
+    cl_abap_unit_assert=>assert_not_initial( lv_response ).
+
+  ENDMETHOD.                    "ntmlv2_response
+
   METHOD ntlm_response.
 
     DATA: lv_response TYPE zcl_ntlm=>ty_byte24.
@@ -39,7 +65,9 @@ CLASS lcl_test IMPLEMENTATION.
         iv_password  = 'SecREt01'
         iv_challenge = '0123456789ABCDEF' ).
 
-* todo
+    cl_abap_unit_assert=>assert_equals(
+      exp = '25A98C1C31E81847466B29B2DF4680F39958FB8C213A9CC6'
+      act = lv_response ).
 
   ENDMETHOD.                    "ntlm_response
 
@@ -111,16 +139,16 @@ CLASS lcl_convert_test DEFINITION FOR TESTING
 
   PRIVATE SECTION.
 * ================
-    METHODS: base64_encode FOR TESTING,
-             base64_decode FOR TESTING,
-             flags_encode  FOR TESTING,
-             flags_decode  FOR TESTING,
-             fields_encode FOR TESTING,
+    METHODS: base64_encode  FOR TESTING,
+             base64_decode  FOR TESTING,
+             flags_encode   FOR TESTING,
+             flags_decode   FOR TESTING,
+             fields_encode  FOR TESTING,
              fields_decode1 FOR TESTING,
              fields_decode2 FOR TESTING,
-             byte2 FOR TESTING,
-             byte4_1 FOR TESTING,
-             byte4_2 FOR TESTING.
+             byte2          FOR TESTING,
+             byte4_1        FOR TESTING,
+             byte4_2        FOR TESTING.
 
 ENDCLASS.       "lcl_Test
 

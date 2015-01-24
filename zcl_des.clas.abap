@@ -11,10 +11,16 @@ public section.
   types:
     TY_BYTE8 type x length 8 .
 
+  class-methods DECRYPT
+    importing
+      !IV_KEY type TY_BYTE8
+      !IV_CIPHERTEXT type XSEQUENCE
+    returning
+      value(RV_PLAINTEXT) type XSTRING .
   class-methods ENCRYPT
     importing
       !IV_KEY type TY_BYTE8
-      !IV_PLAINTEXT type XSTRING
+      !IV_PLAINTEXT type XSEQUENCE
     returning
       value(RV_CIPHERTEXT) type XSTRING .
   class-methods PARITY_ADJUST
@@ -236,6 +242,14 @@ METHOD c_and_d.
   _shift 2.
   _shift 2.
   _shift 1.
+
+ENDMETHOD.
+
+
+METHOD decrypt.
+
+* todo
+  RETURN.
 
 ENDMETHOD.
 

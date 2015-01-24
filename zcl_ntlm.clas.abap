@@ -30,6 +30,18 @@ protected section.
   constants C_MESSAGE_TYPE_2 type XSTRING value '02000000'. "#EC NOTEXT
   constants C_MESSAGE_TYPE_3 type XSTRING value '03000000'. "#EC NOTEXT
 
+  class-methods LM_RESPONSE .
+  class-methods NTLMV2_RESPONSE
+    importing
+      !IV_PASSWORD type STRING
+      !IV_USERNAME type STRING
+      !IV_TARGET type STRING
+      !IV_CHALLENGE type TY_BYTE8
+      !IV_INFO type XSTRING
+    returning
+      value(RV_RESPONSE) type XSTRING
+    raising
+      CX_STATIC_CHECK .
   class-methods NTLM_RESPONSE
     importing
       !IV_PASSWORD type STRING
@@ -126,6 +138,9 @@ METHOD get.
       http_invalid_state         = 2
       http_processing_failed     = 3
       OTHERS                     = 4 ).
+  IF sy-subrc <> 0.
+* todo
+  ENDIF.
 
   li_client->response->get_header_fields( CHANGING fields = lt_fields ).
 
@@ -146,21 +161,87 @@ METHOD get.
 ENDMETHOD.
 
 
+METHOD lm_response.
+
+* todo
+  RETURN.
+
+ENDMETHOD.
+
+
+METHOD ntlmv2_response.
+
+  CONSTANTS: lc_signature TYPE xstring VALUE '01010000',
+             lc_zero      TYPE xstring VALUE '00000000'.
+
+  DATA: lv_xpass   TYPE xstring,
+        lv_xtarget TYPE xstring,
+        lv_data    TYPE xstring,
+        lv_hmac    TYPE xstring,
+        lv_random  TYPE xstring,
+        lv_time    TYPE xstring,
+        lv_blob    TYPE xstring,
+        lv_v2hash  TYPE xstring,
+        lv_key     TYPE xstring.
+
+
+  lv_key = zcl_md4=>hash( iv_encoding = '4103'
+                          iv_string   = iv_password ).
+
+  lv_xpass = lcl_convert=>codepage_4103( to_upper( iv_username ) ).
+  lv_xtarget = lcl_convert=>codepage_4103( iv_target ) .
+  CONCATENATE lv_xpass lv_xtarget INTO lv_data IN BYTE MODE.
+
+  lv_v2hash = lcl_util=>hmac_md5( iv_key  = lv_key
+                                  iv_data = lv_data ).
+
+*  lv_time = '0090D336B734C301'.
+  lv_time = lcl_util=>since_epoc_hex( ).
+  lv_random = lcl_util=>random_nonce( ).
+
+  CONCATENATE lc_signature lc_zero lv_time
+    lv_random lc_zero iv_info lc_zero
+    INTO lv_blob IN BYTE MODE.
+  CONCATENATE iv_challenge lv_blob
+    INTO lv_data IN BYTE MODE.
+
+  lv_hmac = lcl_util=>hmac_md5( iv_key  = lv_v2hash
+                                iv_data = lv_data ).
+
+  CONCATENATE lv_hmac lv_blob INTO rv_response IN BYTE MODE.
+
+ENDMETHOD.
+
+
 METHOD ntlm_response.
 
-  DATA: lv_hash  TYPE zcl_md4=>ty_byte16,
-        lv_rd1   TYPE x LENGTH 7,
-        lv_rd2   TYPE x LENGTH 7,
-        lv_rd3   TYPE x LENGTH 7.
+  DATA: lv_hash TYPE zcl_md4=>ty_byte16,
+        lv_rd1  TYPE x LENGTH 7,
+        lv_rd2  TYPE x LENGTH 7,
+        lv_rd3  TYPE x LENGTH 7,
+        lv_r1   TYPE x LENGTH 8,
+        lv_r2   TYPE x LENGTH 8,
+        lv_r3   TYPE x LENGTH 8.
 
 
   lv_hash = zcl_md4=>hash( iv_encoding = '4103'
-                           iv_string   = 'SecREt01' ).
+                           iv_string   = iv_password ).
 
   lv_rd1 = lv_hash.
   lv_rd2 = lv_hash+7.
   lv_rd3 = lv_hash+14.
-  BREAK-POINT.
+
+  lv_r1 = zcl_des=>encrypt(
+      iv_key       = zcl_des=>parity_adjust( lv_rd1 )
+      iv_plaintext = iv_challenge ).
+  lv_r2 = zcl_des=>encrypt(
+      iv_key       = zcl_des=>parity_adjust( lv_rd2 )
+      iv_plaintext = iv_challenge ).
+  lv_r3 = zcl_des=>encrypt(
+      iv_key       = zcl_des=>parity_adjust( lv_rd3 )
+      iv_plaintext = iv_challenge ).
+
+  CONCATENATE lv_r1 lv_r2 lv_r3 INTO rv_response IN BYTE MODE.
 
 ENDMETHOD.
 

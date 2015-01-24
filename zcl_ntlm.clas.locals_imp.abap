@@ -50,6 +50,121 @@
   TYPES: ty_byte8 TYPE x LENGTH 8.
 
 *----------------------------------------------------------------------*
+*       CLASS lcl_time DEFINITION
+*----------------------------------------------------------------------*
+*
+*----------------------------------------------------------------------*
+  CLASS lcl_util DEFINITION FINAL.
+
+    PUBLIC SECTION.
+      CLASS-METHODS since_epoc_hex
+        RETURNING
+          value(rv_hex) TYPE xstring
+        RAISING cx_static_check.
+
+      CLASS-METHODS hmac_md5
+        IMPORTING
+          iv_key TYPE xsequence
+          iv_data TYPE xsequence
+        RETURNING
+          value(rv_hash) TYPE xstring
+        RAISING
+          cx_static_check.
+
+      CLASS-METHODS random_nonce
+        RETURNING
+          value(rv_data) TYPE xstring.
+
+  ENDCLASS.                    "lcl_time DEFINITION
+
+*----------------------------------------------------------------------*
+*       CLASS lcl_time IMPLEMENTATION
+*----------------------------------------------------------------------*
+*
+*----------------------------------------------------------------------*
+  CLASS lcl_util IMPLEMENTATION.
+
+    METHOD random_nonce.
+
+      DATA: lv_output TYPE c LENGTH 16.
+
+
+      CALL FUNCTION 'RSEC_GENERATE_PASSWORD'
+        EXPORTING
+          alphabet        = '0123456789ABCDEF'
+          alphabet_length = 16
+          output_length   = 16
+        IMPORTING
+          output          = lv_output.
+
+      rv_data = lv_output.
+*      rv_data = 'FFFFFF0011223344'.
+
+    ENDMETHOD.                    "random_nonce
+
+    METHOD hmac_md5.
+
+      DATA: lo_hmac TYPE REF TO cl_abap_hmac.
+
+
+      lo_hmac = cl_abap_hmac=>get_instance(
+                  if_algorithm = 'MD5'
+                  if_key       = iv_key ).
+      lo_hmac->update( iv_data ).
+      lo_hmac->final( ).
+      rv_hash = lo_hmac->get_hmac( ).
+
+    ENDMETHOD.                    "hmac_md5
+
+    METHOD since_epoc_hex.
+* tenths of a microsecond since 1 jan 1601, encoded as little endian signed 64 bit value
+
+      DATA: lv_secs   TYPE tzntstmpl,
+            lv_f      TYPE f,
+            lv_lsec   TYPE db02_blid,
+            lv_i      TYPE i,
+            lv_c      TYPE c,
+            lv_xres   TYPE x LENGTH 8,
+            lv_index  TYPE i,
+            lv_tstmp1 TYPE p,
+            lv_tstmp2 TYPE p.
+
+
+      cl_abap_tstmp=>systemtstmp_syst2utc(
+        EXPORTING
+          syst_date = sy-datum
+          syst_time = sy-uzeit
+        IMPORTING
+          utc_tstmp = lv_tstmp1 ).
+
+      lv_tstmp2 = '16010101000000'.
+      lv_secs = cl_abap_tstmp=>subtract(
+          tstmp1 = lv_tstmp1
+          tstmp2 = lv_tstmp2 ).
+      lv_lsec = lv_secs * ( 10 ** 7 ).
+
+* hmm, this is crazy, since there are no 64 bit types in ABAP
+      DO 64 TIMES.
+        lv_index = 64 - sy-index + 1.
+
+        lv_i = lv_lsec MOD 2.
+        lv_c = lv_i.
+        lv_f = lv_lsec / 2.
+        lv_lsec = round( val = lv_f dec = 0 mode = cl_abap_math=>round_half_down ).
+
+        SET BIT lv_index OF lv_xres TO lv_c.
+      ENDDO.
+
+      CONCATENATE
+        lv_xres+7(1) lv_xres+6(1) lv_xres+5(1) lv_xres+4(1)
+        lv_xres+3(1) lv_xres+2(1) lv_xres+1(1) lv_xres(1)
+        INTO rv_hex IN BYTE MODE.
+
+    ENDMETHOD.                    "since_epoc
+
+  ENDCLASS.                    "lcl_time IMPLEMENTATION
+
+*----------------------------------------------------------------------*
 *       CLASS lcl_convert DEFINITION
 *----------------------------------------------------------------------*
 *
@@ -107,6 +222,12 @@
           iv_int TYPE i
         RETURNING
           value(rv_byte4) TYPE ty_byte4 .
+      CLASS-METHODS codepage_4103
+        IMPORTING
+          iv_string TYPE string
+        RETURNING
+          value(rv_xstring) TYPE xstring.
+
   ENDCLASS.                    "lcl_convert DEFINITION
 
 *----------------------------------------------------------------------*
@@ -115,6 +236,18 @@
 *
 *----------------------------------------------------------------------*
   CLASS lcl_convert IMPLEMENTATION.
+
+    METHOD codepage_4103.
+
+      DATA: lo_obj TYPE REF TO cl_abap_conv_out_ce.
+
+
+      lo_obj = cl_abap_conv_out_ce=>create( encoding = '4103' ).
+
+      lo_obj->convert( EXPORTING data = iv_string
+                       IMPORTING buffer = rv_xstring ).
+
+    ENDMETHOD.                    "codepage_4103
 
     METHOD fields_decode.
 
