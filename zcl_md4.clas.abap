@@ -15,7 +15,7 @@ public section.
   class ZCL_MD4 definition load .
   class-methods HASH
     importing
-      !IV_STRING type STRING
+      !IV_STRING type CLIKE
       !IV_ENCODING type ABAP_ENCODING default 'UTF-8'
     returning
       value(RV_HASH) type ZCL_MD4=>TY_BYTE16 .
@@ -106,7 +106,7 @@ protected section.
   class-methods CODEPAGE
     importing
       !IV_ENCODING type ABAP_ENCODING default 'UTF-8'
-      !IV_STRING type STRING
+      !IV_STRING type CLIKE
     returning
       value(RV_XSTRING) type XSTRING .
 private section.

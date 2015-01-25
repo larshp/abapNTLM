@@ -18,6 +18,9 @@
     CLASS lcl_writer DEFINITION DEFERRED.
   CLASS zcl_ntlm DEFINITION LOCAL FRIENDS lcl_writer.
 
+    CLASS lcl_util DEFINITION DEFERRED.
+  CLASS zcl_ntlm DEFINITION LOCAL FRIENDS lcl_util.
+
 *----------------------------------------------------------------------*
 *       CLASS lcl_time DEFINITION
 *----------------------------------------------------------------------*
@@ -28,7 +31,7 @@
     PUBLIC SECTION.
       CLASS-METHODS since_epoc_hex
         RETURNING
-          value(rv_hex) TYPE xstring
+          value(rv_hex) TYPE zcl_ntlm=>ty_byte8
         RAISING cx_static_check.
 
       CLASS-METHODS hmac_md5
@@ -42,7 +45,7 @@
 
       CLASS-METHODS random_nonce
         RETURNING
-          value(rv_data) TYPE xstring.
+          value(rv_data) TYPE zcl_ntlm=>ty_byte8.
 
   ENDCLASS.                    "lcl_time DEFINITION
 
@@ -67,18 +70,19 @@
           output          = lv_output.
 
       rv_data = lv_output.
-*      rv_data = 'FFFFFF0011223344'.
 
     ENDMETHOD.                    "random_nonce
 
     METHOD hmac_md5.
 
-      DATA: lo_hmac TYPE REF TO cl_abap_hmac.
+      DATA: lo_hmac TYPE REF TO cl_abap_hmac,
+            lv_key  TYPE xstring.
 
 
+      lv_key = iv_key. " convert type
       lo_hmac = cl_abap_hmac=>get_instance(
                   if_algorithm = 'MD5'
-                  if_key       = iv_key ).
+                  if_key       = lv_key ).
       lo_hmac->update( iv_data ).
       lo_hmac->final( ).
       rv_hash = lo_hmac->get_hmac( ).
@@ -311,7 +315,7 @@
           ssf_krn_invalid_parlen   = 7
           OTHERS                   = 8.
       IF sy-subrc <> 0.
-        BREAK-POINT.
+        ASSERT 1 = 1 + 1.
       ENDIF.
 
     ENDMETHOD.                    "base64_decode
@@ -333,7 +337,7 @@
           ssf_krn_invalid_parlen   = 7
           OTHERS                   = 8.
       IF sy-subrc <> 0.
-        BREAK-POINT.
+        ASSERT 1 = 1 + 1.
       ENDIF.
 
     ENDMETHOD.                    "base64_encode
@@ -584,6 +588,8 @@
           value(rv_data) TYPE xstring.
 
       METHODS data_str
+        IMPORTING
+          iv_oem TYPE abap_bool
         RETURNING
           value(rv_data) TYPE string.
 
@@ -676,7 +682,11 @@
 
 
       lv_raw = data_raw( ).
-      rv_data = lcl_convert=>codepage_4103_x( lv_raw ).
+      IF iv_oem = abap_true.
+        rv_data = lcl_convert=>codepage_utf_8_x( lv_raw ).
+      ELSE.
+        rv_data = lcl_convert=>codepage_4103_x( lv_raw ).
+      ENDIF.
 
     ENDMETHOD.                    "data_str
 
@@ -703,6 +713,7 @@
 
       METHODS data_str
         IMPORTING
+          iv_oem  TYPE abap_bool DEFAULT abap_false
           iv_data TYPE clike.
 
       METHODS message
@@ -812,7 +823,11 @@
       DATA: lv_raw TYPE xstring.
 
 
-      lv_raw = lcl_convert=>codepage_4103( iv_data ).
+      IF iv_oem = abap_true.
+        lv_raw = lcl_convert=>codepage_utf_8( iv_data ).
+      ELSE.
+        lv_raw = lcl_convert=>codepage_4103( iv_data ).
+      ENDIF.
 
       data_raw( lv_raw ).
 

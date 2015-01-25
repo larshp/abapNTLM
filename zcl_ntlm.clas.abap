@@ -7,8 +7,6 @@ public section.
 *"* public components of class ZCL_NTLM
 *"* do not include other source files here!!!
 
-  constants C_SIGNATURE type XSTRING value '4E544C4D53535000'. "#EC NOTEXT
-
   class-methods GET
     importing
       !IV_USERNAME type CLIKE
@@ -17,19 +15,23 @@ public section.
       !IV_URL type CLIKE
       !IV_SSL_ID type SSFAPPLSSL default 'ANONYM'
     returning
-      value(RV_RESULT) type XSTRING .
+      value(RI_CLIENT) type ref to IF_HTTP_CLIENT
+    raising
+      CX_STATIC_CHECK .
 protected section.
 *"* protected components of class ZCL_NTLM
 *"* do not include other source files here!!!
 
   types:
-    ty_byte8 TYPE x LENGTH 8 .
-  types:
-    ty_byte24 TYPE x LENGTH 24 .
-  types:
     ty_byte2 TYPE x LENGTH 2 .
   types:
     ty_byte4 TYPE x LENGTH 4 .
+  types:
+    ty_byte8 TYPE x LENGTH 8 .
+  types:
+    ty_byte16 TYPE x LENGTH 16 .
+  types:
+    ty_byte24 TYPE x LENGTH 24 .
   types:
     BEGIN OF ty_flags,
            negotiate_56 TYPE abap_bool,
@@ -68,8 +70,9 @@ protected section.
   types:
     BEGIN OF ty_type1,
       flags type ty_flags,
-      target_name TYPE xstring,
+      target_name TYPE string,
       workstation TYPE string,
+      version type ty_byte8,
     END OF ty_type1 .
   types:
     begin of TY_TYPE2,
@@ -91,36 +94,81 @@ protected section.
     end of ty_type3 .
 
   constants C_MESSAGE_TYPE_1 type XSTRING value '01000000'. "#EC NOTEXT
+  constants C_SIGNATURE type XSTRING value '4E544C4D53535000'. "#EC NOTEXT
   constants C_MESSAGE_TYPE_2 type XSTRING value '02000000'. "#EC NOTEXT
   constants C_MESSAGE_TYPE_3 type XSTRING value '03000000'. "#EC NOTEXT
 
+  class-methods NTLMV2_HASH
+    importing
+      !IV_PASSWORD type CLIKE
+      !IV_USERNAME type CLIKE
+      !IV_TARGET type CLIKE
+    returning
+      value(RV_HASH) type TY_BYTE16
+    raising
+      CX_STATIC_CHECK .
+  class-methods HTTP_1
+    importing
+      !IV_URL type CLIKE
+      !IV_SSL_ID type SSFAPPLSSL
+    returning
+      value(RI_CLIENT) type ref to IF_HTTP_CLIENT .
+  class-methods HTTP_2
+    importing
+      !IV_AUTHORIZATION type STRING
+      !II_CLIENT type ref to IF_HTTP_CLIENT
+    returning
+      value(RV_AUTHORIZATION) type STRING .
+  class-methods LMV2_RESPONSE
+    importing
+      !IV_PASSWORD type CLIKE
+      !IV_DOMAIN type CLIKE
+      !IV_USERNAME type CLIKE
+      !IV_CHALLENGE type TY_BYTE8
+      !IV_NONCE type TY_BYTE8
+    returning
+      value(RV_RESPONSE) type TY_BYTE24
+    raising
+      CX_STATIC_CHECK .
+  class-methods TYPE_3_BUILD
+    importing
+      !IV_USERNAME type CLIKE
+      !IV_PASSWORD type CLIKE
+      !IV_DOMAIN type CLIKE
+      !IS_DATA2 type TY_TYPE2
+    returning
+      value(RS_DATA3) type TY_TYPE3
+    raising
+      CX_STATIC_CHECK .
   class-methods SESSION_KEY
     importing
-      !IV_PASSWORD type STRING
+      !IV_PASSWORD type CLIKE
     returning
       value(RV_SESSION_KEY) type XSTRING
     raising
       CX_STATIC_CHECK .
   class-methods LMV1_RESPONSE
     importing
-      !IV_PASSWORD type STRING
+      !IV_PASSWORD type CLIKE
       !IV_CHALLENGE type TY_BYTE8
     returning
       value(RV_RESPONSE) type XSTRING .
   class-methods NTLMV2_RESPONSE
     importing
-      !IV_PASSWORD type STRING
-      !IV_USERNAME type STRING
-      !IV_TARGET type STRING
+      !IV_PASSWORD type CLIKE
+      !IV_USERNAME type CLIKE
+      !IV_TARGET type CLIKE
       !IV_CHALLENGE type TY_BYTE8
       !IV_INFO type XSTRING
+      !IV_NONCE type TY_BYTE8
+      !IV_TIME type TY_BYTE8 optional
     returning
       value(RV_RESPONSE) type XSTRING
     raising
       CX_STATIC_CHECK .
   class-methods NTLMV1_RESPONSE
     importing
-      !IV_PASSWORD type STRING
+      !IV_PASSWORD type CLIKE
       !IV_CHALLENGE type TY_BYTE8
     returning
       value(RV_RESPONSE) type TY_BYTE24 .
@@ -134,9 +182,11 @@ protected section.
       !IS_DATA type TY_TYPE2
     returning
       value(RV_MSG) type STRING .
+  type-pools ABAP .
   class-methods TYPE_3_DECODE
     importing
       !IV_MSG type STRING
+      !IV_OEM type ABAP_BOOL default ABAP_FALSE
     returning
       value(RS_DATA) type TY_TYPE3 .
   class-methods TYPE_1_ENCODE
@@ -147,6 +197,7 @@ protected section.
   class-methods TYPE_2_DECODE
     importing
       !IV_MSG type STRING
+      !IV_OEM type ABAP_BOOL default ABAP_FALSE
     returning
       value(RS_DATA) type TY_TYPE2 .
   class-methods TYPE_3_ENCODE
@@ -195,11 +246,46 @@ METHOD get.
 * http://blogs.msdn.com/b/chiranth/archive/2013/09/21/ntlm-want-to-know-how-it-works.aspx
 * http://www.innovation.ch/personal/ronald/ntlm.html
 
-  DATA: li_client TYPE REF TO if_http_client,
-        lv_value  TYPE string,
-        lv_url    TYPE string,
+  DATA: lv_value  TYPE string,
         ls_data1  TYPE ty_type1,
-        lt_fields TYPE tihttpnvp.
+        ls_data2  TYPE ty_type2,
+        ls_data3  TYPE ty_type3.
+
+
+  ri_client = http_1( iv_url    = iv_url
+                      iv_ssl_id = iv_ssl_id ).
+
+* build type 1 message
+  ls_data1-flags-negotiate_ntlm = abap_true.
+  ls_data1-flags-negotiate_unicode = abap_true.
+  lv_value = type_1_encode( ls_data1 ).
+  CONCATENATE 'NTLM' lv_value INTO lv_value SEPARATED BY space.
+
+  lv_value = http_2( iv_authorization = lv_value
+                     ii_client        = ri_client ).
+
+* decode type 2 message
+  lv_value = lv_value+5.
+  ls_data2 = type_2_decode( lv_value ).
+
+* build type 3 message
+  ls_data3 = type_3_build( iv_username = iv_username
+                           iv_password = iv_password
+                           iv_domain   = iv_domain
+                           is_data2    = ls_data2 ).
+  lv_value = type_3_encode( ls_data3 ).
+  CONCATENATE 'NTLM' lv_value INTO lv_value SEPARATED BY space.
+
+  http_2( iv_authorization = lv_value
+          ii_client        = ri_client ).
+
+ENDMETHOD.
+
+
+METHOD http_1.
+
+  DATA: lt_fields TYPE tihttpnvp,
+        lv_url    TYPE string.
 
   FIELD-SYMBOLS: <ls_field> LIKE LINE OF lt_fields.
 
@@ -210,12 +296,12 @@ METHOD get.
       url    = lv_url
       ssl_id = iv_ssl_id
     IMPORTING
-      client = li_client ).
+      client = ri_client ).
 
-  li_client->propertytype_logon_popup = li_client->co_disabled.
+  ri_client->propertytype_logon_popup = ri_client->co_disabled.
 
-  li_client->send( ).
-  li_client->receive(
+  ri_client->send( ).
+  ri_client->receive(
     EXCEPTIONS
       http_communication_failure = 1
       http_invalid_state         = 2
@@ -226,7 +312,7 @@ METHOD get.
     BREAK-POINT.
   ENDIF.
 
-  li_client->response->get_header_fields( CHANGING fields = lt_fields ).
+  ri_client->response->get_header_fields( CHANGING fields = lt_fields ).
 
   READ TABLE lt_fields ASSIGNING <ls_field>
     WITH KEY name = 'www-authenticate' value = 'NTLM'.      "#EC NOTEXT
@@ -235,16 +321,22 @@ METHOD get.
     BREAK-POINT.
   ENDIF.
 
-***********************************************
+ENDMETHOD.
 
-  lv_value = type_1_encode( ls_data1 ).
-  CONCATENATE 'NTLM' lv_value INTO lv_value SEPARATED BY space.
-  li_client->request->set_header_field(
+
+METHOD http_2.
+
+  DATA: lt_fields TYPE tihttpnvp.
+
+  FIELD-SYMBOLS: <ls_field> LIKE LINE OF lt_fields.
+
+
+  ii_client->request->set_header_field(
       name  = 'authorization'
-      value = lv_value ).                                   "#EC NOTEXT
+      value = iv_authorization ).                           "#EC NOTEXT
 
-  li_client->send( ).
-  li_client->receive(
+  ii_client->send( ).
+  ii_client->receive(
     EXCEPTIONS
       http_communication_failure = 1
       http_invalid_state         = 2
@@ -252,9 +344,10 @@ METHOD get.
       OTHERS                     = 4 ).
   IF sy-subrc <> 0.
 * todo
+    BREAK-POINT.
   ENDIF.
 
-  li_client->response->get_header_fields( CHANGING fields = lt_fields ).
+  ii_client->response->get_header_fields( CHANGING fields = lt_fields ).
 
   READ TABLE lt_fields ASSIGNING <ls_field>
     WITH KEY name = 'www-authenticate'.                     "#EC NOTEXT
@@ -263,13 +356,7 @@ METHOD get.
     BREAK-POINT.
   ENDIF.
 
-  lv_value = <ls_field>-value+5.
-  type_2_decode( lv_value ).
-
-* todo
-*  BREAK-POINT.
-
-  li_client->close( ).
+  rv_authorization = <ls_field>-value.
 
 ENDMETHOD.
 
@@ -321,6 +408,26 @@ METHOD lmv1_response.
 ENDMETHOD.
 
 
+METHOD lmv2_response.
+
+  DATA: lv_v2hash TYPE ty_byte16,
+        lv_data   TYPE xstring.
+
+
+  lv_v2hash = ntlmv2_hash( iv_password = iv_password
+                           iv_username = iv_username
+                           iv_target   = iv_domain ).
+
+  CONCATENATE iv_challenge iv_nonce INTO lv_data IN BYTE MODE.
+
+  lv_data = lcl_util=>hmac_md5( iv_key  = lv_v2hash
+                                iv_data = lv_data ).
+
+  CONCATENATE lv_data iv_nonce INTO rv_response IN BYTE MODE.
+
+ENDMETHOD.
+
+
 METHOD ntlmv1_response.
 
   DATA: lv_hash TYPE zcl_md4=>ty_byte16,
@@ -354,19 +461,11 @@ METHOD ntlmv1_response.
 ENDMETHOD.
 
 
-METHOD ntlmv2_response.
-
-  CONSTANTS: lc_signature TYPE xstring VALUE '01010000',
-             lc_zero      TYPE xstring VALUE '00000000'.
+METHOD ntlmv2_hash.
 
   DATA: lv_xpass   TYPE xstring,
         lv_xtarget TYPE xstring,
         lv_data    TYPE xstring,
-        lv_hmac    TYPE xstring,
-        lv_random  TYPE xstring,
-        lv_time    TYPE xstring,
-        lv_blob    TYPE xstring,
-        lv_v2hash  TYPE xstring,
         lv_key     TYPE xstring.
 
 
@@ -377,15 +476,36 @@ METHOD ntlmv2_response.
   lv_xtarget = lcl_convert=>codepage_4103( iv_target ) .
   CONCATENATE lv_xpass lv_xtarget INTO lv_data IN BYTE MODE.
 
-  lv_v2hash = lcl_util=>hmac_md5( iv_key  = lv_key
-                                  iv_data = lv_data ).
+  rv_hash = lcl_util=>hmac_md5( iv_key  = lv_key
+                                iv_data = lv_data ).
 
-*  lv_time = '0090D336B734C301'.
-  lv_time = lcl_util=>since_epoc_hex( ).
-  lv_random = lcl_util=>random_nonce( ).
+ENDMETHOD.
+
+
+METHOD ntlmv2_response.
+
+  CONSTANTS: lc_signature TYPE xstring VALUE '01010000',
+             lc_zero      TYPE xstring VALUE '00000000'.
+
+  DATA: lv_data    TYPE xstring,
+        lv_hmac    TYPE xstring,
+        lv_time    TYPE ty_byte8,
+        lv_blob    TYPE xstring,
+        lv_v2hash  TYPE ty_byte16.
+
+
+  lv_v2hash = ntlmv2_hash( iv_password = iv_password
+                           iv_username = iv_username
+                           iv_target   = iv_target ).
+
+  IF iv_time IS INITIAL.
+    lv_time = lcl_util=>since_epoc_hex( ).
+  ELSE.
+    lv_time = iv_time.
+  ENDIF.
 
   CONCATENATE lc_signature lc_zero lv_time
-    lv_random lc_zero iv_info lc_zero
+    iv_nonce lc_zero iv_info lc_zero
     INTO lv_blob IN BYTE MODE.
   CONCATENATE iv_challenge lv_blob
     INTO lv_data IN BYTE MODE.
@@ -428,32 +548,47 @@ METHOD type_1_decode.
   rs_data-flags = lo_reader->flags( ).
 
 * domain/target name
-  rs_data-target_name = lo_reader->data_str( ).
+  IF rs_data-flags-negotiate_oem_domain_supplied = abap_true.
+    rs_data-target_name = lo_reader->data_str( abap_true ).
+  ENDIF.
 
 * workstation fields
-  rs_data-workstation = lo_reader->data_str( ).
+  IF rs_data-flags-negotiate_oem_workstation_sup = abap_true.
+    rs_data-workstation = lo_reader->data_str( abap_true ).
+  ENDIF.
 
-* todo
-  BREAK-POINT.
+* version
+  rs_data-version = lo_reader->raw( 8 ).
 
 ENDMETHOD.
 
 
 METHOD type_1_encode.
 
-  DATA: lo_writer TYPE REF TO lcl_writer,
-        ls_flags  TYPE ty_flags.
+  DATA: lo_writer TYPE REF TO lcl_writer.
 
 
   CREATE OBJECT lo_writer
     EXPORTING
       iv_type = c_message_type_1.
 
-* minimal flags, Negotiate NTLM and Negotiate unicode
-  ls_flags-negotiate_ntlm = abap_true.
-  ls_flags-negotiate_unicode = abap_true.
+  lo_writer->flags( is_data-flags ).
 
-  lo_writer->flags( ls_flags ).
+* domain/target name
+  IF is_data-flags-negotiate_oem_domain_supplied = abap_true.
+    lo_writer->data_str( iv_oem  = abap_true
+                         iv_data = is_data-target_name ).
+  ENDIF.
+
+* workstation fields
+  IF is_data-flags-negotiate_oem_workstation_sup = abap_true.
+    lo_writer->data_str( iv_oem  = abap_true
+                         iv_data = is_data-workstation ).
+  ENDIF.
+
+  IF is_data-flags-negotiate_version = abap_true.
+    lo_writer->raw( is_data-version ).
+  ENDIF.
 
   rv_msg = lo_writer->message( ).
 
@@ -471,7 +606,7 @@ METHOD type_2_decode.
       iv_type  = c_message_type_2.
 
 * target name
-  rs_data-target_name = lo_reader->data_str( ).
+  rs_data-target_name = lo_reader->data_str( iv_oem ).
 
 * flags
   rs_data-flags = lo_reader->flags( ).
@@ -483,7 +618,7 @@ METHOD type_2_decode.
   lo_reader->skip( 8 ).
 
 * target info
-  rs_data-target_info = lo_reader->data_str( ).
+  rs_data-target_info = lo_reader->data_str( iv_oem ).
 
 ENDMETHOD.
 
@@ -499,7 +634,30 @@ METHOD type_2_encode.
 
 * todo
 
-*  rv_msg = lo_writer->message( ).
+  rv_msg = lo_writer->message( ).
+
+ENDMETHOD.
+
+
+METHOD type_3_build.
+
+  rs_data3-lm_resp = lmv1_response(
+                       iv_password  = iv_password
+                       iv_challenge = is_data2-challenge ).
+
+  rs_data3-ntlm_resp = ntlmv1_response(
+                         iv_password  = iv_password
+                         iv_challenge = is_data2-challenge ).
+
+  rs_data3-target_name = iv_domain.
+
+  rs_data3-user_name = iv_username.
+
+  rs_data3-workstation = 'WORKSTATION'.
+
+  rs_data3-session_key = session_key( iv_password ).
+
+  rs_data3-flags = is_data2-flags.
 
 ENDMETHOD.
 
@@ -521,13 +679,13 @@ METHOD type_3_decode.
   rs_data-ntlm_resp = lo_reader->data_raw( ).
 
 * domain/target name
-  rs_data-target_name = lo_reader->data_str( ).
+  rs_data-target_name = lo_reader->data_str( iv_oem ).
 
 * user name
-  rs_data-user_name = lo_reader->data_str( ).
+  rs_data-user_name = lo_reader->data_str( iv_oem ).
 
 * workstation name
-  rs_data-workstation = lo_reader->data_str( ).
+  rs_data-workstation = lo_reader->data_str( iv_oem ).
 
 * encrypted random session key
   rs_data-session_key = lo_reader->data_raw( ).

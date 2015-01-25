@@ -25,6 +25,7 @@ CLASS lcl_test DEFINITION FOR TESTING
              type_3_build    FOR TESTING RAISING cx_static_check,
              lmv1_response   FOR TESTING,
              ntlmv1_response FOR TESTING,
+             lmv2_response   FOR TESTING RAISING cx_static_check,
              ntlmv2_response FOR TESTING RAISING cx_static_check.
 
 ENDCLASS.                    "lcl_test DEFINITION
@@ -59,9 +60,28 @@ CLASS lcl_test IMPLEMENTATION.
 
   ENDMETHOD.                    "lmv1_response
 
+  METHOD lmv2_response.
+
+    DATA: lv_response TYPE zcl_ntlm=>ty_byte24.
+
+
+    lv_response = zcl_ntlm=>lmv2_response(
+        iv_password  = 'SecREt01'
+        iv_domain    = 'DOMAIN'
+        iv_username  = 'user'
+        iv_challenge = '0123456789ABCDEF'
+        iv_nonce     = 'FFFFFF0011223344' ).
+
+    cl_abap_unit_assert=>assert_equals(
+        exp = 'D6E6152EA25D03B7C6BA6629C2D6AAF0FFFFFF0011223344'
+        act = lv_response ).
+
+  ENDMETHOD.                    "lmv2_response
+
   METHOD ntlmv2_response.
 
     DATA: lv_info     TYPE xstring,
+          lv_expected TYPE xstring,
           lv_response TYPE xstring.
 
 
@@ -78,9 +98,24 @@ CLASS lcl_test IMPLEMENTATION.
       iv_username  = 'user'
       iv_target    = 'DOMAIN'
       iv_challenge = '0123456789ABCDEF'
-      iv_info      = lv_info ).
+      iv_info      = lv_info
+      iv_nonce     = 'FFFFFF0011223344'
+      iv_time      = '0090D336B734C301' ).
 
-    cl_abap_unit_assert=>assert_not_initial( lv_response ).
+    lv_expected = 'CBABBCA713EB795D04C97ABC01EE4983' &&
+                  '01010000000000000090D336B734C301' &&
+                  'FFFFFF00112233440000000002000C00' &&
+                  '44004F004D00410049004E0001000C00' &&
+                  '53004500520056004500520004001400' &&
+                  '64006F006D00610069006E002E006300' &&
+                  '6F006D00030022007300650072007600' &&
+                  '650072002E0064006F006D0061006900' &&
+                  '6E002E0063006F006D00000000000000' &&
+                  '0000'.
+
+    cl_abap_unit_assert=>assert_equals(
+        exp = lv_expected
+        act = lv_response ).
 
   ENDMETHOD.                    "ntmlv2_response
 
@@ -111,21 +146,38 @@ CLASS lcl_test IMPLEMENTATION.
 
   METHOD type_1_decode.
 
-    DATA: lv_value TYPE string.
+    DATA: lv_raw   TYPE xstring,
+          ls_data1 TYPE zcl_ntlm=>ty_type1.
 
 
-    RETURN.
-    lv_value = ''.
+    lv_raw = '4E544C4D5353500001000000073200000600' &&
+             '0600330000000B000B002800000005009308' &&
+             '0000000F574F524B53544154494F4E444F4D' &&
+             '41494E'.
 
-    zcl_ntlm=>type_1_decode( lv_value ).
+    ls_data1 = zcl_ntlm=>type_1_decode( lcl_convert=>base64_encode( lv_raw ) ).
+
+    cl_abap_unit_assert=>assert_equals(
+        exp  = 'DOMAIN'
+        act  = ls_data1-target_name
+        quit = if_aunit_constants=>no ).
+
+    cl_abap_unit_assert=>assert_equals(
+        exp  = 'WORKSTATION'
+        act  = ls_data1-workstation
+        quit = if_aunit_constants=>no ).
 
   ENDMETHOD.                    "type_1_decode
 
   METHOD type_1_encode.
 
-    DATA: lv_msg TYPE string,
+    DATA: lv_msg  TYPE string,
           ls_data TYPE zcl_ntlm=>ty_type1.
 
+
+* minimal flags, Negotiate NTLM and Negotiate unicode
+    ls_data-flags-negotiate_ntlm = abap_true.
+    ls_data-flags-negotiate_unicode = abap_true.
 
     lv_msg = zcl_ntlm=>type_1_encode( ls_data ).
 
