@@ -98,6 +98,14 @@ protected section.
   constants C_MESSAGE_TYPE_2 type XSTRING value '02000000'. "#EC NOTEXT
   constants C_MESSAGE_TYPE_3 type XSTRING value '03000000'. "#EC NOTEXT
 
+  class-methods NTLM2_SESSION_RESPONSE
+    importing
+      !IV_NONCE type TY_BYTE8
+      !IV_CHALLENGE type TY_BYTE8
+      !IV_PASSWORD type CLIKE
+    exporting
+      !EV_LM_RESPONSE type XSTRING
+      !EV_NTLM_RESPONSE type XSTRING .
   class-methods NTLMV2_HASH
     importing
       !IV_PASSWORD type CLIKE
@@ -256,13 +264,20 @@ METHOD get.
                       iv_ssl_id = iv_ssl_id ).
 
 * build type 1 message
-  ls_data1-flags-negotiate_ntlm = abap_true.
-  ls_data1-flags-negotiate_unicode = abap_true.
+*  ls_data1-flags-negotiate_key_exch = abap_true.
+  ls_data1-flags-negotiate_target_info = abap_true.
+  ls_data1-flags-negotiate_ntlm     = abap_true.
+  ls_data1-flags-negotiate_unicode  = abap_true.
   lv_value = type_1_encode( ls_data1 ).
   CONCATENATE 'NTLM' lv_value INTO lv_value SEPARATED BY space.
 
   lv_value = http_2( iv_authorization = lv_value
                      ii_client        = ri_client ).
+
+  IF strlen( lv_value ) <= 5.
+    BREAK-POINT.
+    RETURN.
+  ENDIF.
 
 * decode type 2 message
   lv_value = lv_value+5.
@@ -428,6 +443,51 @@ METHOD lmv2_response.
 ENDMETHOD.
 
 
+METHOD ntlm2_session_response.
+
+  CONSTANTS: lc_zero TYPE x LENGTH 16 VALUE '00000000000000000000000000000000'.
+
+  DATA: lv_snonce TYPE xstring,
+        lv_md5    TYPE ty_byte16,
+        lv_md4    TYPE ty_byte16,
+        lv_shash  TYPE ty_byte8,
+        lv_rd1    TYPE x LENGTH 7,
+        lv_rd2    TYPE x LENGTH 7,
+        lv_rd3    TYPE x LENGTH 7,
+        lv_r1     TYPE x LENGTH 8,
+        lv_r2     TYPE x LENGTH 8,
+        lv_r3     TYPE x LENGTH 8.
+
+
+  CONCATENATE iv_nonce lc_zero INTO ev_lm_response IN BYTE MODE.
+
+  CONCATENATE iv_challenge iv_nonce INTO lv_snonce IN BYTE MODE.
+
+  lv_md5 = lcl_util=>md5( lv_snonce ).
+  lv_shash = lv_md5(8).
+
+  lv_md4 = zcl_md4=>hash( iv_string   = iv_password
+                          iv_encoding = '4103' ).
+
+  lv_rd1 = lv_md4.
+  lv_rd2 = lv_md4+7.
+  lv_rd3 = lv_md4+14.
+
+  lv_r1 = zcl_des=>encrypt(
+      iv_key       = zcl_des=>parity_adjust( lv_rd1 )
+      iv_plaintext = lv_shash ).
+  lv_r2 = zcl_des=>encrypt(
+      iv_key       = zcl_des=>parity_adjust( lv_rd2 )
+      iv_plaintext = lv_shash ).
+  lv_r3 = zcl_des=>encrypt(
+      iv_key       = zcl_des=>parity_adjust( lv_rd3 )
+      iv_plaintext = lv_shash ).
+
+  CONCATENATE lv_r1 lv_r2 lv_r3 INTO ev_ntlm_response IN BYTE MODE.
+
+ENDMETHOD.
+
+
 METHOD ntlmv1_response.
 
   DATA: lv_hash TYPE zcl_md4=>ty_byte16,
@@ -550,15 +610,21 @@ METHOD type_1_decode.
 * domain/target name
   IF rs_data-flags-negotiate_oem_domain_supplied = abap_true.
     rs_data-target_name = lo_reader->data_str( abap_true ).
+  ELSE.
+    rs_data-target_name = lo_reader->data_str( abap_false ).
   ENDIF.
 
 * workstation fields
   IF rs_data-flags-negotiate_oem_workstation_sup = abap_true.
     rs_data-workstation = lo_reader->data_str( abap_true ).
+  ELSE.
+    rs_data-workstation = lo_reader->data_str( abap_false ).
   ENDIF.
 
 * version
-  rs_data-version = lo_reader->raw( 8 ).
+  IF rs_data-flags-negotiate_version = abap_true.
+    rs_data-version = lo_reader->raw( 8 ).
+  ENDIF.
 
 ENDMETHOD.
 
@@ -641,21 +707,50 @@ ENDMETHOD.
 
 METHOD type_3_build.
 
-  rs_data3-lm_resp = lmv1_response(
-                       iv_password  = iv_password
-                       iv_challenge = is_data2-challenge ).
+  DATA: lv_nonce TYPE ty_byte8.
 
-  rs_data3-ntlm_resp = ntlmv1_response(
-                         iv_password  = iv_password
-                         iv_challenge = is_data2-challenge ).
+
+  lv_nonce = lcl_util=>random_nonce( ).
+
+  IF is_data2-flags-negotiate_extended_session_sec = abap_true.
+* Negotiate NTLM2 Key
+    ntlm2_session_response(
+      EXPORTING
+        iv_nonce         = lv_nonce
+        iv_challenge     = is_data2-challenge
+        iv_password      = iv_password
+      IMPORTING
+        ev_lm_response   = rs_data3-lm_resp
+        ev_ntlm_response = rs_data3-ntlm_resp ).
+  ELSE.
+*    rs_data3-lm_resp = lmv1_response( iv_password  = iv_password
+*                                      iv_challenge = is_data2-challenge ).
+*
+*    rs_data3-ntlm_resp = ntlmv1_response( iv_password  = iv_password
+*                                          iv_challenge = is_data2-challenge ).
+
+    rs_data3-lm_resp = lmv2_response( iv_password  = iv_password
+                                      iv_domain    = iv_domain
+                                      iv_username  = iv_username
+                                      iv_nonce     = lv_nonce
+                                      iv_challenge = is_data2-challenge ).
+
+    rs_data3-ntlm_resp = ntlmv2_response( iv_password  = iv_password
+                                          iv_username  = iv_username
+                                          iv_target    = iv_domain
+                                          iv_info      = is_data2-target_info
+                                          iv_nonce     = lv_nonce
+                                          iv_challenge = is_data2-challenge ).
+
+  ENDIF.
 
   rs_data3-target_name = iv_domain.
-
-  rs_data3-user_name = iv_username.
-
+  rs_data3-user_name   = iv_username.
   rs_data3-workstation = 'WORKSTATION'.
 
-  rs_data3-session_key = session_key( iv_password ).
+  IF is_data2-flags-negotiate_key_exch = abap_true.
+    rs_data3-session_key = session_key( iv_password ).
+  ENDIF.
 
   rs_data3-flags = is_data2-flags.
 

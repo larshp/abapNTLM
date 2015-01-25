@@ -47,6 +47,12 @@
         RETURNING
           value(rv_data) TYPE zcl_ntlm=>ty_byte8.
 
+      CLASS-METHODS md5
+        IMPORTING
+          iv_data TYPE xstring
+        RETURNING
+          value(rv_hash) TYPE zcl_ntlm=>ty_byte16.
+
   ENDCLASS.                    "lcl_time DEFINITION
 
 *----------------------------------------------------------------------*
@@ -55,6 +61,36 @@
 *
 *----------------------------------------------------------------------*
   CLASS lcl_util IMPLEMENTATION.
+
+    METHOD md5.
+
+      DATA: lv_xstr TYPE xstring.
+
+
+      CALL FUNCTION 'CALCULATE_HASH_FOR_RAW'
+        EXPORTING
+          alg            = 'MD5'
+          data           = iv_data
+        IMPORTING
+*         HASH           =
+*         HASHLEN        =
+*         HASHX          =
+*         HASHXLEN       =
+*         HASHSTRING     =
+          hashxstring    = lv_xstr
+*         HASHB64STRING  =
+        EXCEPTIONS
+          unknown_alg    = 1
+          param_error    = 2
+          internal_error = 3
+          OTHERS         = 4.
+      IF sy-subrc <> 0.
+        BREAK-POINT.
+      ENDIF.
+
+      rv_hash = lv_xstr.
+
+    ENDMETHOD.                    "md5
 
     METHOD random_nonce.
 
@@ -197,7 +233,7 @@
           value(rv_byte4) TYPE zcl_ntlm=>ty_byte4 .
       CLASS-METHODS codepage_4103
         IMPORTING
-          iv_string TYPE string
+          iv_string TYPE clike
         RETURNING
           value(rv_xstring) TYPE xstring.
       CLASS-METHODS codepage_utf_8

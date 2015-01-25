@@ -16,17 +16,21 @@ CLASS lcl_test DEFINITION FOR TESTING
 
   PRIVATE SECTION.
 * ================
-    METHODS: type_1_decode   FOR TESTING,
+    METHODS: type_1_decode_1 FOR TESTING,
+             type_1_decode_2 FOR TESTING,
              type_1_encode   FOR TESTING,
-             type_2_decode   FOR TESTING,
+             type_2_decode_1 FOR TESTING,
+             type_2_decode_2 FOR TESTING,
              type_2_encode   FOR TESTING,
              type_3_1        FOR TESTING RAISING cx_static_check,
              type_3_2        FOR TESTING RAISING cx_static_check,
              type_3_build    FOR TESTING RAISING cx_static_check,
+             type_3_decode   FOR TESTING,
              lmv1_response   FOR TESTING,
              ntlmv1_response FOR TESTING,
              lmv2_response   FOR TESTING RAISING cx_static_check,
-             ntlmv2_response FOR TESTING RAISING cx_static_check.
+             ntlmv2_response FOR TESTING RAISING cx_static_check,
+             ntlm2_session_r FOR TESTING.
 
 ENDCLASS.                    "lcl_test DEFINITION
 
@@ -36,6 +40,33 @@ ENDCLASS.                    "lcl_test DEFINITION
 *
 *----------------------------------------------------------------------*
 CLASS lcl_test IMPLEMENTATION.
+
+  METHOD ntlm2_session_r.
+
+    DATA: lv_lm_resp   TYPE xstring,
+          lv_ntlm_resp TYPE xstring.
+
+
+    zcl_ntlm=>ntlm2_session_response(
+      EXPORTING
+        iv_nonce         = 'FFFFFF0011223344'
+        iv_challenge     = '0123456789ABCDEF'
+        iv_password      = 'SecREt01'
+      IMPORTING
+        ev_lm_response   = lv_lm_resp
+        ev_ntlm_response = lv_ntlm_resp ).
+
+    cl_abap_unit_assert=>assert_equals(
+        exp  = 'FFFFFF001122334400000000000000000000000000000000'
+        act  = lv_lm_resp
+        quit = if_aunit_constants=>no ).
+
+    cl_abap_unit_assert=>assert_equals(
+          exp  = '10D550832D12B2CCB79D5AD1F4EED3DF82ACA4C3681DD455'
+          act  = lv_ntlm_resp
+          quit = if_aunit_constants=>no ).
+
+  ENDMETHOD.                    "ntlm2_session_r
 
   METHOD lmv1_response.
 
@@ -144,7 +175,19 @@ CLASS lcl_test IMPLEMENTATION.
 
   ENDMETHOD.                    "ntlm_response
 
-  METHOD type_1_decode.
+  METHOD type_1_decode_2.
+
+    DATA: ls_data1 TYPE zcl_ntlm=>ty_type1,
+          lv_msg   TYPE string.
+
+
+    lv_msg = ''.
+    RETURN.
+    ls_data1 = zcl_ntlm=>type_1_decode( lv_msg ) .
+
+  ENDMETHOD.                    "type_1_decode_2
+
+  METHOD type_1_decode_1.
 
     DATA: lv_raw   TYPE xstring,
           ls_data1 TYPE zcl_ntlm=>ty_type1.
@@ -187,7 +230,7 @@ CLASS lcl_test IMPLEMENTATION.
 
   ENDMETHOD.                    "type_1_encode
 
-  METHOD type_2_decode.
+  METHOD type_2_decode_1.
 
     DATA: lv_value TYPE string,
           lv_xstr  TYPE xstring.
@@ -210,6 +253,18 @@ CLASS lcl_test IMPLEMENTATION.
 
 
   ENDMETHOD.                    "type_2_decode
+
+  METHOD type_2_decode_2.
+
+    DATA: ls_data2 TYPE zcl_ntlm=>ty_type2,
+          lv_msg   TYPE string.
+
+
+    lv_msg = ''.
+    RETURN.
+    ls_data2 = zcl_ntlm=>type_2_decode( lv_msg ) .
+
+  ENDMETHOD.                    "type_2_decode_2
 
   METHOD type_2_encode.
 
@@ -285,6 +340,18 @@ CLASS lcl_test IMPLEMENTATION.
         act = ls_data2 ).
 
   ENDMETHOD.                    "type_3_decode_encode2
+
+  METHOD type_3_decode.
+
+    DATA: ls_data3 TYPE zcl_ntlm=>ty_type3,
+          lv_msg   TYPE string.
+
+
+    lv_msg = ''.
+    RETURN.
+    ls_data3 = zcl_ntlm=>type_3_decode( lv_msg ) .
+
+  ENDMETHOD.                    "type_3_decode
 
   METHOD type_3_build.
 
