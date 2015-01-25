@@ -20,8 +20,9 @@ CLASS lcl_test DEFINITION FOR TESTING
              type_1_encode   FOR TESTING,
              type_2_decode   FOR TESTING,
              type_2_encode   FOR TESTING,
-             type_3_decode   FOR TESTING,
-             type_3_encode   FOR TESTING RAISING cx_static_check,
+             type_3_1        FOR TESTING RAISING cx_static_check,
+             type_3_2        FOR TESTING RAISING cx_static_check,
+             type_3_build    FOR TESTING RAISING cx_static_check,
              lmv1_response   FOR TESTING,
              ntlmv1_response FOR TESTING,
              ntlmv2_response FOR TESTING RAISING cx_static_check.
@@ -122,10 +123,11 @@ CLASS lcl_test IMPLEMENTATION.
 
   METHOD type_1_encode.
 
-    DATA: lv_msg TYPE string.
+    DATA: lv_msg TYPE string,
+          ls_data TYPE zcl_ntlm=>ty_type1.
 
 
-    lv_msg = zcl_ntlm=>type_1_encode( ).
+    lv_msg = zcl_ntlm=>type_1_encode( ls_data ).
 
     cl_abap_unit_assert=>assert_equals(
         exp = 'TlRMTVNTUAABAAAAAQIAAA=='
@@ -159,21 +161,21 @@ CLASS lcl_test IMPLEMENTATION.
 
   METHOD type_2_encode.
 
-    zcl_ntlm=>type_2_encode( ).
+    DATA: ls_data TYPE zcl_ntlm=>ty_type2.
+
+
+    zcl_ntlm=>type_2_encode( ls_data ).
 
   ENDMETHOD.                    "type_2_encode
 
-  METHOD type_3_decode.
+  METHOD type_3_1.
 
-    DATA: lv_raw TYPE xstring,
-          lv_value TYPE string.
+    DATA: lv_raw     TYPE xstring,
+          ls_data    TYPE zcl_ntlm=>ty_type3,
+          ls_data2   TYPE zcl_ntlm=>ty_type3,
+          lv_msg_in  TYPE string,
+          lv_msg_out TYPE string.
 
-
-    lv_value = 'TlRMTVNTUAADAAAAGAAYAGoAAAAYABgAggAAAAwADABAAAAACAAIAEwAAAAWABYAVA' &&
-               'AAAAAAAACaAAAAAQIAAEQATwBNAEEASQBOAHUAcwBlAHIAVwBPAFIASwBTAFQAQQBU' &&
-               'AEkATwBOAMM3zVy9RPyXgqZnr21CfG3mfCDC0+d8ViWpjBwx6BhHRmspst9GgPOZWP' &&
-               'uMITqcxg=='.
-    zcl_ntlm=>type_3_decode( lv_value ).
 
     lv_raw = '4E544C4D535350000300000018001800' &&
              '6C00000018001800840000000C000C00' &&
@@ -186,35 +188,104 @@ CLASS lcl_test IMPLEMENTATION.
              '5CCDEF1367C43011F30298A2AD35ECE6' &&
              '4F16331C44BDBED927841F94518822B1' &&
              'B3F350C8958682ECBB3E3CB7'.
-    lv_value = lcl_convert=>base64_encode( lv_raw ).
-    zcl_ntlm=>type_3_decode( lv_value ).
+    lv_msg_in = lcl_convert=>base64_encode( lv_raw ).
+
+    ls_data = zcl_ntlm=>type_3_decode( lv_msg_in ).
+    lv_msg_out = zcl_ntlm=>type_3_encode( ls_data ).
+
+* payload sequence is different, so just check the length
+    cl_abap_unit_assert=>assert_equals(
+        exp = strlen( lv_msg_in )
+        act = strlen( lv_msg_out ) ).
+
+* decode it again
+    ls_data2 = zcl_ntlm=>type_3_decode( lv_msg_out ).
+    cl_abap_unit_assert=>assert_equals(
+        exp = ls_data
+        act = ls_data2 ).
 
   ENDMETHOD.                    "type_3_decode
 
-  METHOD type_3_encode.
+  METHOD type_3_2.
 
-    DATA: lv_expected TYPE xstring,
-          lv_response TYPE xstring.
+    DATA: ls_data    TYPE zcl_ntlm=>ty_type3,
+          ls_data2   TYPE zcl_ntlm=>ty_type3,
+          lv_msg_in  TYPE string,
+          lv_msg_out TYPE string.
 
 
-    lv_expected = '4E544C4D535350000300000018001800' &&
-                  '6C00000018001800840000000C000C00' &&
-                  '48000000080008005400000010001000' &&
-                  '5C000000100010009C000000358280E2' &&
-                  '0501280A0000000F44006F006D006100' &&
-                  '69006E00550073006500720043004F00' &&
-                  '4D005000550054004500520098DEF7B8' &&
-                  '7F88AA5DAFE2DF779688A172DEF11C7D' &&
-                  '5CCDEF1367C43011F30298A2AD35ECE6' &&
-                  '4F16331C44BDBED927841F94518822B1' &&
-                  'B3F350C8958682ECBB3E3CB7'.
-    lv_response = zcl_ntlm=>type_3_encode( iv_password = 'Password'
-                                           iv_challenge = '0123456789ABCDEF' ).
+    lv_msg_in = 'TlRMTVNTUAADAAAAGAAYAGoAAAAYABgAggAAAAwADABAAAAACAAIAEwAAAAWABYAVA' &&
+                'AAAAAAAACaAAAAAQIAAEQATwBNAEEASQBOAHUAcwBlAHIAVwBPAFIASwBTAFQAQQBU' &&
+                'AEkATwBOAMM3zVy9RPyXgqZnr21CfG3mfCDC0+d8ViWpjBwx6BhHRmspst9GgPOZWP' &&
+                'uMITqcxg=='.
+    ls_data = zcl_ntlm=>type_3_decode( lv_msg_in ).
+    lv_msg_out = zcl_ntlm=>type_3_encode( ls_data ).
 
-* todo
-*    cl_abap_unit_assert=>assert_equals(
-*        exp = lv_response
-*        act = lv_expected ).
+* payload sequence is different, so just check the length
+    cl_abap_unit_assert=>assert_equals(
+        exp = strlen( lv_msg_in )
+        act = strlen( lv_msg_out ) ).
+
+* decode it again
+    ls_data2 = zcl_ntlm=>type_3_decode( lv_msg_out ).
+    cl_abap_unit_assert=>assert_equals(
+        exp = ls_data
+        act = ls_data2 ).
+
+  ENDMETHOD.                    "type_3_decode_encode2
+
+  METHOD type_3_build.
+
+    CONSTANTS: lc_challenge TYPE zcl_ntlm=>ty_byte8 VALUE '0123456789ABCDEF',
+               lc_password TYPE string VALUE 'Password'.
+
+    DATA: ls_data        TYPE zcl_ntlm=>ty_type3,
+          lv_lm_resp     TYPE xstring,
+          lv_ntlm_resp   TYPE xstring,
+          lv_session_key TYPE xstring,
+          lv_raw         TYPE xstring,
+          lv_msg         TYPE string.
+
+
+    lv_lm_resp = zcl_ntlm=>lmv1_response(
+        iv_password  = lc_password
+        iv_challenge = lc_challenge ).
+
+    lv_ntlm_resp = zcl_ntlm=>ntlmv1_response(
+        iv_password  = lc_password
+        iv_challenge = lc_challenge ).
+
+    lv_session_key = zcl_ntlm=>session_key( lc_password ).
+
+
+    lv_raw = '4E544C4D535350000300000018001800' &&
+             '6C00000018001800840000000C000C00' &&
+             '48000000080008005400000010001000' &&
+             '5C000000100010009C000000358280E2' &&
+             '0501280A0000000F44006F006D006100' &&
+             '69006E00550073006500720043004F00' &&
+             '4D005000550054004500520098DEF7B8' &&
+             '7F88AA5DAFE2DF779688A172DEF11C7D' &&
+             '5CCDEF1367C43011F30298A2AD35ECE6' &&
+             '4F16331C44BDBED927841F94518822B1' &&
+             'B3F350C8958682ECBB3E3CB7'.
+    lv_msg = lcl_convert=>base64_encode( lv_raw ).
+    ls_data = zcl_ntlm=>type_3_decode( lv_msg ).
+
+    cl_abap_unit_assert=>assert_equals(
+        exp  = ls_data-lm_resp
+        act  = lv_lm_resp
+        quit = if_aunit_constants=>no ).
+
+    cl_abap_unit_assert=>assert_equals(
+        exp  = ls_data-ntlm_resp
+        act  = lv_ntlm_resp
+        quit = if_aunit_constants=>no ).
+
+    cl_abap_unit_assert=>assert_equals(
+        exp  = ls_data-session_key
+        act  = lv_session_key
+        quit = if_aunit_constants=>no ).
 
   ENDMETHOD.                    "type_3_encode
 

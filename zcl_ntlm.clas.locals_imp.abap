@@ -201,6 +201,16 @@
           iv_string TYPE string
         RETURNING
           value(rv_xstring) TYPE xstring.
+      CLASS-METHODS codepage_4103_x
+        IMPORTING
+          iv_xstring TYPE xstring
+        RETURNING
+          value(rv_string) TYPE string.
+      CLASS-METHODS codepage_utf_8_x
+        IMPORTING
+          iv_xstring TYPE xstring
+        RETURNING
+          value(rv_string) TYPE string.
 
   ENDCLASS.                    "lcl_convert DEFINITION
 
@@ -210,6 +220,30 @@
 *
 *----------------------------------------------------------------------*
   CLASS lcl_convert IMPLEMENTATION.
+
+    METHOD codepage_4103_x.
+
+      DATA: lo_obj TYPE REF TO cl_abap_conv_in_ce.
+
+
+      lo_obj = cl_abap_conv_in_ce=>create( encoding = '4103' ).
+
+      lo_obj->convert( EXPORTING input = iv_xstring
+                       IMPORTING data = rv_string ).
+
+    ENDMETHOD.                    "codepage_4103_x
+
+    METHOD codepage_utf_8_x.
+
+      DATA: lo_obj TYPE REF TO cl_abap_conv_in_ce.
+
+
+      lo_obj = cl_abap_conv_in_ce=>create( encoding = 'UTF-8' ).
+
+      lo_obj->convert( EXPORTING input = iv_xstring
+                       IMPORTING data = rv_string ).
+
+    ENDMETHOD.                    "codepage_utf_8_x
 
     METHOD codepage_utf_8.
 
@@ -545,9 +579,13 @@
         RETURNING
           value(rs_flags) TYPE zcl_ntlm=>ty_flags.
 
-      METHODS fields
+      METHODS data_raw
         RETURNING
           value(rv_data) TYPE xstring.
+
+      METHODS data_str
+        RETURNING
+          value(rv_data) TYPE string.
 
       METHODS skip
         IMPORTING
@@ -612,7 +650,7 @@
 
     ENDMETHOD.                    "flags
 
-    METHOD fields.
+    METHOD data_raw.
 
       DATA: lv_byte8 TYPE zcl_ntlm=>ty_byte8,
             ls_fields TYPE ty_fields.
@@ -632,6 +670,16 @@
 
     ENDMETHOD.                    "fields
 
+    METHOD data_str.
+
+      DATA: lv_raw TYPE xstring.
+
+
+      lv_raw = data_raw( ).
+      rv_data = lcl_convert=>codepage_4103_x( lv_raw ).
+
+    ENDMETHOD.                    "data_str
+
   ENDCLASS.                    "lcl_read IMPLEMENTATION
 
 *----------------------------------------------------------------------*
@@ -649,17 +697,32 @@
         IMPORTING
           is_flags TYPE zcl_ntlm=>ty_flags.
 
-      METHODS fields
+      METHODS data_raw
         IMPORTING
           iv_data TYPE xsequence.
+
+      METHODS data_str
+        IMPORTING
+          iv_data TYPE clike.
 
       METHODS message
         RETURNING
           value(rv_msg) TYPE string.
 
+      METHODS raw
+        IMPORTING
+          iv_data TYPE xsequence.
+
     PRIVATE SECTION.
+      TYPES: BEGIN OF ty_fix,
+               fix TYPE i,
+               offset TYPE i,
+               length TYPE i,
+             END OF ty_fix.
+
       DATA: mv_header TYPE xstring,
-            mv_payload TYPE xstring.
+            mv_payload TYPE xstring,
+            mt_fix TYPE TABLE OF ty_fix.
 
   ENDCLASS.                    "lcl_write DEFINITION
 
@@ -672,8 +735,27 @@
 
     METHOD message.
 
-      DATA: lv_xstr TYPE xstring.
+      DATA: lv_xstr   TYPE xstring,
+            lv_fix    TYPE i,
+            lv_len    TYPE i,
+            lv_header TYPE x LENGTH 200,
+            lv_offset TYPE i.
 
+      FIELD-SYMBOLS: <ls_fix> LIKE LINE OF mt_fix.
+
+
+      lv_len = xstrlen( mv_header ).
+      IF lv_len > 200.
+        BREAK-POINT.
+      ENDIF.
+      lv_header = mv_header.
+      lv_offset = xstrlen( mv_header ).
+      LOOP AT mt_fix ASSIGNING <ls_fix>.
+        lv_fix = <ls_fix>-fix.
+        lv_header+lv_fix(4) = lcl_convert=>int_to_byte4( lv_offset ).
+        lv_offset = lv_offset + <ls_fix>-length.
+      ENDLOOP.
+      mv_header = lv_header(lv_len).
 
       CONCATENATE mv_header mv_payload INTO lv_xstr IN BYTE MODE.
 
@@ -697,17 +779,43 @@
 
     ENDMETHOD.                    "flags
 
-    METHOD fields.
+    METHOD data_raw.
 
       DATA: ls_fields TYPE ty_fields,
-            lv_byte8 TYPE zcl_ntlm=>ty_byte8.
+            ls_fix    LIKE LINE OF mt_fix,
+            lv_byte8  TYPE zcl_ntlm=>ty_byte8.
 
+
+      ls_fields-len = xstrlen( iv_data ).
+      ls_fields-maxlen = xstrlen( iv_data ).
+
+      ls_fix-fix = xstrlen( mv_header ) + 4.
+      ls_fix-offset = xstrlen( mv_payload ).
+      ls_fix-length = xstrlen( iv_data ).
+      APPEND ls_fix TO mt_fix.
 
       lv_byte8 = lcl_convert=>fields_encode( ls_fields ).
       CONCATENATE mv_header lv_byte8 INTO mv_header IN BYTE MODE.
 
-* todo, write payload
+      CONCATENATE mv_payload iv_data INTO mv_payload IN BYTE MODE.
 
     ENDMETHOD.                    "fields
+
+    METHOD raw.
+
+      CONCATENATE mv_header iv_data INTO mv_header IN BYTE MODE.
+
+    ENDMETHOD.                    "raw
+
+    METHOD data_str.
+
+      DATA: lv_raw TYPE xstring.
+
+
+      lv_raw = lcl_convert=>codepage_4103( iv_data ).
+
+      data_raw( lv_raw ).
+
+    ENDMETHOD.                    "data_str
 
   ENDCLASS.                    "lcl_write IMPLEMENTATION
