@@ -82,5 +82,11 @@
    <ENTRY>        Username</ENTRY>
    <LENGTH>16 </LENGTH>
   </TEXTPOOL>
+  <TEXTPOOL>
+   <ID>S</ID>
+   <KEY>P_WORKST</KEY>
+   <ENTRY>        Workstation</ENTRY>
+   <LENGTH>19 </LENGTH>
+  </TEXTPOOL>
  </TEXTPOOL_TABLE>
 </abapGit>

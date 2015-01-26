@@ -3,7 +3,8 @@ REPORT zntlm_test.
 PARAMETERS: p_url    TYPE text100,
             p_user   TYPE text20,
             p_passw  TYPE text20,
-            p_domain TYPE text20.
+            p_domain TYPE text20,
+            p_workst type text20.
 
 INITIALIZATION.
   PERFORM initialization.
@@ -27,6 +28,7 @@ FORM run RAISING cx_static_check.
   li_client = zcl_ntlm=>get( iv_username = p_user
                              iv_password = p_passw
                              iv_domain   = p_domain
+                             iv_workstation = p_workst
                              iv_url      = p_url ).
   li_client->response->get_header_fields( CHANGING fields = lt_fields ).
   li_client->close( ).

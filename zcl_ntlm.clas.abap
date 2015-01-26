@@ -12,6 +12,7 @@ public section.
       !IV_USERNAME type CLIKE
       !IV_PASSWORD type CLIKE
       !IV_DOMAIN type CLIKE
+      !IV_WORKSTATION type CLIKE
       !IV_URL type CLIKE
       !IV_SSL_ID type SSFAPPLSSL default 'ANONYM'
     returning
@@ -143,6 +144,7 @@ protected section.
       !IV_USERNAME type CLIKE
       !IV_PASSWORD type CLIKE
       !IV_DOMAIN type CLIKE
+      !IV_WORKSTATION type CLIKE
       !IS_DATA2 type TY_TYPE2
     returning
       value(RS_DATA3) type TY_TYPE3
@@ -264,10 +266,21 @@ METHOD get.
                       iv_ssl_id = iv_ssl_id ).
 
 * build type 1 message
-*  ls_data1-flags-negotiate_key_exch = abap_true.
-  ls_data1-flags-negotiate_target_info = abap_true.
-  ls_data1-flags-negotiate_ntlm     = abap_true.
-  ls_data1-flags-negotiate_unicode  = abap_true.
+**  ls_data1-flags-negotiate_key_exch = abap_true.
+*  ls_data1-flags-negotiate_target_info = abap_true.
+*  ls_data1-flags-negotiate_ntlm     = abap_true.
+*  ls_data1-flags-negotiate_unicode  = abap_true.
+  ls_data1-flags-r3 = abap_true.
+  ls_data1-flags-negotiate_extended_session_sec = abap_true.
+  ls_data1-flags-negotiate_ntlm = abap_true.
+  ls_data1-flags-negotiate_seal = abap_true.
+  ls_data1-flags-negotiate_sign = abap_true.
+  ls_data1-flags-request_target = abap_true.
+  ls_data1-flags-negotiate_unicode = abap_true.
+
+  ls_data1-target_name = iv_domain.
+  ls_data1-workstation = iv_workstation.
+
   lv_value = type_1_encode( ls_data1 ).
   CONCATENATE 'NTLM' lv_value INTO lv_value SEPARATED BY space.
 
@@ -287,6 +300,7 @@ METHOD get.
   ls_data3 = type_3_build( iv_username = iv_username
                            iv_password = iv_password
                            iv_domain   = iv_domain
+                           iv_workstation = iv_workstation
                            is_data2    = ls_data2 ).
   lv_value = type_3_encode( ls_data3 ).
   CONCATENATE 'NTLM' lv_value INTO lv_value SEPARATED BY space.
@@ -644,12 +658,16 @@ METHOD type_1_encode.
   IF is_data-flags-negotiate_oem_domain_supplied = abap_true.
     lo_writer->data_str( iv_oem  = abap_true
                          iv_data = is_data-target_name ).
+  ELSE.
+    lo_writer->data_str( is_data-target_name ).
   ENDIF.
 
 * workstation fields
   IF is_data-flags-negotiate_oem_workstation_sup = abap_true.
     lo_writer->data_str( iv_oem  = abap_true
                          iv_data = is_data-workstation ).
+  ELSE.
+    lo_writer->data_str( is_data-workstation ).
   ENDIF.
 
   IF is_data-flags-negotiate_version = abap_true.
@@ -684,7 +702,7 @@ METHOD type_2_decode.
   lo_reader->skip( 8 ).
 
 * target info
-  rs_data-target_info = lo_reader->data_str( iv_oem ).
+  rs_data-target_info = lo_reader->data_raw( ).
 
 ENDMETHOD.
 
@@ -712,47 +730,54 @@ METHOD type_3_build.
 
   lv_nonce = lcl_util=>random_nonce( ).
 
-  IF is_data2-flags-negotiate_extended_session_sec = abap_true.
-* Negotiate NTLM2 Key
-    ntlm2_session_response(
-      EXPORTING
-        iv_nonce         = lv_nonce
-        iv_challenge     = is_data2-challenge
-        iv_password      = iv_password
-      IMPORTING
-        ev_lm_response   = rs_data3-lm_resp
-        ev_ntlm_response = rs_data3-ntlm_resp ).
-  ELSE.
+*  IF is_data2-flags-negotiate_extended_session_sec = abap_true.
+** Negotiate NTLM2 Key
+*    ntlm2_session_response(
+*      EXPORTING
+*        iv_nonce         = lv_nonce
+*        iv_challenge     = is_data2-challenge
+*        iv_password      = iv_password
+*      IMPORTING
+*        ev_lm_response   = rs_data3-lm_resp
+*        ev_ntlm_response = rs_data3-ntlm_resp ).
+*  ELSE.
 *    rs_data3-lm_resp = lmv1_response( iv_password  = iv_password
 *                                      iv_challenge = is_data2-challenge ).
 *
 *    rs_data3-ntlm_resp = ntlmv1_response( iv_password  = iv_password
 *                                          iv_challenge = is_data2-challenge ).
 
-    rs_data3-lm_resp = lmv2_response( iv_password  = iv_password
-                                      iv_domain    = iv_domain
-                                      iv_username  = iv_username
-                                      iv_nonce     = lv_nonce
-                                      iv_challenge = is_data2-challenge ).
+  rs_data3-lm_resp = lmv2_response( iv_password  = iv_password
+                                    iv_domain    = iv_domain
+                                    iv_username  = iv_username
+                                    iv_nonce     = lv_nonce
+                                    iv_challenge = is_data2-challenge ).
 
-    rs_data3-ntlm_resp = ntlmv2_response( iv_password  = iv_password
-                                          iv_username  = iv_username
-                                          iv_target    = iv_domain
-                                          iv_info      = is_data2-target_info
-                                          iv_nonce     = lv_nonce
-                                          iv_challenge = is_data2-challenge ).
+  rs_data3-ntlm_resp = ntlmv2_response( iv_password  = iv_password
+                                        iv_username  = iv_username
+                                        iv_target    = iv_domain
+                                        iv_info      = is_data2-target_info
+                                        iv_nonce     = lv_nonce
+                                        iv_challenge = is_data2-challenge ).
 
-  ENDIF.
+*  ENDIF.
 
   rs_data3-target_name = iv_domain.
   rs_data3-user_name   = iv_username.
-  rs_data3-workstation = 'WORKSTATION'.
+  rs_data3-workstation = iv_workstation.
 
-  IF is_data2-flags-negotiate_key_exch = abap_true.
-    rs_data3-session_key = session_key( iv_password ).
-  ENDIF.
+*  IF is_data2-flags-negotiate_key_exch = abap_true.
+*    rs_data3-session_key = session_key( iv_password ).
+*  ENDIF.
 
-  rs_data3-flags = is_data2-flags.
+*  rs_data3-flags = is_data2-flags.
+  rs_data3-flags-r3 = abap_true.
+  rs_data3-flags-negotiate_extended_session_sec = abap_true.
+  rs_data3-flags-negotiate_ntlm = abap_true.
+  rs_data3-flags-negotiate_seal = abap_true.
+  rs_data3-flags-negotiate_sign = abap_true.
+  rs_data3-flags-request_target = abap_true.
+  rs_data3-flags-negotiate_unicode = abap_true.
 
 ENDMETHOD.
 

@@ -72,13 +72,7 @@
           alg            = 'MD5'
           data           = iv_data
         IMPORTING
-*         HASH           =
-*         HASHLEN        =
-*         HASHX          =
-*         HASHXLEN       =
-*         HASHSTRING     =
           hashxstring    = lv_xstr
-*         HASHB64STRING  =
         EXCEPTIONS
           unknown_alg    = 1
           param_error    = 2

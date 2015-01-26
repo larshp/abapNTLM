@@ -16,21 +16,22 @@ CLASS lcl_test DEFINITION FOR TESTING
 
   PRIVATE SECTION.
 * ================
-    METHODS: type_1_decode_1 FOR TESTING,
-             type_1_decode_2 FOR TESTING,
-             type_1_encode   FOR TESTING,
-             type_2_decode_1 FOR TESTING,
-             type_2_decode_2 FOR TESTING,
-             type_2_encode   FOR TESTING,
-             type_3_1        FOR TESTING RAISING cx_static_check,
-             type_3_2        FOR TESTING RAISING cx_static_check,
-             type_3_build    FOR TESTING RAISING cx_static_check,
-             type_3_decode   FOR TESTING,
-             lmv1_response   FOR TESTING,
-             ntlmv1_response FOR TESTING,
-             lmv2_response   FOR TESTING RAISING cx_static_check,
-             ntlmv2_response FOR TESTING RAISING cx_static_check,
-             ntlm2_session_r FOR TESTING.
+    METHODS: type_1_decode_1   FOR TESTING,
+             type_1_decode_2   FOR TESTING,
+             type_1_encode     FOR TESTING,
+             type_2_decode_1   FOR TESTING,
+             type_2_decode_2   FOR TESTING,
+             type_2_encode     FOR TESTING,
+             type_3_1          FOR TESTING RAISING cx_static_check,
+             type_3_2          FOR TESTING RAISING cx_static_check,
+             type_3_build      FOR TESTING RAISING cx_static_check,
+             type_3_decode     FOR TESTING,
+             lmv1_response     FOR TESTING,
+             ntlmv1_response   FOR TESTING,
+             lmv2_response_1   FOR TESTING RAISING cx_static_check,
+             lmv2_response_2   FOR TESTING RAISING cx_static_check,
+             ntlmv2_response_1 FOR TESTING RAISING cx_static_check,
+             ntlm2_session_r   FOR TESTING.
 
 ENDCLASS.                    "lcl_test DEFINITION
 
@@ -91,7 +92,7 @@ CLASS lcl_test IMPLEMENTATION.
 
   ENDMETHOD.                    "lmv1_response
 
-  METHOD lmv2_response.
+  METHOD lmv2_response_1.
 
     DATA: lv_response TYPE zcl_ntlm=>ty_byte24.
 
@@ -109,7 +110,25 @@ CLASS lcl_test IMPLEMENTATION.
 
   ENDMETHOD.                    "lmv2_response
 
-  METHOD ntlmv2_response.
+  METHOD lmv2_response_2.
+
+    DATA: lv_response TYPE zcl_ntlm=>ty_byte24.
+
+
+    lv_response = zcl_ntlm=>lmv2_response(
+        iv_password  = 'Password'
+        iv_domain    = 'Domain'
+        iv_username  = 'User'
+        iv_challenge = '0123456789ABCDEF'
+        iv_nonce     = 'AAAAAAAAAAAAAAAA' ).
+
+    cl_abap_unit_assert=>assert_equals(
+        exp = '86C35097AC9CEC102554764A57CCCC19AAAAAAAAAAAAAAAA'
+        act = lv_response ).
+
+  ENDMETHOD.                    "lmv2_response_2
+
+  METHOD ntlmv2_response_1.
 
     DATA: lv_info     TYPE xstring,
           lv_expected TYPE xstring,
@@ -178,7 +197,8 @@ CLASS lcl_test IMPLEMENTATION.
   METHOD type_1_decode_2.
 
     DATA: ls_data1 TYPE zcl_ntlm=>ty_type1,
-          lv_msg   TYPE string.
+          lv_msg   TYPE string,
+          lv_msg2  TYPE string.
 
 
     lv_msg = ''.
