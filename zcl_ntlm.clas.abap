@@ -452,7 +452,7 @@ METHOD lmv2_response.
 
   lv_password = iv_password. " strip whitespace
   lv_username = iv_username. " strip whitespace
-  lv_domain = iv_domain.     " strip whitespace
+  lv_domain   = iv_domain.   " strip whitespace
 
   lv_v2hash = ntlmv2_hash( iv_password = lv_password
                            iv_username = lv_username
@@ -584,7 +584,7 @@ METHOD ntlmv2_response.
 
   lv_password = iv_password. " strip whitespace
   lv_username = iv_username. " strip whitespace
-  lv_target = iv_target.     " strip whitespace
+  lv_target   = iv_target.   " strip whitespace
 
   lv_v2hash = ntlmv2_hash( iv_password = lv_password
                            iv_username = lv_username

@@ -45,6 +45,7 @@ FORM run RAISING cx_static_check.
     WRITE: / lv_string(100).
     lv_string = lv_string+100.
   ENDWHILE.
+  WRITE: / lv_string.
 
 ENDFORM.                    "run
 
