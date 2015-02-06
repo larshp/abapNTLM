@@ -48,7 +48,6 @@ CLASS lcl_test2 IMPLEMENTATION.
 
   METHOD type_3.
 
-* todo
 
   ENDMETHOD.                    "type_3
 

@@ -443,13 +443,20 @@ ENDMETHOD.
 
 METHOD lmv2_response.
 
-  DATA: lv_v2hash TYPE ty_byte16,
-        lv_data   TYPE xstring.
+  DATA: lv_v2hash   TYPE ty_byte16,
+        lv_password TYPE string,
+        lv_username TYPE string,
+        lv_domain   TYPE string,
+        lv_data     TYPE xstring.
 
 
-  lv_v2hash = ntlmv2_hash( iv_password = iv_password
-                           iv_username = iv_username
-                           iv_target   = iv_domain ).
+  lv_password = iv_password. " strip whitespace
+  lv_username = iv_username. " strip whitespace
+  lv_domain = iv_domain.     " strip whitespace
+
+  lv_v2hash = ntlmv2_hash( iv_password = lv_password
+                           iv_username = lv_username
+                           iv_target   = lv_domain ).
 
   CONCATENATE iv_challenge iv_nonce INTO lv_data IN BYTE MODE.
 
@@ -565,16 +572,23 @@ METHOD ntlmv2_response.
   CONSTANTS: lc_signature TYPE xstring VALUE '01010000',
              lc_zero      TYPE xstring VALUE '00000000'.
 
-  DATA: lv_data    TYPE xstring,
-        lv_hmac    TYPE xstring,
-        lv_time    TYPE ty_byte8,
-        lv_blob    TYPE xstring,
-        lv_v2hash  TYPE ty_byte16.
+  DATA: lv_data     TYPE xstring,
+        lv_hmac     TYPE xstring,
+        lv_time     TYPE ty_byte8,
+        lv_blob     TYPE xstring,
+        lv_v2hash   TYPE ty_byte16,
+        lv_password TYPE string,
+        lv_username TYPE string,
+        lv_target   TYPE string.
 
 
-  lv_v2hash = ntlmv2_hash( iv_password = iv_password
-                           iv_username = iv_username
-                           iv_target   = iv_target ).
+  lv_password = iv_password. " strip whitespace
+  lv_username = iv_username. " strip whitespace
+  lv_target = iv_target.     " strip whitespace
+
+  lv_v2hash = ntlmv2_hash( iv_password = lv_password
+                           iv_username = lv_username
+                           iv_target   = lv_target ).
 
   IF iv_time IS INITIAL.
     lv_time = lcl_util=>since_epoc_hex( ).
