@@ -1,8 +1,58 @@
 CLASS lcl_test DEFINITION DEFERRED.
 CLASS zcl_ntlm DEFINITION LOCAL FRIENDS lcl_test.
 
+  CLASS lcl_test2 DEFINITION DEFERRED.
+CLASS zcl_ntlm DEFINITION LOCAL FRIENDS lcl_test2.
+
   CLASS lcl_convert_test DEFINITION DEFERRED.
 CLASS zcl_ntlm DEFINITION LOCAL FRIENDS lcl_convert_test.
+
+*----------------------------------------------------------------------*
+*       CLASS lcl_test2 DEFINITION
+*----------------------------------------------------------------------*
+*
+*----------------------------------------------------------------------*
+CLASS lcl_test2 DEFINITION FOR TESTING
+  DURATION SHORT
+  RISK LEVEL HARMLESS
+  FINAL.
+
+  PRIVATE SECTION.
+* ================
+    METHODS: type_1 FOR TESTING,
+             type_3 FOR TESTING.
+
+ENDCLASS.                    "lcl_test2 DEFINITION
+
+*----------------------------------------------------------------------*
+*       CLASS lcl_test2 IMPLEMENTATION
+*----------------------------------------------------------------------*
+*
+*----------------------------------------------------------------------*
+CLASS lcl_test2 IMPLEMENTATION.
+
+  METHOD type_1.
+
+    DATA: ls_data TYPE zcl_ntlm=>ty_type1,
+          lv_res TYPE string.
+
+
+    ls_data = zcl_ntlm=>type_1_build( ).
+    lv_res = zcl_ntlm=>type_1_encode( ls_data ).
+
+    cl_abap_unit_assert=>assert_equals(
+        exp = 'TlRMTVNTUAABAAAAAYIIogAAAAAoAAAAAAAAACgAAAAFASgKAAAADw=='
+        act = lv_res ).
+
+  ENDMETHOD.                    "type_1
+
+  METHOD type_3.
+
+* todo
+
+  ENDMETHOD.                    "type_3
+
+ENDCLASS.                    "lcl_test2 IMPLEMENTATION
 
 *----------------------------------------------------------------------*
 *       CLASS lcl_test DEFINITION
@@ -17,15 +67,12 @@ CLASS lcl_test DEFINITION FOR TESTING
   PRIVATE SECTION.
 * ================
     METHODS: type_1_decode_1   FOR TESTING,
-             type_1_decode_2   FOR TESTING,
              type_1_encode     FOR TESTING,
              type_2_decode_1   FOR TESTING,
-             type_2_decode_2   FOR TESTING,
              type_2_encode     FOR TESTING,
              type_3_1          FOR TESTING RAISING cx_static_check,
              type_3_2          FOR TESTING RAISING cx_static_check,
              type_3_build      FOR TESTING RAISING cx_static_check,
-             type_3_decode     FOR TESTING,
              lmv1_response     FOR TESTING,
              ntlmv1_response   FOR TESTING,
              lmv2_response_1   FOR TESTING RAISING cx_static_check,
@@ -175,8 +222,8 @@ CLASS lcl_test IMPLEMENTATION.
 
 
     lv_response = zcl_ntlm=>ntlmv1_response(
-        iv_password  = 'SecREt01'
-        iv_challenge = '0123456789ABCDEF' ).
+      iv_password  = 'SecREt01'
+      iv_challenge = '0123456789ABCDEF' ).
 
     cl_abap_unit_assert=>assert_equals(
       exp  = '25A98C1C31E81847466B29B2DF4680F39958FB8C213A9CC6'
@@ -184,8 +231,8 @@ CLASS lcl_test IMPLEMENTATION.
       quit = if_aunit_constants=>no ).
 
     lv_response = zcl_ntlm=>ntlmv1_response(
-        iv_password  = 'Password'
-        iv_challenge = '0123456789ABCDEF' ).
+      iv_password  = 'Password'
+      iv_challenge = '0123456789ABCDEF' ).
 
     cl_abap_unit_assert=>assert_equals(
       exp  = '67C43011F30298A2AD35ECE64F16331C44BDBED927841F94'
@@ -193,19 +240,6 @@ CLASS lcl_test IMPLEMENTATION.
       quit = if_aunit_constants=>no ).
 
   ENDMETHOD.                    "ntlm_response
-
-  METHOD type_1_decode_2.
-
-    DATA: ls_data1 TYPE zcl_ntlm=>ty_type1,
-          lv_msg   TYPE string,
-          lv_msg2  TYPE string.
-
-
-    lv_msg = ''.
-    RETURN.
-    ls_data1 = zcl_ntlm=>type_1_decode( lv_msg ) .
-
-  ENDMETHOD.                    "type_1_decode_2
 
   METHOD type_1_decode_1.
 
@@ -245,7 +279,7 @@ CLASS lcl_test IMPLEMENTATION.
     lv_msg = zcl_ntlm=>type_1_encode( ls_data ).
 
     cl_abap_unit_assert=>assert_equals(
-        exp = 'TlRMTVNTUAABAAAAAQIAAA=='
+        exp = 'TlRMTVNTUAABAAAAAQIAAAAAAAAoAAAAAAAAACgAAAAAAAAAAAAAAA=='
         act = lv_msg ).
 
   ENDMETHOD.                    "type_1_encode
@@ -273,18 +307,6 @@ CLASS lcl_test IMPLEMENTATION.
 
 
   ENDMETHOD.                    "type_2_decode
-
-  METHOD type_2_decode_2.
-
-    DATA: ls_data2 TYPE zcl_ntlm=>ty_type2,
-          lv_msg   TYPE string.
-
-
-    lv_msg = ''.
-    RETURN.
-    ls_data2 = zcl_ntlm=>type_2_decode( lv_msg ) .
-
-  ENDMETHOD.                    "type_2_decode_2
 
   METHOD type_2_encode.
 
@@ -348,11 +370,6 @@ CLASS lcl_test IMPLEMENTATION.
     ls_data = zcl_ntlm=>type_3_decode( lv_msg_in ).
     lv_msg_out = zcl_ntlm=>type_3_encode( ls_data ).
 
-* payload sequence is different, so just check the length
-    cl_abap_unit_assert=>assert_equals(
-        exp = strlen( lv_msg_in )
-        act = strlen( lv_msg_out ) ).
-
 * decode it again
     ls_data2 = zcl_ntlm=>type_3_decode( lv_msg_out ).
     cl_abap_unit_assert=>assert_equals(
@@ -360,18 +377,6 @@ CLASS lcl_test IMPLEMENTATION.
         act = ls_data2 ).
 
   ENDMETHOD.                    "type_3_decode_encode2
-
-  METHOD type_3_decode.
-
-    DATA: ls_data3 TYPE zcl_ntlm=>ty_type3,
-          lv_msg   TYPE string.
-
-
-    lv_msg = ''.
-    RETURN.
-    ls_data3 = zcl_ntlm=>type_3_decode( lv_msg ) .
-
-  ENDMETHOD.                    "type_3_decode
 
   METHOD type_3_build.
 

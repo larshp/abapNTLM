@@ -107,6 +107,9 @@ protected section.
     exporting
       !EV_LM_RESPONSE type XSTRING
       !EV_NTLM_RESPONSE type XSTRING .
+  class-methods TYPE_1_BUILD
+    returning
+      value(RS_DATA) type TY_TYPE1 .
   class-methods NTLMV2_HASH
     importing
       !IV_PASSWORD type CLIKE
@@ -146,6 +149,9 @@ protected section.
       !IV_DOMAIN type CLIKE
       !IV_WORKSTATION type CLIKE
       !IS_DATA2 type TY_TYPE2
+      value(IV_LMV2_NONCE) type TY_BYTE8 optional
+      value(IV_NTLMV2_NONCE) type TY_BYTE8 optional
+      !IV_TIME type TY_BYTE8 optional
     returning
       value(RS_DATA3) type TY_TYPE3
     raising
@@ -266,21 +272,7 @@ METHOD get.
                       iv_ssl_id = iv_ssl_id ).
 
 * build type 1 message
-**  ls_data1-flags-negotiate_key_exch = abap_true.
-*  ls_data1-flags-negotiate_target_info = abap_true.
-*  ls_data1-flags-negotiate_ntlm     = abap_true.
-*  ls_data1-flags-negotiate_unicode  = abap_true.
-  ls_data1-flags-r3 = abap_true.
-  ls_data1-flags-negotiate_extended_session_sec = abap_true.
-  ls_data1-flags-negotiate_ntlm = abap_true.
-  ls_data1-flags-negotiate_seal = abap_true.
-  ls_data1-flags-negotiate_sign = abap_true.
-  ls_data1-flags-request_target = abap_true.
-  ls_data1-flags-negotiate_unicode = abap_true.
-
-  ls_data1-target_name = iv_domain.
-  ls_data1-workstation = iv_workstation.
-
+  ls_data1 = type_1_build( ).
   lv_value = type_1_encode( ls_data1 ).
   CONCATENATE 'NTLM' lv_value INTO lv_value SEPARATED BY space.
 
@@ -363,6 +355,8 @@ METHOD http_2.
   ii_client->request->set_header_field(
       name  = 'authorization'
       value = iv_authorization ).                           "#EC NOTEXT
+
+  ii_client->request->get_header_fields( changing fields = lt_fields ).
 
   ii_client->send( ).
   ii_client->receive(
@@ -609,6 +603,23 @@ METHOD session_key.
 ENDMETHOD.
 
 
+METHOD type_1_build.
+
+  rs_data-flags-negotiate_key_exch = abap_true.
+  rs_data-flags-r3 = abap_true.
+  rs_data-flags-r4 = abap_true.
+  rs_data-flags-negotiate_extended_session_sec = abap_true.
+  rs_data-flags-negotiate_always_sign = abap_true.
+  rs_data-flags-negotiate_ntlm = abap_true.
+  rs_data-flags-negotiate_unicode = abap_true.
+
+  rs_data-target_name = ''.
+  rs_data-workstation = ''.
+  rs_data-version = '0501280A0000000F'.
+
+ENDMETHOD.
+
+
 METHOD type_1_decode.
 
   DATA: lo_reader TYPE REF TO lcl_reader.
@@ -636,9 +647,7 @@ METHOD type_1_decode.
   ENDIF.
 
 * version
-  IF rs_data-flags-negotiate_version = abap_true.
-    rs_data-version = lo_reader->raw( 8 ).
-  ENDIF.
+  rs_data-version = lo_reader->raw( 8 ).
 
 ENDMETHOD.
 
@@ -670,9 +679,7 @@ METHOD type_1_encode.
     lo_writer->data_str( is_data-workstation ).
   ENDIF.
 
-  IF is_data-flags-negotiate_version = abap_true.
-    lo_writer->raw( is_data-version ).
-  ENDIF.
+  lo_writer->raw( is_data-version ).
 
   rv_msg = lo_writer->message( ).
 
@@ -728,54 +735,40 @@ METHOD type_3_build.
   DATA: lv_nonce TYPE ty_byte8.
 
 
-  lv_nonce = lcl_util=>random_nonce( ).
-
-*  IF is_data2-flags-negotiate_extended_session_sec = abap_true.
-** Negotiate NTLM2 Key
-*    ntlm2_session_response(
-*      EXPORTING
-*        iv_nonce         = lv_nonce
-*        iv_challenge     = is_data2-challenge
-*        iv_password      = iv_password
-*      IMPORTING
-*        ev_lm_response   = rs_data3-lm_resp
-*        ev_ntlm_response = rs_data3-ntlm_resp ).
-*  ELSE.
-*    rs_data3-lm_resp = lmv1_response( iv_password  = iv_password
-*                                      iv_challenge = is_data2-challenge ).
-*
-*    rs_data3-ntlm_resp = ntlmv1_response( iv_password  = iv_password
-*                                          iv_challenge = is_data2-challenge ).
-
+  IF iv_lmv2_nonce IS INITIAL.
+    iv_lmv2_nonce = lcl_util=>random_nonce( ).
+  ENDIF.
   rs_data3-lm_resp = lmv2_response( iv_password  = iv_password
                                     iv_domain    = iv_domain
                                     iv_username  = iv_username
-                                    iv_nonce     = lv_nonce
+                                    iv_nonce     = iv_lmv2_nonce
                                     iv_challenge = is_data2-challenge ).
 
+  IF iv_ntlmv2_nonce IS INITIAL.
+    iv_ntlmv2_nonce = lcl_util=>random_nonce( ).
+  ENDIF.
   rs_data3-ntlm_resp = ntlmv2_response( iv_password  = iv_password
                                         iv_username  = iv_username
                                         iv_target    = iv_domain
                                         iv_info      = is_data2-target_info
-                                        iv_nonce     = lv_nonce
+                                        iv_nonce     = iv_ntlmv2_nonce
+                                        iv_time      = iv_time
                                         iv_challenge = is_data2-challenge ).
-
-*  ENDIF.
 
   rs_data3-target_name = iv_domain.
   rs_data3-user_name   = iv_username.
   rs_data3-workstation = iv_workstation.
 
-*  IF is_data2-flags-negotiate_key_exch = abap_true.
-*    rs_data3-session_key = session_key( iv_password ).
-*  ENDIF.
+* todo, make constant?
+  rs_data3-version = '0501280A0000000F'.
 
-*  rs_data3-flags = is_data2-flags.
+  rs_data3-flags-negotiate_key_exch = abap_true.
   rs_data3-flags-r3 = abap_true.
+  rs_data3-flags-r4 = abap_true.
+  rs_data3-flags-negotiate_target_info = abap_true.
   rs_data3-flags-negotiate_extended_session_sec = abap_true.
+  rs_data3-flags-negotiate_always_sign = abap_true.
   rs_data3-flags-negotiate_ntlm = abap_true.
-  rs_data3-flags-negotiate_seal = abap_true.
-  rs_data3-flags-negotiate_sign = abap_true.
   rs_data3-flags-request_target = abap_true.
   rs_data3-flags-negotiate_unicode = abap_true.
 
@@ -814,9 +807,7 @@ METHOD type_3_decode.
   rs_data-flags = lo_reader->flags( ).
 
 * version
-  IF rs_data-flags-negotiate_version = abap_true.
-    rs_data-version = lo_reader->raw( 8 ).
-  ENDIF.
+  rs_data-version = lo_reader->raw( 8 ).
 
 ENDMETHOD.
 
@@ -852,9 +843,9 @@ METHOD type_3_encode.
   lo_writer->flags( is_data-flags ).
 
 * version
-  IF is_data-flags-negotiate_version = abap_true.
+*  IF is_data-flags-negotiate_version = abap_true.
     lo_writer->raw( is_data-version ).
-  ENDIF.
+*  ENDIF.
 
 * MIC?
 * todo
