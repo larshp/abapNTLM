@@ -125,10 +125,12 @@ protected section.
       !IV_SSL_ID type SSFAPPLSSL
     returning
       value(RI_CLIENT) type ref to IF_HTTP_CLIENT .
+  type-pools ABAP .
   class-methods HTTP_2
     importing
       !IV_AUTHORIZATION type STRING
       !II_CLIENT type ref to IF_HTTP_CLIENT
+      !IV_IGNORE type ABAP_BOOL default ABAP_FALSE
     returning
       value(RV_AUTHORIZATION) type STRING .
   class-methods LMV2_RESPONSE
@@ -198,7 +200,6 @@ protected section.
       !IS_DATA type TY_TYPE2
     returning
       value(RV_MSG) type STRING .
-  type-pools ABAP .
   class-methods TYPE_3_DECODE
     importing
       !IV_MSG type STRING
@@ -289,16 +290,17 @@ METHOD get.
   ls_data2 = type_2_decode( lv_value ).
 
 * build type 3 message
-  ls_data3 = type_3_build( iv_username = iv_username
-                           iv_password = iv_password
-                           iv_domain   = iv_domain
+  ls_data3 = type_3_build( iv_username    = iv_username
+                           iv_password    = iv_password
+                           iv_domain      = iv_domain
                            iv_workstation = iv_workstation
-                           is_data2    = ls_data2 ).
+                           is_data2       = ls_data2 ).
   lv_value = type_3_encode( ls_data3 ).
   CONCATENATE 'NTLM' lv_value INTO lv_value SEPARATED BY space.
 
   http_2( iv_authorization = lv_value
-          ii_client        = ri_client ).
+          ii_client        = ri_client
+          iv_ignore        = abap_true ).
 
 ENDMETHOD.
 
@@ -320,6 +322,9 @@ METHOD http_1.
       client = ri_client ).
 
   ri_client->propertytype_logon_popup = ri_client->co_disabled.
+  ri_client->request->set_header_field(
+      name  = 'Connection'
+      value = 'Keep-Alive' ).
 
   ri_client->send( ).
   ri_client->receive(
@@ -355,8 +360,11 @@ METHOD http_2.
   ii_client->request->set_header_field(
       name  = 'authorization'
       value = iv_authorization ).                           "#EC NOTEXT
+  ii_client->request->set_header_field(
+      name  = 'Connection'
+      value = 'Keep-Alive' ).
 
-  ii_client->request->get_header_fields( changing fields = lt_fields ).
+  ii_client->request->get_header_fields( CHANGING fields = lt_fields ).
 
   ii_client->send( ).
   ii_client->receive(
@@ -370,16 +378,18 @@ METHOD http_2.
     BREAK-POINT.
   ENDIF.
 
-  ii_client->response->get_header_fields( CHANGING fields = lt_fields ).
+  IF iv_ignore = abap_false.
+    ii_client->response->get_header_fields( CHANGING fields = lt_fields ).
 
-  READ TABLE lt_fields ASSIGNING <ls_field>
-    WITH KEY name = 'www-authenticate'.                     "#EC NOTEXT
-  IF sy-subrc <> 0.
+    READ TABLE lt_fields ASSIGNING <ls_field>
+      WITH KEY name = 'www-authenticate'.                   "#EC NOTEXT
+    IF sy-subrc <> 0.
 * no NTML destination
-    BREAK-POINT.
-  ENDIF.
+      BREAK-POINT.
+    ENDIF.
 
-  rv_authorization = <ls_field>-value.
+    rv_authorization = <ls_field>-value.
+  ENDIF.
 
 ENDMETHOD.
 

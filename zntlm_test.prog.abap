@@ -4,7 +4,7 @@ PARAMETERS: p_url    TYPE text100,
             p_user   TYPE text20,
             p_passw  TYPE text20,
             p_domain TYPE text20,
-            p_workst type text20.
+            p_workst TYPE text20.
 
 INITIALIZATION.
   PERFORM initialization.
@@ -20,6 +20,7 @@ START-OF-SELECTION.
 FORM run RAISING cx_static_check.
 
   DATA: li_client TYPE REF TO if_http_client,
+        lv_string TYPE string,
         lt_fields TYPE tihttpnvp.
 
   FIELD-SYMBOLS: <ls_field> LIKE LINE OF lt_fields.
@@ -31,11 +32,19 @@ FORM run RAISING cx_static_check.
                              iv_workstation = p_workst
                              iv_url      = p_url ).
   li_client->response->get_header_fields( CHANGING fields = lt_fields ).
+  lv_string = li_client->response->get_cdata( ).
   li_client->close( ).
 
   LOOP AT lt_fields ASSIGNING <ls_field>.
     WRITE: / <ls_field>-name, 25 <ls_field>-value.
   ENDLOOP.
+
+  WRITE: / .
+
+  WHILE strlen( lv_string ) > 100.
+    WRITE: / lv_string(100).
+    lv_string = lv_string+100.
+  ENDWHILE.
 
 ENDFORM.                    "run
 
