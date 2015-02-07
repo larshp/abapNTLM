@@ -1,57 +1,47 @@
 CLASS lcl_test DEFINITION DEFERRED.
 CLASS zcl_ntlm DEFINITION LOCAL FRIENDS lcl_test.
 
-  CLASS lcl_test2 DEFINITION DEFERRED.
-CLASS zcl_ntlm DEFINITION LOCAL FRIENDS lcl_test2.
-
   CLASS lcl_convert_test DEFINITION DEFERRED.
 CLASS zcl_ntlm DEFINITION LOCAL FRIENDS lcl_convert_test.
 
 *----------------------------------------------------------------------*
-*       CLASS lcl_test2 DEFINITION
+*       CLASS lcl_util_test DEFINITION
 *----------------------------------------------------------------------*
 *
 *----------------------------------------------------------------------*
-CLASS lcl_test2 DEFINITION FOR TESTING
+CLASS lcl_util_test DEFINITION FOR TESTING
   DURATION SHORT
   RISK LEVEL HARMLESS
   FINAL.
 
   PRIVATE SECTION.
 * ================
-    METHODS: type_1 FOR TESTING,
-             type_3 FOR TESTING.
+    METHODS: since_epoc            FOR TESTING.
 
-ENDCLASS.                    "lcl_test2 DEFINITION
+ENDCLASS.                    "lcl_util_test DEFINITION
 
 *----------------------------------------------------------------------*
-*       CLASS lcl_test2 IMPLEMENTATION
+*       CLASS lcl_util_test IMPLEMENTATION
 *----------------------------------------------------------------------*
 *
 *----------------------------------------------------------------------*
-CLASS lcl_test2 IMPLEMENTATION.
+CLASS lcl_util_test IMPLEMENTATION.
 
-  METHOD type_1.
+  METHOD since_epoc.
 
-    DATA: ls_data TYPE zcl_ntlm=>ty_type1,
-          lv_res TYPE string.
+    DATA: lv_num TYPE db02_blid.
 
 
-    ls_data = zcl_ntlm=>type_1_build( ).
-    lv_res = zcl_ntlm=>type_1_encode( ls_data ).
+    lv_num = lcl_util=>since_epoc( iv_date = '20150101'
+                                   iv_time = '103040' ).
 
     cl_abap_unit_assert=>assert_equals(
-        exp = 'TlRMTVNTUAABAAAAAYIIogAAAAAoAAAAAAAAACgAAAAFASgKAAAADw=='
-        act = lv_res ).
+        exp = '130645782400000000'
+        act = lv_num ).
 
-  ENDMETHOD.                    "type_1
+  ENDMETHOD.                    "since_epoc
 
-  METHOD type_3.
-
-
-  ENDMETHOD.                    "type_3
-
-ENDCLASS.                    "lcl_test2 IMPLEMENTATION
+ENDCLASS.                    "lcl_util_test IMPLEMENTATION
 
 *----------------------------------------------------------------------*
 *       CLASS lcl_test DEFINITION
@@ -65,7 +55,8 @@ CLASS lcl_test DEFINITION FOR TESTING
 
   PRIVATE SECTION.
 * ================
-    METHODS: type_1_decode_1   FOR TESTING,
+    METHODS: type_1            FOR TESTING,
+             type_1_decode_1   FOR TESTING,
              type_1_encode     FOR TESTING,
              type_2_decode_1   FOR TESTING,
              type_2_encode     FOR TESTING,
@@ -87,6 +78,21 @@ ENDCLASS.                    "lcl_test DEFINITION
 *
 *----------------------------------------------------------------------*
 CLASS lcl_test IMPLEMENTATION.
+
+  METHOD type_1.
+
+    DATA: ls_data TYPE zcl_ntlm=>ty_type1,
+          lv_res TYPE string.
+
+
+    ls_data = zcl_ntlm=>type_1_build( ).
+    lv_res = zcl_ntlm=>type_1_encode( ls_data ).
+
+    cl_abap_unit_assert=>assert_equals(
+        exp = 'TlRMTVNTUAABAAAAAYIIogAAAAAoAAAAAAAAACgAAAAFASgKAAAADw=='
+        act = lv_res ).
+
+  ENDMETHOD.                    "type_1
 
   METHOD ntlm2_session_r.
 
@@ -455,7 +461,12 @@ CLASS lcl_convert_test DEFINITION FOR TESTING
              fields_decode2 FOR TESTING,
              byte2          FOR TESTING,
              byte4_1        FOR TESTING,
-             byte4_2        FOR TESTING.
+             byte4_2        FOR TESTING,
+             bit64_1        FOR TESTING,
+             bit64_2        FOR TESTING,
+             bit64_3        FOR TESTING,
+             bit64_4        FOR TESTING,
+             bit64_5        FOR TESTING.
 
 ENDCLASS.       "lcl_Test
 
@@ -466,6 +477,84 @@ ENDCLASS.       "lcl_Test
 *----------------------------------------------------------------------*
 CLASS lcl_convert_test IMPLEMENTATION.
 * ==============================
+
+  METHOD bit64_1.
+
+    DATA: lv_num TYPE db02_blid,
+          lv_hex TYPE zcl_ntlm=>ty_byte8.
+
+
+    lv_hex = lcl_convert=>to_64bit( lv_num ).
+
+    cl_abap_unit_assert=>assert_equals(
+        exp = '0000000000000000'
+        act = lv_hex ).
+
+  ENDMETHOD.                    "bit64_1
+
+  METHOD bit64_2.
+
+    DATA: lv_num TYPE db02_blid,
+          lv_hex TYPE zcl_ntlm=>ty_byte8.
+
+
+    lv_num = '130676773970000000'.
+
+    lv_hex = lcl_convert=>to_64bit( lv_num ).
+
+    cl_abap_unit_assert=>assert_equals(
+        exp = '8038E064D541D001'
+        act = lv_hex ).
+
+  ENDMETHOD.                    "bit64_2
+
+  METHOD bit64_3.
+
+    DATA: lv_num TYPE db02_blid,
+          lv_hex TYPE zcl_ntlm=>ty_byte8.
+
+
+    lv_num = '130677671692800000'.
+
+    lv_hex = lcl_convert=>to_64bit( lv_num ).
+
+    cl_abap_unit_assert=>assert_equals(
+        exp = '00105369A642D001'
+        act = lv_hex ).
+
+  ENDMETHOD.                    "bit64_3
+
+  METHOD bit64_4.
+
+    DATA: lv_num TYPE db02_blid,
+          lv_hex TYPE zcl_ntlm=>ty_byte8.
+
+
+    lv_num = '130677672370990000'.
+
+    lv_hex = lcl_convert=>to_64bit( lv_num ).
+
+    cl_abap_unit_assert=>assert_equals(
+        exp = 'B06BBF91A642D001'
+        act = lv_hex ).
+
+  ENDMETHOD.                    "bit64_4
+
+  METHOD bit64_5.
+
+    DATA: lv_num TYPE db02_blid,
+          lv_hex TYPE zcl_ntlm=>ty_byte8.
+
+
+    lv_num = '130677673023090000'.
+
+    lv_hex = lcl_convert=>to_64bit( lv_num ).
+
+    cl_abap_unit_assert=>assert_equals(
+        exp = '50AD9DB8A642D001'
+        act = lv_hex ).
+
+  ENDMETHOD.                    "bit64_5
 
   METHOD base64_encode.
 

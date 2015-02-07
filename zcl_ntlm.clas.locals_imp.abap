@@ -34,6 +34,11 @@
           value(rv_hex) TYPE zcl_ntlm=>ty_byte8
         RAISING cx_static_check.
 
+      CLASS-METHODS since_epoc
+        IMPORTING iv_time TYPE t DEFAULT sy-uzeit
+                  iv_date TYPE d DEFAULT sy-datum
+        RETURNING value(rv_num) TYPE db02_blid.
+
       CLASS-METHODS hmac_md5
         IMPORTING
           iv_key TYPE xsequence
@@ -56,118 +61,6 @@
   ENDCLASS.                    "lcl_time DEFINITION
 
 *----------------------------------------------------------------------*
-*       CLASS lcl_time IMPLEMENTATION
-*----------------------------------------------------------------------*
-*
-*----------------------------------------------------------------------*
-  CLASS lcl_util IMPLEMENTATION.
-
-    METHOD md5.
-
-      DATA: lv_xstr TYPE xstring.
-
-
-      CALL FUNCTION 'CALCULATE_HASH_FOR_RAW'
-        EXPORTING
-          alg            = 'MD5'
-          data           = iv_data
-        IMPORTING
-          hashxstring    = lv_xstr
-        EXCEPTIONS
-          unknown_alg    = 1
-          param_error    = 2
-          internal_error = 3
-          OTHERS         = 4.
-      IF sy-subrc <> 0.
-        BREAK-POINT.
-      ENDIF.
-
-      rv_hash = lv_xstr.
-
-    ENDMETHOD.                    "md5
-
-    METHOD random_nonce.
-
-      DATA: lv_output TYPE c LENGTH 16.
-
-
-      CALL FUNCTION 'RSEC_GENERATE_PASSWORD'
-        EXPORTING
-          alphabet        = '0123456789ABCDEF'
-          alphabet_length = 16
-          output_length   = 16
-        IMPORTING
-          output          = lv_output.
-
-      rv_data = lv_output.
-
-    ENDMETHOD.                    "random_nonce
-
-    METHOD hmac_md5.
-
-      DATA: lo_hmac TYPE REF TO cl_abap_hmac,
-            lv_key  TYPE xstring.
-
-
-      lv_key = iv_key. " convert type
-      lo_hmac = cl_abap_hmac=>get_instance(
-                  if_algorithm = 'MD5'
-                  if_key       = lv_key ).
-      lo_hmac->update( iv_data ).
-      lo_hmac->final( ).
-      rv_hash = lo_hmac->get_hmac( ).
-
-    ENDMETHOD.                    "hmac_md5
-
-    METHOD since_epoc_hex.
-* tenths of a microsecond since 1 jan 1601, encoded as little endian signed 64 bit value
-
-      DATA: lv_secs   TYPE tzntstmpl,
-            lv_f      TYPE f,
-            lv_lsec   TYPE db02_blid,
-            lv_i      TYPE i,
-            lv_c      TYPE c,
-            lv_xres   TYPE x LENGTH 8,
-            lv_index  TYPE i,
-            lv_tstmp1 TYPE p,
-            lv_tstmp2 TYPE p.
-
-
-      cl_abap_tstmp=>systemtstmp_syst2utc(
-        EXPORTING
-          syst_date = sy-datum
-          syst_time = sy-uzeit
-        IMPORTING
-          utc_tstmp = lv_tstmp1 ).
-
-      lv_tstmp2 = '16010101000000'.
-      lv_secs = cl_abap_tstmp=>subtract(
-          tstmp1 = lv_tstmp1
-          tstmp2 = lv_tstmp2 ).
-      lv_lsec = lv_secs * ( 10 ** 7 ).
-
-* hmm, this is crazy, since there are no 64 bit types in ABAP
-      DO 64 TIMES.
-        lv_index = 64 - sy-index + 1.
-
-        lv_i = lv_lsec MOD 2.
-        lv_c = lv_i.
-        lv_f = lv_lsec / 2.
-        lv_lsec = round( val = lv_f dec = 0 mode = cl_abap_math=>round_half_down ).
-
-        SET BIT lv_index OF lv_xres TO lv_c.
-      ENDDO.
-
-      CONCATENATE
-        lv_xres+7(1) lv_xres+6(1) lv_xres+5(1) lv_xres+4(1)
-        lv_xres+3(1) lv_xres+2(1) lv_xres+1(1) lv_xres(1)
-        INTO rv_hex IN BYTE MODE.
-
-    ENDMETHOD.                    "since_epoc
-
-  ENDCLASS.                    "lcl_time IMPLEMENTATION
-
-*----------------------------------------------------------------------*
 *       CLASS lcl_convert DEFINITION
 *----------------------------------------------------------------------*
 *
@@ -175,6 +68,11 @@
   CLASS lcl_convert DEFINITION FINAL.
 
     PUBLIC SECTION.
+      CLASS-METHODS to_64bit
+        IMPORTING
+          iv_num TYPE db02_blid
+        RETURNING
+          value(rv_hex) TYPE zcl_ntlm=>ty_byte8.
       CLASS-METHODS fields_decode
         IMPORTING
           iv_byte8 TYPE zcl_ntlm=>ty_byte8
@@ -249,11 +147,141 @@
   ENDCLASS.                    "lcl_convert DEFINITION
 
 *----------------------------------------------------------------------*
+*       CLASS lcl_time IMPLEMENTATION
+*----------------------------------------------------------------------*
+*
+*----------------------------------------------------------------------*
+  CLASS lcl_util IMPLEMENTATION.
+
+    METHOD md5.
+
+      DATA: lv_xstr TYPE xstring.
+
+
+      CALL FUNCTION 'CALCULATE_HASH_FOR_RAW'
+        EXPORTING
+          alg            = 'MD5'
+          data           = iv_data
+        IMPORTING
+          hashxstring    = lv_xstr
+        EXCEPTIONS
+          unknown_alg    = 1
+          param_error    = 2
+          internal_error = 3
+          OTHERS         = 4.
+      IF sy-subrc <> 0.
+        BREAK-POINT.
+      ENDIF.
+
+      rv_hash = lv_xstr.
+
+    ENDMETHOD.                    "md5
+
+    METHOD random_nonce.
+
+      DATA: lv_output TYPE c LENGTH 16.
+
+
+      CALL FUNCTION 'RSEC_GENERATE_PASSWORD'
+        EXPORTING
+          alphabet        = '0123456789ABCDEF'
+          alphabet_length = 16
+          output_length   = 16
+        IMPORTING
+          output          = lv_output.
+
+      rv_data = lv_output.
+
+    ENDMETHOD.                    "random_nonce
+
+    METHOD hmac_md5.
+
+      DATA: lo_hmac TYPE REF TO cl_abap_hmac,
+            lv_key  TYPE xstring.
+
+
+      lv_key = iv_key. " convert type
+      lo_hmac = cl_abap_hmac=>get_instance(
+                  if_algorithm = 'MD5'
+                  if_key       = lv_key ).
+      lo_hmac->update( iv_data ).
+      lo_hmac->final( ).
+      rv_hash = lo_hmac->get_hmac( ).
+
+    ENDMETHOD.                    "hmac_md5
+
+    METHOD since_epoc.
+* tenths of a microsecond since 1 jan 1601, encoded as little endian signed 64 bit value
+
+      DATA: lv_secs   TYPE tzntstmpl,
+            lv_tstmp1 TYPE p,
+            lv_tstmp2 TYPE p.
+
+
+      cl_abap_tstmp=>systemtstmp_syst2utc(
+        EXPORTING
+          syst_date = iv_date
+          syst_time = iv_time
+        IMPORTING
+          utc_tstmp = lv_tstmp1 ).
+
+      lv_tstmp2 = '16010101000000'.
+      lv_secs = cl_abap_tstmp=>subtract(
+          tstmp1 = lv_tstmp1
+          tstmp2 = lv_tstmp2 ).
+      rv_num = lv_secs * ( 10 ** 7 ).
+
+    ENDMETHOD.                    "since_epoc
+
+    METHOD since_epoc_hex.
+
+      DATA: lv_lsec TYPE db02_blid.
+
+
+      lv_lsec = since_epoc( ).
+      rv_hex = lcl_convert=>to_64bit( lv_lsec ).
+
+    ENDMETHOD.                    "since_epoc
+
+  ENDCLASS.                    "lcl_time IMPLEMENTATION
+
+*----------------------------------------------------------------------*
 *       CLASS lcl_convert IMPLMENTATION.
 *----------------------------------------------------------------------*
 *
 *----------------------------------------------------------------------*
   CLASS lcl_convert IMPLEMENTATION.
+
+    METHOD to_64bit.
+
+      DATA: lv_f      TYPE f,
+            lv_i      TYPE i,
+            lv_c      TYPE c,
+            lv_xres   TYPE x LENGTH 8,
+            lv_index  TYPE i,
+            lv_num    LIKE iv_num.
+
+
+      lv_num = iv_num.
+
+* hmm, this is crazy, since there are no 64 bit types in ABAP
+      DO 64 TIMES.
+        lv_index = 64 - sy-index + 1.
+
+        lv_i = lv_num MOD 2.
+        lv_c = lv_i.
+        lv_f = lv_num / 2.
+        lv_num = round( val = lv_f dec = 0 mode = cl_abap_math=>round_half_down ).
+
+        SET BIT lv_index OF lv_xres TO lv_c.
+      ENDDO.
+
+      CONCATENATE
+        lv_xres+7(1) lv_xres+6(1) lv_xres+5(1) lv_xres+4(1)
+        lv_xres+3(1) lv_xres+2(1) lv_xres+1(1) lv_xres(1)
+        INTO rv_hex IN BYTE MODE.
+
+    ENDMETHOD.                    "to_64bit
 
     METHOD codepage_4103_x.
 

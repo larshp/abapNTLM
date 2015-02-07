@@ -592,6 +592,7 @@ METHOD ntlmv2_response.
 
   IF iv_time IS INITIAL.
     lv_time = lcl_util=>since_epoc_hex( ).
+    WRITE: / 'ntlmv2 time', lv_time.
   ELSE.
     lv_time = iv_time.
   ENDIF.
@@ -759,8 +760,11 @@ METHOD type_3_build.
   DATA: lv_nonce TYPE ty_byte8.
 
 
+  WRITE: / 'server challenge', is_data2-challenge.
+
   IF iv_lmv2_nonce IS INITIAL.
     iv_lmv2_nonce = lcl_util=>random_nonce( ).
+    WRITE: / 'lmv2 nonce', iv_lmv2_nonce.
   ENDIF.
   rs_data3-lm_resp = lmv2_response( iv_password  = iv_password
                                     iv_domain    = iv_domain
@@ -770,6 +774,7 @@ METHOD type_3_build.
 
   IF iv_ntlmv2_nonce IS INITIAL.
     iv_ntlmv2_nonce = lcl_util=>random_nonce( ).
+    WRITE: / 'ntlmv2 nonce', iv_ntlmv2_nonce.
   ENDIF.
   rs_data3-ntlm_resp = ntlmv2_response( iv_password  = iv_password
                                         iv_username  = iv_username
