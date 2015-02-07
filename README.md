@@ -1,5 +1,5 @@
 # abapNTLM
-work in progress
+Status: all algorithms implmented and logic, and it seems to work _some_ times, not sure what the problem is.
 
 Featuring:
 * [ARC4](http://en.wikipedia.org/wiki/RC4) implemented in ABAP
