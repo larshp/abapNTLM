@@ -122,14 +122,14 @@ protected section.
     importing
       !IV_L_0 type CLIKE
       !IV_R_0 type CLIKE
-      !IT_K type STRING_TT
+      !IT_K type STRING_TABLE
     returning
       value(RV_BITS) type STRING .
   class-methods K
     importing
-      !IT_BITS type STRING_TT
+      !IT_BITS type STRING_table
     returning
-      value(RT_BITS) type STRING_TT .
+      value(RT_BITS) type STRING_Table .
   class-methods I_TO_BITS_4
     importing
       !IV_I type I
@@ -151,7 +151,7 @@ protected section.
       !IV_C_0 type CLIKE
       !IV_D_0 type CLIKE
     returning
-      value(RT_BITS) type STRING_TT .
+      value(RT_BITS) type STRING_Table .
   class-methods COLUMN
     importing
       !IV_B type CLIKE
@@ -281,7 +281,7 @@ METHOD encrypt.
 * https://www.utdallas.edu/~edsha/OS2000/des-algorithm-details.txt
 * http://page.math.tu-berlin.de/~kant/teaching/hess/krypto-ws2006/des.htm
 
-  DATA: lt_bits   TYPE string_tt,
+  DATA: lt_bits   TYPE string_table,
         lv_bits   TYPE string,
         lv_ip     TYPE c LENGTH 64,
         lv_k_plus TYPE c LENGTH 56.
