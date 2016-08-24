@@ -1,7 +1,7 @@
 CLASS lcl_test DEFINITION DEFERRED.
 CLASS zcl_ntlm DEFINITION LOCAL FRIENDS lcl_test.
 
-  CLASS lcl_convert_test DEFINITION DEFERRED.
+CLASS lcl_convert_test DEFINITION DEFERRED.
 CLASS zcl_ntlm DEFINITION LOCAL FRIENDS lcl_convert_test.
 
 *----------------------------------------------------------------------*
@@ -56,19 +56,19 @@ CLASS lcl_test DEFINITION FOR TESTING
   PRIVATE SECTION.
 * ================
     METHODS: type_1            FOR TESTING,
-             type_1_decode_1   FOR TESTING,
-             type_1_encode     FOR TESTING,
-             type_2_decode_1   FOR TESTING,
-             type_2_encode     FOR TESTING,
-             type_3_1          FOR TESTING RAISING cx_static_check,
-             type_3_2          FOR TESTING RAISING cx_static_check,
-             type_3_build      FOR TESTING RAISING cx_static_check,
-             lmv1_response     FOR TESTING,
-             ntlmv1_response   FOR TESTING,
-             lmv2_response_1   FOR TESTING RAISING cx_static_check,
-             lmv2_response_2   FOR TESTING RAISING cx_static_check,
-             ntlmv2_response_1 FOR TESTING RAISING cx_static_check,
-             ntlm2_session_r   FOR TESTING.
+      type_1_decode_1   FOR TESTING,
+      type_1_encode     FOR TESTING,
+      type_2_decode_1   FOR TESTING,
+      type_2_encode     FOR TESTING,
+      type_3_1          FOR TESTING RAISING cx_static_check,
+      type_3_2          FOR TESTING RAISING cx_static_check,
+      type_3_build      FOR TESTING RAISING cx_static_check,
+      lmv1_response     FOR TESTING,
+      ntlmv1_response   FOR TESTING,
+      lmv2_response_1   FOR TESTING RAISING cx_static_check,
+      lmv2_response_2   FOR TESTING RAISING cx_static_check,
+      ntlmv2_response_1 FOR TESTING RAISING cx_static_check,
+      ntlm2_session_r   FOR TESTING.
 
 ENDCLASS.                    "lcl_test DEFINITION
 
@@ -82,7 +82,7 @@ CLASS lcl_test IMPLEMENTATION.
   METHOD type_1.
 
     DATA: ls_data TYPE zcl_ntlm=>ty_type1,
-          lv_res TYPE string.
+          lv_res  TYPE string.
 
 
     ls_data = zcl_ntlm=>type_1_build( ).
@@ -386,7 +386,7 @@ CLASS lcl_test IMPLEMENTATION.
   METHOD type_3_build.
 
     CONSTANTS: lc_challenge TYPE zcl_ntlm=>ty_byte8 VALUE '0123456789ABCDEF',
-               lc_password TYPE string VALUE 'Password'.
+               lc_password  TYPE string VALUE 'Password'.
 
     DATA: ls_data        TYPE zcl_ntlm=>ty_type3,
           lv_lm_resp     TYPE xstring,
@@ -453,20 +453,20 @@ CLASS lcl_convert_test DEFINITION FOR TESTING
   PRIVATE SECTION.
 * ================
     METHODS: base64_encode  FOR TESTING,
-             base64_decode  FOR TESTING,
-             flags_encode   FOR TESTING,
-             flags_decode   FOR TESTING,
-             fields_encode  FOR TESTING,
-             fields_decode1 FOR TESTING,
-             fields_decode2 FOR TESTING,
-             byte2          FOR TESTING,
-             byte4_1        FOR TESTING,
-             byte4_2        FOR TESTING,
-             bit64_1        FOR TESTING,
-             bit64_2        FOR TESTING,
-             bit64_3        FOR TESTING,
-             bit64_4        FOR TESTING,
-             bit64_5        FOR TESTING.
+      base64_decode  FOR TESTING,
+      flags_encode   FOR TESTING,
+      flags_decode   FOR TESTING,
+      fields_encode  FOR TESTING,
+      fields_decode1 FOR TESTING,
+      fields_decode2 FOR TESTING,
+      byte2          FOR TESTING,
+      byte4_1        FOR TESTING,
+      byte4_2        FOR TESTING,
+      bit64_1        FOR TESTING,
+      bit64_2        FOR TESTING,
+      bit64_3        FOR TESTING,
+      bit64_4        FOR TESTING,
+      bit64_5        FOR TESTING.
 
 ENDCLASS.       "lcl_Test
 

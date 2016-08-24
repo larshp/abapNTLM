@@ -1,91 +1,91 @@
-class ZCL_ARC4 definition
-  public
-  final
-  create public .
+CLASS zcl_arc4 DEFINITION
+  PUBLIC
+  FINAL
+  CREATE PUBLIC.
 
-public section.
+  PUBLIC SECTION.
 *"* public components of class ZCL_ARC4
 *"* do not include other source files here!!!
 
-  class-methods DECRYPT
-    importing
-      !IV_KEY type STRING
-      !IV_CIPHERTEXT type XSTRING
-    returning
-      value(RV_PLAINTEXT) type STRING
-    raising
-      CX_STATIC_CHECK .
-  class-methods DECRYPT_HEX
-    importing
-      !IV_KEY type XSTRING
-      !IV_CIPHERTEXT type XSTRING
-    returning
-      value(RV_PLAINTEXT) type XSTRING
-    raising
-      CX_STATIC_CHECK .
-  class-methods ENCRYPT
-    importing
-      !IV_KEY type STRING
-      !IV_PLAINTEXT type STRING
-    returning
-      value(RV_CIPHERTEXT) type XSTRING
-    raising
-      CX_STATIC_CHECK .
-  class-methods ENCRYPT_HEX
-    importing
-      !IV_KEY type XSTRING
-      !IV_PLAINTEXT type XSTRING
-    returning
-      value(RV_CIPHERTEXT) type XSTRING
-    raising
-      CX_STATIC_CHECK .
-protected section.
+    CLASS-METHODS decrypt
+      IMPORTING
+        !iv_key             TYPE string
+        !iv_ciphertext      TYPE xstring
+      RETURNING
+        VALUE(rv_plaintext) TYPE string
+      RAISING
+        cx_static_check .
+    CLASS-METHODS decrypt_hex
+      IMPORTING
+        !iv_key             TYPE xstring
+        !iv_ciphertext      TYPE xstring
+      RETURNING
+        VALUE(rv_plaintext) TYPE xstring
+      RAISING
+        cx_static_check .
+    CLASS-METHODS encrypt
+      IMPORTING
+        !iv_key              TYPE string
+        !iv_plaintext        TYPE string
+      RETURNING
+        VALUE(rv_ciphertext) TYPE xstring
+      RAISING
+        cx_static_check .
+    CLASS-METHODS encrypt_hex
+      IMPORTING
+        !iv_key              TYPE xstring
+        !iv_plaintext        TYPE xstring
+      RETURNING
+        VALUE(rv_ciphertext) TYPE xstring
+      RAISING
+        cx_static_check .
+  PROTECTED SECTION.
 *"* protected components of class ZCL_ARC4
 *"* do not include other source files here!!!
 
-  types:
-    ty_s TYPE x LENGTH 256 .
+    TYPES:
+      ty_s TYPE x LENGTH 256 .
 
-  class-methods KEYSTREAM
-    importing
-      !IV_KEY type XSTRING
-      !IV_LENGTH type I
-    returning
-      value(RV_KEYSTREAM) type XSTRING
-    raising
-      CX_STATIC_CHECK .
-  class-methods KSA
-    importing
-      !IV_XKEY type XSTRING
-    returning
-      value(RV_S) type TY_S .
-  class-methods PRGA
-    importing
-      !IV_S type TY_S
-      !IV_LENGTH type I
-    returning
-      value(RV_K) type XSTRING .
-  class-methods TO_STRING
-    importing
-      !IV_XSTRING type XSTRING
-    returning
-      value(RV_STRING) type STRING
-    raising
-      CX_STATIC_CHECK .
-  class-methods TO_XSTRING
-    importing
-      !IV_STRING type STRING
-    returning
-      value(RV_XSTRING) type XSTRING
-    raising
-      CX_STATIC_CHECK .
-  class-methods XOR
-    importing
-      !IV_VAL1 type XSTRING
-      !IV_VAL2 type XSTRING
-    returning
-      value(RV_RES) type XSTRING .
-private section.
+    CLASS-METHODS keystream
+      IMPORTING
+        !iv_key             TYPE xstring
+        !iv_length          TYPE i
+      RETURNING
+        VALUE(rv_keystream) TYPE xstring
+      RAISING
+        cx_static_check .
+    CLASS-METHODS ksa
+      IMPORTING
+        !iv_xkey    TYPE xstring
+      RETURNING
+        VALUE(rv_s) TYPE ty_s .
+    CLASS-METHODS prga
+      IMPORTING
+        !iv_s       TYPE ty_s
+        !iv_length  TYPE i
+      RETURNING
+        VALUE(rv_k) TYPE xstring .
+    CLASS-METHODS to_string
+      IMPORTING
+        !iv_xstring      TYPE xstring
+      RETURNING
+        VALUE(rv_string) TYPE string
+      RAISING
+        cx_static_check .
+    CLASS-METHODS to_xstring
+      IMPORTING
+        !iv_string        TYPE string
+      RETURNING
+        VALUE(rv_xstring) TYPE xstring
+      RAISING
+        cx_static_check .
+    CLASS-METHODS xor
+      IMPORTING
+        !iv_val1      TYPE xstring
+        !iv_val2      TYPE xstring
+      RETURNING
+        VALUE(rv_res) TYPE xstring .
+  PRIVATE SECTION.
 *"* private components of class ZCL_ARC4
 *"* do not include other source files here!!!
 ENDCLASS.
@@ -95,30 +95,30 @@ ENDCLASS.
 CLASS ZCL_ARC4 IMPLEMENTATION.
 
 
-METHOD decrypt.
+  METHOD decrypt.
 
-  DATA: lv_xstr TYPE xstring.
-
-
-  lv_xstr = decrypt_hex(
-              iv_key        = to_xstring( iv_key )
-              iv_ciphertext = iv_ciphertext ).
-
-  rv_plaintext = to_string( lv_xstr ).
-
-ENDMETHOD.
+    DATA: lv_xstr TYPE xstring.
 
 
-METHOD decrypt_hex.
+    lv_xstr = decrypt_hex(
+                iv_key        = to_xstring( iv_key )
+                iv_ciphertext = iv_ciphertext ).
 
-  rv_plaintext = encrypt_hex(
-                   iv_key       = iv_key
-                   iv_plaintext = iv_ciphertext ).
+    rv_plaintext = to_string( lv_xstr ).
 
-ENDMETHOD.
+  ENDMETHOD.
 
 
-METHOD encrypt.
+  METHOD decrypt_hex.
+
+    rv_plaintext = encrypt_hex(
+                     iv_key       = iv_key
+                     iv_plaintext = iv_ciphertext ).
+
+  ENDMETHOD.
+
+
+  METHOD encrypt.
 
 * The MIT License (MIT)
 *
@@ -142,143 +142,143 @@ METHOD encrypt.
 * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 * SOFTWARE.
 
-  rv_ciphertext = encrypt_hex(
-                    iv_key       = to_xstring( iv_key )
-                    iv_plaintext = to_xstring( iv_plaintext ) ).
+    rv_ciphertext = encrypt_hex(
+                      iv_key       = to_xstring( iv_key )
+                      iv_plaintext = to_xstring( iv_plaintext ) ).
 
-ENDMETHOD.
-
-
-METHOD encrypt_hex.
-
-  DATA: lv_k TYPE xstring.
+  ENDMETHOD.
 
 
-  lv_k = keystream(
-      iv_key    = iv_key
-      iv_length = xstrlen( iv_plaintext ) ).
+  METHOD encrypt_hex.
 
-  rv_ciphertext = xor(
-      iv_val1 = lv_k
-      iv_val2 = iv_plaintext ).
-
-ENDMETHOD.
+    DATA: lv_k TYPE xstring.
 
 
-METHOD keystream.
+    lv_k = keystream(
+        iv_key    = iv_key
+        iv_length = xstrlen( iv_plaintext ) ).
 
-  DATA: lv_s TYPE ty_s.
+    rv_ciphertext = xor(
+        iv_val1 = lv_k
+        iv_val2 = iv_plaintext ).
 
-
-  lv_s = ksa( iv_key ).
-
-  rv_keystream = prga( iv_s      = lv_s
-                       iv_length = iv_length ).
-
-ENDMETHOD.
+  ENDMETHOD.
 
 
-METHOD ksa.
+  METHOD keystream.
 
-  DATA: lv_offset TYPE i,
-        lv_j      TYPE i,
-        lv_i      TYPE i,
-        lv_x      TYPE x.
+    DATA: lv_s TYPE ty_s.
 
 
-  DO 256 TIMES.
-    lv_offset = sy-index - 1.
-    rv_s+lv_offset(1) = lv_offset.
-  ENDDO.
+    lv_s = ksa( iv_key ).
 
-  WHILE lv_i < 256.
-    lv_offset = lv_i MOD xstrlen( iv_xkey ).
+    rv_keystream = prga( iv_s      = lv_s
+                         iv_length = iv_length ).
 
-    lv_j = ( lv_j + rv_s+lv_i(1) + iv_xkey+lv_offset(1) ) MOD 256.
-
-    lv_x = rv_s+lv_i(1).
-    rv_s+lv_i(1) = rv_s+lv_j(1).
-    rv_s+lv_j(1) = lv_x.
-
-    lv_i = lv_i + 1.
-  ENDWHILE.
-
-ENDMETHOD.
+  ENDMETHOD.
 
 
-METHOD prga.
+  METHOD ksa.
 
-  DATA: lv_x      TYPE x,
-        lv_j      TYPE i,
-        lv_i      TYPE i,
-        lv_s      LIKE iv_s,
-        lv_offset TYPE i.
-
-
-  lv_s = iv_s.
-
-  DO iv_length TIMES.
-    lv_i = ( lv_i + 1 ) MOD 256.
-    lv_j = ( lv_j + lv_s+lv_i(1) ) MOD 256.
-
-    lv_x = lv_s+lv_i(1).
-    lv_s+lv_i(1) = lv_s+lv_j(1).
-    lv_s+lv_j(1) = lv_x.
-
-    lv_offset = ( lv_s+lv_i(1) + lv_s+lv_j(1) ) MOD 256.
-    lv_x = lv_s+lv_offset(1).
-
-    CONCATENATE rv_k lv_x INTO rv_k IN BYTE MODE.
-  ENDDO.
-
-ENDMETHOD.
+    DATA: lv_offset TYPE i,
+          lv_j      TYPE i,
+          lv_i      TYPE i,
+          lv_x      TYPE x.
 
 
-METHOD to_string.
+    DO 256 TIMES.
+      lv_offset = sy-index - 1.
+      rv_s+lv_offset(1) = lv_offset.
+    ENDDO.
 
-  DATA: lv_len TYPE i,
-        lo_obj TYPE REF TO cl_abap_conv_in_ce.
+    WHILE lv_i < 256.
+      lv_offset = lv_i MOD xstrlen( iv_xkey ).
 
+      lv_j = ( lv_j + rv_s+lv_i(1) + iv_xkey+lv_offset(1) ) MOD 256.
 
-  lo_obj = cl_abap_conv_in_ce=>create(
-      input    = iv_xstring
-      encoding = 'UTF-8' ).
-  lv_len = xstrlen( iv_xstring ).
+      lv_x = rv_s+lv_i(1).
+      rv_s+lv_i(1) = rv_s+lv_j(1).
+      rv_s+lv_j(1) = lv_x.
 
-  lo_obj->read( EXPORTING n    = lv_len
-                IMPORTING data = rv_string ).
+      lv_i = lv_i + 1.
+    ENDWHILE.
 
-ENDMETHOD.
-
-
-METHOD to_xstring.
-
-  DATA: lo_obj TYPE REF TO cl_abap_conv_out_ce.
+  ENDMETHOD.
 
 
-  lo_obj = cl_abap_conv_out_ce=>create( encoding = 'UTF-8' ).
+  METHOD prga.
 
-  lo_obj->convert( EXPORTING data = iv_string
-                   IMPORTING buffer = rv_xstring ).
-
-ENDMETHOD.
-
-
-METHOD xor.
-
-  DATA: lv_x      TYPE x,
-        lv_offset TYPE i.
+    DATA: lv_x      TYPE x,
+          lv_j      TYPE i,
+          lv_i      TYPE i,
+          lv_s      LIKE iv_s,
+          lv_offset TYPE i.
 
 
-  ASSERT xstrlen( iv_val1 ) = xstrlen( iv_val2 ).
+    lv_s = iv_s.
 
-  DO xstrlen( iv_val1 ) TIMES.
-    lv_offset = sy-index - 1.
+    DO iv_length TIMES.
+      lv_i = ( lv_i + 1 ) MOD 256.
+      lv_j = ( lv_j + lv_s+lv_i(1) ) MOD 256.
 
-    lv_x = iv_val1+lv_offset(1) BIT-XOR iv_val2+lv_offset(1).
+      lv_x = lv_s+lv_i(1).
+      lv_s+lv_i(1) = lv_s+lv_j(1).
+      lv_s+lv_j(1) = lv_x.
 
-    CONCATENATE rv_res lv_x INTO rv_res IN BYTE MODE.
-  ENDDO.
+      lv_offset = ( lv_s+lv_i(1) + lv_s+lv_j(1) ) MOD 256.
+      lv_x = lv_s+lv_offset(1).
 
-ENDMETHOD.
+      CONCATENATE rv_k lv_x INTO rv_k IN BYTE MODE.
+    ENDDO.
+
+  ENDMETHOD.
+
+
+  METHOD to_string.
+
+    DATA: lv_len TYPE i,
+          lo_obj TYPE REF TO cl_abap_conv_in_ce.
+
+
+    lo_obj = cl_abap_conv_in_ce=>create(
+        input    = iv_xstring
+        encoding = 'UTF-8' ).
+    lv_len = xstrlen( iv_xstring ).
+
+    lo_obj->read( EXPORTING n    = lv_len
+                  IMPORTING data = rv_string ).
+
+  ENDMETHOD.
+
+
+  METHOD to_xstring.
+
+    DATA: lo_obj TYPE REF TO cl_abap_conv_out_ce.
+
+
+    lo_obj = cl_abap_conv_out_ce=>create( encoding = 'UTF-8' ).
+
+    lo_obj->convert( EXPORTING data = iv_string
+                     IMPORTING buffer = rv_xstring ).
+
+  ENDMETHOD.
+
+
+  METHOD xor.
+
+    DATA: lv_x      TYPE x,
+          lv_offset TYPE i.
+
+
+    ASSERT xstrlen( iv_val1 ) = xstrlen( iv_val2 ).
+
+    DO xstrlen( iv_val1 ) TIMES.
+      lv_offset = sy-index - 1.
+
+      lv_x = iv_val1+lv_offset(1) BIT-XOR iv_val2+lv_offset(1).
+
+      CONCATENATE rv_res lv_x INTO rv_res IN BYTE MODE.
+    ENDDO.
+
+  ENDMETHOD.
 ENDCLASS.
