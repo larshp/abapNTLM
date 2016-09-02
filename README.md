@@ -1,3 +1,5 @@
+[![abaplint](http://abaplint.org/badges/larshp/abapNTLM)](http://abaplint.org/project/larshp/abapNTLM)
+
 # abapNTLM
 Status: all algorithms implmented and logic, and it seems to work _some_ times, not sure what the problem is.
 
