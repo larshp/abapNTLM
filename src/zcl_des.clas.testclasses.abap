@@ -70,19 +70,19 @@ CLASS lcl_test IMPLEMENTATION.
     DATA: lv_word TYPE zcl_des=>ty_byte8.
 
 
-    lv_word = zcl_des=>parity_adjust('CD06CA7C7E10C9' ).
+    lv_word = zcl_des=>parity_adjust( 'CD06CA7C7E10C9' ).
     cl_abap_unit_assert=>assert_equals(
       exp  = 'CD83B34FC7F14392'
       act  = lv_word
       quit = if_aunit_constants=>no ).
 
-    lv_word = zcl_des=>parity_adjust('9B1D33B7485A2E' ).
+    lv_word = zcl_des=>parity_adjust( '9B1D33B7485A2E' ).
     cl_abap_unit_assert=>assert_equals(
       exp  = '9B8F4C767543685D'
       act  = lv_word
       quit = if_aunit_constants=>no ).
 
-    lv_word = zcl_des=>parity_adjust('D8080000000000' ).
+    lv_word = zcl_des=>parity_adjust( 'D8080000000000' ).
     cl_abap_unit_assert=>assert_equals(
       exp  = 'D904010101010101'
       act  = lv_word
