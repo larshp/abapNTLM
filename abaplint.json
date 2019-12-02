@@ -65,7 +65,7 @@
     "types_naming": false,
     "7bit_ascii": {
       "enabled": true,
-      "exclude": ["zcl_abapgit_utils.clas.testclasses.abap"]
+      "exclude": []
     },
     "abapdoc": {
       "enabled": false,
@@ -206,10 +206,10 @@
     },
     "no_public_attributes": false,
     "object_naming": {
-      "clas": "^ZC(L|X)\\_ABAPGIT\\_",
-      "intf": "^ZIF\\_ABAPGIT\\_",
-      "prog": "^ZABAPGIT",
-      "fugr": "^ZABAPGIT",
+      "clas": "^ZC(L|X)\\_",
+      "intf": "^ZIF\\_",
+      "prog": "^Z",
+      "fugr": "^Z",
       "tabl": "^Z",
       "ttyp": "^Z",
       "dtel": "^Z",
