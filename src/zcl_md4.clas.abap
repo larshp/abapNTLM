@@ -18,12 +18,12 @@ CLASS zcl_md4 DEFINITION
         !iv_string     TYPE clike
         !iv_encoding   TYPE abap_encoding DEFAULT 'UTF-8'
       RETURNING
-        VALUE(rv_hash) TYPE zcl_md4=>ty_byte16 .
+        VALUE(rv_hash) TYPE ty_byte16 .
     CLASS-METHODS hash_hex
       IMPORTING
         !iv_xstr       TYPE xstring
       RETURNING
-        VALUE(rv_hash) TYPE zcl_md4=>ty_byte16 .
+        VALUE(rv_hash) TYPE ty_byte16 .
   PROTECTED SECTION.
 *"* protected components of class ZCL_MD4
 *"* do not include other source files here!!!
