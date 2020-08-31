@@ -558,7 +558,7 @@ CLASS ZCL_NTLM IMPLEMENTATION.
                             iv_string   = iv_password ).
 
     lv_xpass = lcl_convert=>codepage_4103( to_upper( iv_username ) ).
-    lv_xtarget = lcl_convert=>codepage_4103( iv_target ) .
+    lv_xtarget = lcl_convert=>codepage_4103( iv_target ).
     CONCATENATE lv_xpass lv_xtarget INTO lv_data IN BYTE MODE.
 
     rv_hash = lcl_util=>hmac_md5( iv_key  = lv_key
@@ -622,7 +622,7 @@ CLASS ZCL_NTLM IMPLEMENTATION.
     lv_key = zcl_md4=>hash_hex( lv_key ).
 
     rv_session_key = zcl_arc4=>encrypt_hex(
-        iv_key       =  lv_key
+        iv_key       = lv_key
         iv_plaintext = '55555555555555555555555555555555' ). " todo
 
   ENDMETHOD.
@@ -872,9 +872,9 @@ CLASS ZCL_NTLM IMPLEMENTATION.
     lo_writer->flags( is_data-flags ).
 
 * version
-*  IF is_data-flags-negotiate_version = abap_true.
+*  IF is_data-flags-negotiate_version = abap_true
     lo_writer->raw( is_data-version ).
-*  ENDIF.
+*  ENDIF
 
 * MIC?
 * todo

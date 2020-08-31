@@ -77,52 +77,52 @@ CLASS lcl_convert DEFINITION FINAL.
       IMPORTING
         iv_byte8         TYPE zcl_ntlm=>ty_byte8
       RETURNING
-        VALUE(rs_fields) TYPE ty_fields .
+        VALUE(rs_fields) TYPE ty_fields.
     CLASS-METHODS fields_encode
       IMPORTING
         is_fields       TYPE ty_fields
       RETURNING
-        VALUE(rv_byte8) TYPE zcl_ntlm=>ty_byte8 .
+        VALUE(rv_byte8) TYPE zcl_ntlm=>ty_byte8.
     CLASS-METHODS base64_decode
       IMPORTING
         iv_string         TYPE string
       RETURNING
-        VALUE(rv_xstring) TYPE xstring .
+        VALUE(rv_xstring) TYPE xstring.
     CLASS-METHODS base64_encode
       IMPORTING
         iv_xstring       TYPE xstring
       RETURNING
-        VALUE(rv_string) TYPE string .
+        VALUE(rv_string) TYPE string.
     CLASS-METHODS flags_decode
       IMPORTING
         iv_hex          TYPE zcl_ntlm=>ty_byte4
       RETURNING
-        VALUE(rs_flags) TYPE zcl_ntlm=>ty_flags .
+        VALUE(rs_flags) TYPE zcl_ntlm=>ty_flags.
     CLASS-METHODS flags_encode
       IMPORTING
         is_flags      TYPE zcl_ntlm=>ty_flags
       RETURNING
-        VALUE(rv_hex) TYPE zcl_ntlm=>ty_byte4 .
+        VALUE(rv_hex) TYPE zcl_ntlm=>ty_byte4.
     CLASS-METHODS byte2_to_int
       IMPORTING
         iv_byte2      TYPE zcl_ntlm=>ty_byte2
       RETURNING
-        VALUE(rv_int) TYPE i .
+        VALUE(rv_int) TYPE i.
     CLASS-METHODS byte4_to_int
       IMPORTING
         iv_byte4      TYPE zcl_ntlm=>ty_byte4
       RETURNING
-        VALUE(rv_int) TYPE i .
+        VALUE(rv_int) TYPE i.
     CLASS-METHODS int_to_byte2
       IMPORTING
         iv_int          TYPE i
       RETURNING
-        VALUE(rv_byte2) TYPE zcl_ntlm=>ty_byte2 .
+        VALUE(rv_byte2) TYPE zcl_ntlm=>ty_byte2.
     CLASS-METHODS int_to_byte4
       IMPORTING
         iv_int          TYPE i
       RETURNING
-        VALUE(rv_byte4) TYPE zcl_ntlm=>ty_byte4 .
+        VALUE(rv_byte4) TYPE zcl_ntlm=>ty_byte4.
     CLASS-METHODS codepage_4103
       IMPORTING
         iv_string         TYPE clike
@@ -616,7 +616,7 @@ CLASS lcl_convert IMPLEMENTATION.
 
 
     lv_rev = iv_int.
-    rv_byte4(1)   = lv_rev+3(1).
+    rv_byte4(1) = lv_rev+3(1).
     rv_byte4+1(1) = lv_rev+2(1).
     rv_byte4+2(1) = lv_rev+1(1).
     rv_byte4+3(1) = lv_rev(1).

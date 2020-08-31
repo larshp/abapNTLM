@@ -39,7 +39,7 @@ FORM run RAISING cx_static_check.
     WRITE: / <ls_field>-name, 25 <ls_field>-value.
   ENDLOOP.
 
-  WRITE: / .
+  WRITE: /.
 
   WHILE strlen( lv_string ) > 100.
     WRITE: / lv_string(100).

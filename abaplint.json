@@ -125,12 +125,12 @@
     },
     "cloud_types": true,
     "colon_missing_space": true,
-    "commented_code": false,
+    "commented_code": true,
     "constructor_visibility_public": true,
     "contains_tab": true,
     "definitions_top": true,
     "description_empty": true,
-    "double_space": false,
+    "double_space": true,
     "empty_line_in_statement": {
       "allowChained": true
     },
@@ -242,6 +242,7 @@
       "compute": true,
       "add": true,
       "subtract": true,
+      "fieldSymbolStructure": true,
       "multiply": true,
       "move": true,
       "withHeaderLine": true,
@@ -264,7 +265,8 @@
     },
     "release_idoc": true,
     "remove_descriptions": {
-      "ignoreExceptions": false
+      "ignoreExceptions": false,
+      "ignoreWorkflow": false
     },
     "rfc_error_handling": false,
     "sequential_blank": {
@@ -278,7 +280,7 @@
       ]
     },
     "space_before_colon": true,
-    "space_before_dot": false,
+    "space_before_dot": true,
     "start_at_tab": true,
     "superclass_final": true,
     "tabl_enhancement_category": true,
