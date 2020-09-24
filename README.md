@@ -1,5 +1,3 @@
-[![abaplint](https://app.abaplint.org/badges/larshp/abapNTLM)](https://app.abaplint.org/project/larshp/abapNTLM)
-
 # abapNTLM
 Status: all algorithms implemented and logic, and it seems to work _some_ times, not sure what the problem is.
 
