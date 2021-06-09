@@ -405,7 +405,7 @@ CLASS lcl_convert IMPLEMENTATION.
     DATA: lv_c TYPE c LENGTH 1,
           lv_x TYPE x LENGTH 1.
 
-    DEFINE _flag.
+    DEFINE _flag1.
       IF lv_c = '1'.
         rs_flags-&1 = abap_true.
       ENDIF.
@@ -414,75 +414,75 @@ CLASS lcl_convert IMPLEMENTATION.
 
     lv_x = iv_hex.
     GET BIT 8 OF lv_x INTO lv_c.
-    _flag negotiate_unicode.
+    _flag1 negotiate_unicode.
     GET BIT 7 OF lv_x INTO lv_c.
-    _flag negotiate_oem.
+    _flag1 negotiate_oem.
     GET BIT 6 OF lv_x INTO lv_c.
-    _flag request_target.
+    _flag1 request_target.
     GET BIT 5 OF lv_x INTO lv_c.
-    _flag r10.
+    _flag1 r10.
     GET BIT 4 OF lv_x INTO lv_c.
-    _flag negotiate_sign.
+    _flag1 negotiate_sign.
     GET BIT 3 OF lv_x INTO lv_c.
-    _flag negotiate_seal.
+    _flag1 negotiate_seal.
     GET BIT 2 OF lv_x INTO lv_c.
-    _flag negotiate_datagram.
+    _flag1 negotiate_datagram.
     GET BIT 1 OF lv_x INTO lv_c.
-    _flag negotiate_lm_key.
+    _flag1 negotiate_lm_key.
 
     lv_x = iv_hex+1.
     GET BIT 8 OF lv_x INTO lv_c.
-    _flag r9.
+    _flag1 r9.
     GET BIT 7 OF lv_x INTO lv_c.
-    _flag negotiate_ntlm.
+    _flag1 negotiate_ntlm.
     GET BIT 6 OF lv_x INTO lv_c.
-    _flag r8.
+    _flag1 r8.
     GET BIT 5 OF lv_x INTO lv_c.
-    _flag anonymous.
+    _flag1 anonymous.
     GET BIT 4 OF lv_x INTO lv_c.
-    _flag negotiate_oem_domain_supplied.
+    _flag1 negotiate_oem_domain_supplied.
     GET BIT 3 OF lv_x INTO lv_c.
-    _flag negotiate_oem_workstation_sup.
+    _flag1 negotiate_oem_workstation_sup.
     GET BIT 2 OF lv_x INTO lv_c.
-    _flag r7.
+    _flag1 r7.
     GET BIT 1 OF lv_x INTO lv_c.
-    _flag negotiate_always_sign.
+    _flag1 negotiate_always_sign.
 
     lv_x = iv_hex+2.
     GET BIT 8 OF lv_x INTO lv_c.
-    _flag target_type_domain.
+    _flag1 target_type_domain.
     GET BIT 7 OF lv_x INTO lv_c.
-    _flag target_type_server.
+    _flag1 target_type_server.
     GET BIT 6 OF lv_x INTO lv_c.
-    _flag r6.
+    _flag1 r6.
     GET BIT 5 OF lv_x INTO lv_c.
-    _flag negotiate_extended_session_sec.
+    _flag1 negotiate_extended_session_sec.
     GET BIT 4 OF lv_x INTO lv_c.
-    _flag negotiate_identity.
+    _flag1 negotiate_identity.
     GET BIT 3 OF lv_x INTO lv_c.
-    _flag r5.
+    _flag1 r5.
     GET BIT 2 OF lv_x INTO lv_c.
-    _flag request_non_nt_session_key.
+    _flag1 request_non_nt_session_key.
     GET BIT 1 OF lv_x INTO lv_c.
-    _flag negotiate_target_info.
+    _flag1 negotiate_target_info.
 
     lv_x = iv_hex+3.
     GET BIT 1 OF lv_x INTO lv_c.
-    _flag r4.
+    _flag1 r4.
     GET BIT 2 OF lv_x INTO lv_c.
-    _flag negotiate_version.
+    _flag1 negotiate_version.
     GET BIT 3 OF lv_x INTO lv_c.
-    _flag r3.
+    _flag1 r3.
     GET BIT 4 OF lv_x INTO lv_c.
-    _flag r2.
+    _flag1 r2.
     GET BIT 5 OF lv_x INTO lv_c.
-    _flag r1.
+    _flag1 r1.
     GET BIT 6 OF lv_x INTO lv_c.
-    _flag negotiate_128.
+    _flag1 negotiate_128.
     GET BIT 7 OF lv_x INTO lv_c.
-    _flag negotiate_key_exch.
+    _flag1 negotiate_key_exch.
     GET BIT 8 OF lv_x INTO lv_c.
-    _flag negotiate_56.
+    _flag1 negotiate_56.
 
   ENDMETHOD.                    "flags_decode
 
