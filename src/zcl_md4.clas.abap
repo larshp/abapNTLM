@@ -126,7 +126,9 @@ CLASS ZCL_MD4 IMPLEMENTATION.
 
     lo_obj = cl_abap_conv_out_ce=>create( encoding = iv_encoding ).
 
-    lo_obj->convert( EXPORTING data = iv_string
+    lo_obj->convert( EXPORTING
+                       data = iv_string
+                       n = strlen( iv_string )
                      IMPORTING buffer = rv_xstring ).
 
   ENDMETHOD.
