@@ -348,8 +348,8 @@ CLASS ZCL_DES IMPLEMENTATION.
     lv_d_n = iv_d_0.
 
     LOOP AT VALUE tty_itab(
-      ( 1 ) ( 1 ) ( 2 ) ( 2 ) ( 2 ) ( 2 ) ( 2 ) ( 2 )
-      ( 1 ) ( 2 ) ( 2 ) ( 2 ) ( 2 ) ( 2 ) ( 2 ) ( 1 ) ) INTO lv_shift.
+        ( 1 ) ( 1 ) ( 2 ) ( 2 ) ( 2 ) ( 2 ) ( 2 ) ( 2 )
+        ( 1 ) ( 2 ) ( 2 ) ( 2 ) ( 2 ) ( 2 ) ( 2 ) ( 1 ) ) INTO lv_shift.
 
       SHIFT lv_c_n LEFT BY lv_shift PLACES CIRCULAR.
       SHIFT lv_d_n LEFT BY lv_shift PLACES CIRCULAR.
