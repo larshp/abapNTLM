@@ -31,160 +31,160 @@ CLASS zcl_des DEFINITION
       RETURNING
         VALUE(rv_byte8) TYPE ty_byte8 .
 
-protected section.
+  PROTECTED SECTION.
 
-  types:
+    TYPES:
 *"* protected components of class ZCL_DES
 *"* do not include other source files here!!!
-    tty_itab TYPE STANDARD TABLE OF i WITH DEFAULT KEY .
-private section.
+      tty_itab TYPE STANDARD TABLE OF i WITH DEFAULT KEY .
+  PRIVATE SECTION.
 
-  class-data MT_E type TTY_ITAB .
-  class-data MT_IP type TTY_ITAB .
-  class-data MT_IP1 type TTY_ITAB .
-  class-data MT_P type TTY_ITAB .
-  class-data MT_PC1 type TTY_ITAB .
-  class-data MT_PC2 type TTY_ITAB .
-  class-data MT_S1 type TTY_ITAB .
-  class-data MT_S2 type TTY_ITAB .
-  class-data MT_S3 type TTY_ITAB .
-  class-data MT_S4 type TTY_ITAB .
-  class-data MT_S5 type TTY_ITAB .
-  class-data MT_S6 type TTY_ITAB .
-  class-data MT_S7 type TTY_ITAB .
-  class-data MT_S8 type TTY_ITAB .
+    CLASS-DATA mt_e TYPE tty_itab .
+    CLASS-DATA mt_ip TYPE tty_itab .
+    CLASS-DATA mt_ip1 TYPE tty_itab .
+    CLASS-DATA mt_p TYPE tty_itab .
+    CLASS-DATA mt_pc1 TYPE tty_itab .
+    CLASS-DATA mt_pc2 TYPE tty_itab .
+    CLASS-DATA mt_s1 TYPE tty_itab .
+    CLASS-DATA mt_s2 TYPE tty_itab .
+    CLASS-DATA mt_s3 TYPE tty_itab .
+    CLASS-DATA mt_s4 TYPE tty_itab .
+    CLASS-DATA mt_s5 TYPE tty_itab .
+    CLASS-DATA mt_s6 TYPE tty_itab .
+    CLASS-DATA mt_s7 TYPE tty_itab .
+    CLASS-DATA mt_s8 TYPE tty_itab .
 
-  class-methods PERMUTE
-    importing
-      !IV_BITS type CLIKE
-      !IT_PERMUTATION type TTY_ITAB
-    returning
-      value(RV_BITS) type STRING .
-  class-methods XOR
-    importing
-      !IV_A type CLIKE
-      !IV_B type CLIKE
-    returning
-      value(RV_RES) type STRING .
-  class-methods TO_BITS
-    importing
-      !IV_BINARY type XSEQUENCE
-    returning
-      value(RV_BITS) type STRING .
-  class-methods S8
-    importing
-      !IV_B type CLIKE
-    returning
-      value(RV_S) type STRING .
-  class-methods S7
-    importing
-      !IV_B type CLIKE
-    returning
-      value(RV_S) type STRING .
-  class-methods S6
-    importing
-      !IV_B type CLIKE
-    returning
-      value(RV_S) type STRING .
-  class-methods S5
-    importing
-      !IV_B type CLIKE
-    returning
-      value(RV_S) type STRING .
-  class-methods S4
-    importing
-      !IV_B type CLIKE
-    returning
-      value(RV_S) type STRING .
-  class-methods S3
-    importing
-      !IV_B type CLIKE
-    returning
-      value(RV_S) type STRING .
-  class-methods S2
-    importing
-      !IV_B type CLIKE
-    returning
-      value(RV_S) type STRING .
-  class-methods S1
-    importing
-      !IV_B type CLIKE
-    returning
-      value(RV_S) type STRING .
-  class-methods ROW
-    importing
-      !IV_B type CLIKE
-    returning
-      value(RV_ROW) type I .
-  class-methods PERMUTE_PC2
-    importing
-      !IV_BITS type CLIKE
-    returning
-      value(RV_BITS) type STRING .
-  class-methods PERMUTE_PC1
-    importing
-      !IV_BITS type CLIKE
-    returning
-      value(RV_BITS) type STRING .
-  class-methods PERMUTE_P
-    importing
-      !IV_BITS type CLIKE
-    returning
-      value(RV_BITS) type STRING .
-  class-methods PERMUTE_IP1
-    importing
-      !IV_BITS type CLIKE
-    returning
-      value(RV_BITS) type STRING .
-  class-methods PERMUTE_IP
-    importing
-      !IV_BITS type CLIKE
-    returning
-      value(RV_BITS) type STRING .
-  class-methods PERMUTE_E
-    importing
-      !IV_BITS type CLIKE
-    returning
-      value(RV_BITS) type STRING .
-  class-methods L_AND_R
-    importing
-      !IV_L_0 type CLIKE
-      !IV_R_0 type CLIKE
-      !IT_K type STRING_TABLE
-    returning
-      value(RV_BITS) type STRING .
-  class-methods K
-    importing
-      !IT_BITS type STRING_TABLE
-    returning
-      value(RT_BITS) type STRING_TABLE .
-  class-methods I_TO_BITS_4
-    importing
-      !IV_I type I
-    returning
-      value(RV_BITS) type STRING .
-  class-methods FROM_BITS
-    importing
-      !IV_BITS type CLIKE
-    returning
-      value(RV_XSTR) type XSTRING .
-  class-methods F
-    importing
-      !IV_R type CLIKE
-      !IV_K type CLIKE
-    returning
-      value(RV_RES) type STRING .
-  class-methods C_AND_D
-    importing
-      !IV_C_0 type CLIKE
-      !IV_D_0 type CLIKE
-    returning
-      value(RT_BITS) type STRING_TABLE .
-  class-methods COLUMN
-    importing
-      !IV_B type CLIKE
-    returning
-      value(RV_COLUMN) type I .
+    CLASS-METHODS permute
+      IMPORTING
+        !iv_bits        TYPE clike
+        !it_permutation TYPE tty_itab
+      RETURNING
+        VALUE(rv_bits)  TYPE string .
+    CLASS-METHODS xor
+      IMPORTING
+        !iv_a         TYPE clike
+        !iv_b         TYPE clike
+      RETURNING
+        VALUE(rv_res) TYPE string .
+    CLASS-METHODS to_bits
+      IMPORTING
+        !iv_binary     TYPE xsequence
+      RETURNING
+        VALUE(rv_bits) TYPE string .
+    CLASS-METHODS s8
+      IMPORTING
+        !iv_b       TYPE clike
+      RETURNING
+        VALUE(rv_s) TYPE string .
+    CLASS-METHODS s7
+      IMPORTING
+        !iv_b       TYPE clike
+      RETURNING
+        VALUE(rv_s) TYPE string .
+    CLASS-METHODS s6
+      IMPORTING
+        !iv_b       TYPE clike
+      RETURNING
+        VALUE(rv_s) TYPE string .
+    CLASS-METHODS s5
+      IMPORTING
+        !iv_b       TYPE clike
+      RETURNING
+        VALUE(rv_s) TYPE string .
+    CLASS-METHODS s4
+      IMPORTING
+        !iv_b       TYPE clike
+      RETURNING
+        VALUE(rv_s) TYPE string .
+    CLASS-METHODS s3
+      IMPORTING
+        !iv_b       TYPE clike
+      RETURNING
+        VALUE(rv_s) TYPE string .
+    CLASS-METHODS s2
+      IMPORTING
+        !iv_b       TYPE clike
+      RETURNING
+        VALUE(rv_s) TYPE string .
+    CLASS-METHODS s1
+      IMPORTING
+        !iv_b       TYPE clike
+      RETURNING
+        VALUE(rv_s) TYPE string .
+    CLASS-METHODS row
+      IMPORTING
+        !iv_b         TYPE clike
+      RETURNING
+        VALUE(rv_row) TYPE i .
+    CLASS-METHODS permute_pc2
+      IMPORTING
+        !iv_bits       TYPE clike
+      RETURNING
+        VALUE(rv_bits) TYPE string .
+    CLASS-METHODS permute_pc1
+      IMPORTING
+        !iv_bits       TYPE clike
+      RETURNING
+        VALUE(rv_bits) TYPE string .
+    CLASS-METHODS permute_p
+      IMPORTING
+        !iv_bits       TYPE clike
+      RETURNING
+        VALUE(rv_bits) TYPE string .
+    CLASS-METHODS permute_ip1
+      IMPORTING
+        !iv_bits       TYPE clike
+      RETURNING
+        VALUE(rv_bits) TYPE string .
+    CLASS-METHODS permute_ip
+      IMPORTING
+        !iv_bits       TYPE clike
+      RETURNING
+        VALUE(rv_bits) TYPE string .
+    CLASS-METHODS permute_e
+      IMPORTING
+        !iv_bits       TYPE clike
+      RETURNING
+        VALUE(rv_bits) TYPE string .
+    CLASS-METHODS l_and_r
+      IMPORTING
+        !iv_l_0        TYPE clike
+        !iv_r_0        TYPE clike
+        !it_k          TYPE string_table
+      RETURNING
+        VALUE(rv_bits) TYPE string .
+    CLASS-METHODS k
+      IMPORTING
+        !it_bits       TYPE string_table
+      RETURNING
+        VALUE(rt_bits) TYPE string_table .
+    CLASS-METHODS i_to_bits_4
+      IMPORTING
+        !iv_i          TYPE i
+      RETURNING
+        VALUE(rv_bits) TYPE string .
+    CLASS-METHODS from_bits
+      IMPORTING
+        !iv_bits       TYPE clike
+      RETURNING
+        VALUE(rv_xstr) TYPE xstring .
+    CLASS-METHODS f
+      IMPORTING
+        !iv_r         TYPE clike
+        !iv_k         TYPE clike
+      RETURNING
+        VALUE(rv_res) TYPE string .
+    CLASS-METHODS c_and_d
+      IMPORTING
+        !iv_c_0        TYPE clike
+        !iv_d_0        TYPE clike
+      RETURNING
+        VALUE(rt_bits) TYPE string_table .
+    CLASS-METHODS column
+      IMPORTING
+        !iv_b            TYPE clike
+      RETURNING
+        VALUE(rv_column) TYPE i .
 *"* private components of class ZCL_DES
 *"* do not include other source files here!!!
 ENDCLASS.
