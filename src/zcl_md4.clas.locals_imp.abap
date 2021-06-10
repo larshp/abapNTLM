@@ -325,15 +325,14 @@ ENDCLASS.
 CLASS lcl_buffer IMPLEMENTATION.
 
   METHOD constructor.
-    super->constructor( ).
-
-    mv_buffer = iv_xstr.
-
     CONSTANTS: lc_x0 TYPE x LENGTH 1 VALUE '00',
                lc_x1 TYPE x LENGTH 1 VALUE '80'.
 
     DATA: lv_length TYPE x LENGTH 8. " double word
 
+    super->constructor( ).
+
+    mv_buffer = iv_xstr.
 
     CONCATENATE iv_xstr lc_x1 INTO mv_buffer IN BYTE MODE.
 
