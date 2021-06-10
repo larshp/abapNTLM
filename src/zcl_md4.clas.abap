@@ -3,7 +3,7 @@ class ZCL_MD4 definition
   create public .
 
   public section.
-  type-pools ABAP .
+    type-pools ABAP .
   class ZCL_MD4 definition load .
 
   types:
