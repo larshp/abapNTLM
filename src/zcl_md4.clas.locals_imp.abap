@@ -231,7 +231,7 @@ CLASS lcl_barrel IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD roll.
-    mv_index = ( mv_index + lines( mt_barrel ) - 1 )  MOD lines( mt_barrel ).
+    mv_index = ( mv_index + lines( mt_barrel ) - 1 ) MOD lines( mt_barrel ).
   ENDMETHOD.
 
   METHOD set.
