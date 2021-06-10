@@ -4,7 +4,7 @@ class ZCL_MD4 definition
 
   public section.
     type-pools ABAP .
-  class ZCL_MD4 definition load .
+    class ZCL_MD4 definition load .
 
   types:
 *"* public components of class ZCL_MD4
