@@ -649,11 +649,9 @@ CLASS ZCL_NTLM IMPLEMENTATION.
 
     DATA: lo_reader TYPE REF TO lcl_reader.
 
-
-    CREATE OBJECT lo_reader
-      EXPORTING
-        iv_value = iv_msg
-        iv_type  = c_message_type_1.
+    lo_reader = new #(
+      iv_value = iv_msg
+      iv_type  = c_message_type_1 ).
 
     rs_data-flags = lo_reader->flags( ).
 
@@ -681,10 +679,7 @@ CLASS ZCL_NTLM IMPLEMENTATION.
 
     DATA: lo_writer TYPE REF TO lcl_writer.
 
-
-    CREATE OBJECT lo_writer
-      EXPORTING
-        iv_type = c_message_type_1.
+    lo_writer = NEW #( iv_type = c_message_type_1 ).
 
     lo_writer->flags( is_data-flags ).
 
@@ -716,10 +711,9 @@ CLASS ZCL_NTLM IMPLEMENTATION.
     DATA: lo_reader TYPE REF TO lcl_reader.
 
 
-    CREATE OBJECT lo_reader
-      EXPORTING
-        iv_value = iv_msg
-        iv_type  = c_message_type_2.
+    lo_reader = NEW #(
+      iv_value = iv_msg
+      iv_type  = c_message_type_2 ).
 
 * target name
     rs_data-target_name = lo_reader->data_str( iv_oem ).
@@ -744,9 +738,7 @@ CLASS ZCL_NTLM IMPLEMENTATION.
     DATA: lo_writer TYPE REF TO lcl_writer.
 
 
-    CREATE OBJECT lo_writer
-      EXPORTING
-        iv_type = c_message_type_2.
+    lo_writer = NEW #( iv_type = c_message_type_2 ).
 
 * todo
 
@@ -809,10 +801,9 @@ CLASS ZCL_NTLM IMPLEMENTATION.
     DATA: lo_reader TYPE REF TO lcl_reader.
 
 
-    CREATE OBJECT lo_reader
-      EXPORTING
-        iv_value = iv_msg
-        iv_type  = c_message_type_3.
+    lo_reader = NEW #(
+      iv_value = iv_msg
+      iv_type  = c_message_type_3 ).
 
 * LM challenge response
     rs_data-lm_resp = lo_reader->data_raw( ).
@@ -846,9 +837,7 @@ CLASS ZCL_NTLM IMPLEMENTATION.
     DATA: lo_writer TYPE REF TO lcl_writer.
 
 
-    CREATE OBJECT lo_writer
-      EXPORTING
-        iv_type = c_message_type_3.
+    lo_writer = NEW #( iv_type = c_message_type_3 ).
 
 * LM challenge response
     lo_writer->data_raw( is_data-lm_resp ).
