@@ -236,32 +236,32 @@ CLASS lcl_barrel IMPLEMENTATION.
 
   METHOD set.
     FIELD-SYMBOLS:
-      <word> TYPE zcl_md4=>ty_byte4.
+      <lv_word> TYPE zcl_md4=>ty_byte4.
 
     READ TABLE mt_barrel
       INDEX mv_index + 1
-      ASSIGNING <word>.
+      ASSIGNING <lv_word>.
 
-    IF sy-subrc = 0.
-      <word> = iv_word.
-    ENDIF.
+    ASSERT sy-subrc = 0.
+
+    <lv_word> = iv_word.
   ENDMETHOD.
 
   METHOD get.
     DATA:
       lv_index TYPE i.
     FIELD-SYMBOLS:
-      <word> TYPE zcl_md4=>ty_byte4.
+      <lv_word> TYPE zcl_md4=>ty_byte4.
 
     lv_index = ( mv_index + iv_index ) MOD lines( mt_barrel ).
 
     READ TABLE mt_barrel
       INDEX lv_index + 1
-      ASSIGNING <word>.
+      ASSIGNING <lv_word>.
 
-    IF sy-subrc = 0.
-      rv_result = <word>.
-    ENDIF.
+    ASSERT sy-subrc = 0.
+
+    rv_result = <lv_word>.
   ENDMETHOD.
 
   METHOD snapshot.
@@ -492,25 +492,3 @@ CLASS lcl_hh IMPLEMENTATION.
   ENDMETHOD.
 
 ENDCLASS.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-*
