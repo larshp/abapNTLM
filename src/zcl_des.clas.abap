@@ -35,20 +35,20 @@ CLASS zcl_des DEFINITION
 *"* do not include other source files here!!!
 
     TYPES: tty_itab TYPE STANDARD TABLE OF i WITH DEFAULT KEY.
-    CLASS-DATA: mc_e   TYPE tty_itab,
-                mc_ip  TYPE tty_itab,
-                mc_ip1 TYPE tty_itab,
-                mc_p   TYPE tty_itab,
-                mc_pc1 TYPE tty_itab,
-                mc_pc2 TYPE tty_itab,
-                mc_s1  TYPE tty_itab,
-                mc_s2  TYPE tty_itab,
-                mc_s3  TYPE tty_itab,
-                mc_s4  TYPE tty_itab,
-                mc_s5  TYPE tty_itab,
-                mc_s6  TYPE tty_itab,
-                mc_s7  TYPE tty_itab,
-                mc_s8  TYPE tty_itab.
+    CLASS-DATA: mt_e   TYPE tty_itab,
+                mt_ip  TYPE tty_itab,
+                mt_ip1 TYPE tty_itab,
+                mt_p   TYPE tty_itab,
+                mt_pc1 TYPE tty_itab,
+                mt_pc2 TYPE tty_itab,
+                mt_s1  TYPE tty_itab,
+                mt_s2  TYPE tty_itab,
+                mt_s3  TYPE tty_itab,
+                mt_s4  TYPE tty_itab,
+                mt_s5  TYPE tty_itab,
+                mt_s6  TYPE tty_itab,
+                mt_s7  TYPE tty_itab,
+                mt_s8  TYPE tty_itab.
 
     CLASS-METHODS permute
       IMPORTING
@@ -193,7 +193,7 @@ CLASS ZCL_DES IMPLEMENTATION.
 
 
   METHOD class_constructor.
-    mc_e = VALUE #(
+    mt_e = VALUE #(
       ( 32 ) ( 1 ) ( 2 ) ( 3 ) ( 4 ) ( 5 ) ( 4 ) ( 5 )
       ( 6 ) ( 7 ) ( 8 ) ( 9 ) ( 8 ) ( 9 ) ( 10 ) ( 11 )
       ( 12 ) ( 13 ) ( 12 ) ( 13 ) ( 14 ) ( 15 ) ( 16 ) ( 17 )
@@ -201,7 +201,7 @@ CLASS ZCL_DES IMPLEMENTATION.
       ( 22 ) ( 23 ) ( 24 ) ( 25 ) ( 24 ) ( 25 ) ( 26 ) ( 27 )
       ( 28 ) ( 29 ) ( 28 ) ( 29 ) ( 30 ) ( 31 ) ( 32 ) ( 1 ) ).
 
-    mc_ip = VALUE #(
+    mt_ip = VALUE #(
       ( 58 ) ( 50 ) ( 42 ) ( 34 ) ( 26 ) ( 18 ) ( 10 ) ( 2 )
       ( 60 ) ( 52 ) ( 44 ) ( 36 ) ( 28 ) ( 20 ) ( 12 ) ( 4 )
       ( 62 ) ( 54 ) ( 46 ) ( 38 ) ( 30 ) ( 22 ) ( 14 ) ( 6 )
@@ -211,7 +211,7 @@ CLASS ZCL_DES IMPLEMENTATION.
       ( 61 ) ( 53 ) ( 45 ) ( 37 ) ( 29 ) ( 21 ) ( 13 ) ( 5 )
       ( 63 ) ( 55 ) ( 47 ) ( 39 ) ( 31 ) ( 23 ) ( 15 ) ( 7 ) ).
 
-    mc_ip1 = VALUE #(
+    mt_ip1 = VALUE #(
       ( 40 ) ( 8 ) ( 48 ) ( 16 ) ( 56 ) ( 24 ) ( 64 ) ( 32 )
       ( 39 ) ( 7 ) ( 47 ) ( 15 ) ( 55 ) ( 23 ) ( 63 ) ( 31 )
       ( 38 ) ( 6 ) ( 46 ) ( 14 ) ( 54 ) ( 22 ) ( 62 ) ( 30 )
@@ -221,13 +221,13 @@ CLASS ZCL_DES IMPLEMENTATION.
       ( 34 ) ( 2 ) ( 42 ) ( 10 ) ( 50 ) ( 18 ) ( 58 ) ( 26 )
       ( 33 ) ( 1 ) ( 41 ) ( 9 ) ( 49 ) ( 17 ) ( 57 ) ( 25 ) ).
 
-    mc_p = VALUE #(
+    mt_p = VALUE #(
       ( 16 ) ( 7 ) ( 20 ) ( 21 ) ( 29 ) ( 12 ) ( 28 ) ( 17 )
       ( 1 ) ( 15 ) ( 23 ) ( 26 ) ( 5 ) ( 18 ) ( 31 ) ( 10 )
       ( 2 ) ( 8 ) ( 24 ) ( 14 ) ( 32 ) ( 27 ) ( 3 ) ( 9 )
       ( 19 ) ( 13 ) ( 30 ) ( 6 ) ( 22 ) ( 11 ) ( 4 ) ( 25 ) ).
 
-    mc_pc1 = VALUE #(
+    mt_pc1 = VALUE #(
       ( 57 ) ( 49 ) ( 41 ) ( 33 ) ( 25 ) ( 17 ) ( 9 ) ( 1 )
       ( 58 ) ( 50 ) ( 42 ) ( 34 ) ( 26 ) ( 18 ) ( 10 ) ( 2 )
       ( 59 ) ( 51 ) ( 43 ) ( 35 ) ( 27 ) ( 19 ) ( 11 ) ( 3 )
@@ -236,7 +236,7 @@ CLASS ZCL_DES IMPLEMENTATION.
       ( 30 ) ( 22 ) ( 14 ) ( 6 ) ( 61 ) ( 53 ) ( 45 ) ( 37 )
       ( 29 ) ( 21 ) ( 13 ) ( 5 ) ( 28 ) ( 20 ) ( 12 ) ( 4 ) ).
 
-    mc_pc2 = VALUE #(
+    mt_pc2 = VALUE #(
       ( 14 ) ( 17 ) ( 11 ) ( 24 ) ( 1 ) ( 5 ) ( 3 ) ( 28 )
       ( 15 ) ( 6 ) ( 21 ) ( 10 ) ( 23 ) ( 19 ) ( 12 ) ( 4 )
       ( 26 ) ( 8 ) ( 16 ) ( 7 ) ( 27 ) ( 20 ) ( 13 ) ( 2 )
@@ -244,7 +244,7 @@ CLASS ZCL_DES IMPLEMENTATION.
       ( 51 ) ( 45 ) ( 33 ) ( 48 ) ( 44 ) ( 49 ) ( 39 ) ( 56 )
       ( 34 ) ( 53 ) ( 46 ) ( 42 ) ( 50 ) ( 36 ) ( 29 ) ( 32 ) ).
 
-    mc_s1 = VALUE #(
+    mt_s1 = VALUE #(
       ( 14 ) ( 4 ) ( 13 ) ( 1 ) ( 2 ) ( 15 ) ( 11 ) ( 8 )
       ( 3 ) ( 10 ) ( 6 ) ( 12 ) ( 5 ) ( 9 ) ( 0 ) ( 7 )
       ( 0 ) ( 15 ) ( 7 ) ( 4 ) ( 14 ) ( 2 ) ( 13 ) ( 1 )
@@ -254,7 +254,7 @@ CLASS ZCL_DES IMPLEMENTATION.
       ( 15 ) ( 12 ) ( 8 ) ( 2 ) ( 4 ) ( 9 ) ( 1 ) ( 7 )
       ( 5 ) ( 11 ) ( 3 ) ( 14 ) ( 10 ) ( 0 ) ( 6 ) ( 13 ) ).
 
-    mc_s2 = VALUE #(
+    mt_s2 = VALUE #(
       ( 15 ) ( 1 ) ( 8 ) ( 14 ) ( 6 ) ( 11 ) ( 3 ) ( 4 )
       ( 9 ) ( 7 ) ( 2 ) ( 13 ) ( 12 ) ( 0 ) ( 5 ) ( 10 )
       ( 3 ) ( 13 ) ( 4 ) ( 7 ) ( 15 ) ( 2 ) ( 8 ) ( 14 )
@@ -264,7 +264,7 @@ CLASS ZCL_DES IMPLEMENTATION.
       ( 13 ) ( 8 ) ( 10 ) ( 1 ) ( 3 ) ( 15 ) ( 4 ) ( 2 )
       ( 11 ) ( 6 ) ( 7 ) ( 12 ) ( 0 ) ( 5 ) ( 14 ) ( 9 ) ).
 
-    mc_s3 = VALUE #(
+    mt_s3 = VALUE #(
       ( 10 ) ( 0 ) ( 9 ) ( 14 ) ( 6 ) ( 3 ) ( 15 ) ( 5 )
       ( 1 ) ( 13 ) ( 12 ) ( 7 ) ( 11 ) ( 4 ) ( 2 ) ( 8 )
       ( 13 ) ( 7 ) ( 0 ) ( 9 ) ( 3 ) ( 4 ) ( 6 ) ( 10 )
@@ -274,7 +274,7 @@ CLASS ZCL_DES IMPLEMENTATION.
       ( 1 ) ( 10 ) ( 13 ) ( 0 ) ( 6 ) ( 9 ) ( 8 ) ( 7 )
       ( 4 ) ( 15 ) ( 14 ) ( 3 ) ( 11 ) ( 5 ) ( 2 ) ( 12 ) ).
 
-    mc_s4 = VALUE #(
+    mt_s4 = VALUE #(
       ( 7 ) ( 13 ) ( 14 ) ( 3 ) ( 0 ) ( 6 ) ( 9 ) ( 10 )
       ( 1 ) ( 2 ) ( 8 ) ( 5 ) ( 11 ) ( 12 ) ( 4 ) ( 15 )
       ( 13 ) ( 8 ) ( 11 ) ( 5 ) ( 6 ) ( 15 ) ( 0 ) ( 3 )
@@ -284,7 +284,7 @@ CLASS ZCL_DES IMPLEMENTATION.
       ( 3 ) ( 15 ) ( 0 ) ( 6 ) ( 10 ) ( 1 ) ( 13 ) ( 8 )
       ( 9 ) ( 4 ) ( 5 ) ( 11 ) ( 12 ) ( 7 ) ( 2 ) ( 14 ) ).
 
-    mc_s5 = VALUE #(
+    mt_s5 = VALUE #(
       ( 2 ) ( 12 ) ( 4 ) ( 1 ) ( 7 ) ( 10 ) ( 11 ) ( 6 )
       ( 8 ) ( 5 ) ( 3 ) ( 15 ) ( 13 ) ( 0 ) ( 14 ) ( 9 )
       ( 14 ) ( 11 ) ( 2 ) ( 12 ) ( 4 ) ( 7 ) ( 13 ) ( 1 )
@@ -294,7 +294,7 @@ CLASS ZCL_DES IMPLEMENTATION.
       ( 11 ) ( 8 ) ( 12 ) ( 7 ) ( 1 ) ( 14 ) ( 2 ) ( 13 )
       ( 6 ) ( 15 ) ( 0 ) ( 9 ) ( 10 ) ( 4 ) ( 5 ) ( 3 ) ).
 
-    mc_s6 = VALUE #(
+    mt_s6 = VALUE #(
       ( 12 ) ( 1 ) ( 10 ) ( 15 ) ( 9 ) ( 2 ) ( 6 ) ( 8 )
       ( 0 ) ( 13 ) ( 3 ) ( 4 ) ( 14 ) ( 7 ) ( 5 ) ( 11 )
       ( 10 ) ( 15 ) ( 4 ) ( 2 ) ( 7 ) ( 12 ) ( 9 ) ( 5 )
@@ -304,7 +304,7 @@ CLASS ZCL_DES IMPLEMENTATION.
       ( 4 ) ( 3 ) ( 2 ) ( 12 ) ( 9 ) ( 5 ) ( 15 ) ( 10 )
       ( 11 ) ( 14 ) ( 1 ) ( 7 ) ( 6 ) ( 0 ) ( 8 ) ( 13 ) ).
 
-    mc_s7 = VALUE #(
+    mt_s7 = VALUE #(
       ( 4 ) ( 11 ) ( 2 ) ( 14 ) ( 15 ) ( 0 ) ( 8 ) ( 13 )
       ( 3 ) ( 12 ) ( 9 ) ( 7 ) ( 5 ) ( 10 ) ( 6 ) ( 1 )
       ( 13 ) ( 0 ) ( 11 ) ( 7 ) ( 4 ) ( 9 ) ( 1 ) ( 10 )
@@ -314,7 +314,7 @@ CLASS ZCL_DES IMPLEMENTATION.
       ( 6 ) ( 11 ) ( 13 ) ( 8 ) ( 1 ) ( 4 ) ( 10 ) ( 7 )
       ( 9 ) ( 5 ) ( 0 ) ( 15 ) ( 14 ) ( 2 ) ( 3 ) ( 12 ) ).
 
-    mc_s8 = VALUE #(
+    mt_s8 = VALUE #(
       ( 13 ) ( 2 ) ( 8 ) ( 4 ) ( 6 ) ( 15 ) ( 11 ) ( 1 )
       ( 10 ) ( 9 ) ( 3 ) ( 14 ) ( 5 ) ( 0 ) ( 12 ) ( 7 )
       ( 1 ) ( 15 ) ( 13 ) ( 8 ) ( 10 ) ( 3 ) ( 7 ) ( 4 )
@@ -348,7 +348,7 @@ CLASS ZCL_DES IMPLEMENTATION.
     lv_d_n = iv_d_0.
 
     LOOP AT VALUE tty_itab(
-        ( 1 ) ( 1 ) ( 2 ) ( 2 ) ( 2 ) ( 2 ) ( 2 ) ( 2 )
+      ( 1 ) ( 1 ) ( 2 ) ( 2 ) ( 2 ) ( 2 ) ( 2 ) ( 2 )
       ( 1 ) ( 2 ) ( 2 ) ( 2 ) ( 2 ) ( 2 ) ( 2 ) ( 1 ) ) INTO lv_shift.
 
       SHIFT lv_c_n LEFT BY lv_shift PLACES CIRCULAR.
@@ -600,32 +600,32 @@ CLASS ZCL_DES IMPLEMENTATION.
 
 
   METHOD permute_e.
-    rv_bits = permute( it_permutation = mc_e iv_bits = iv_bits ).
+    rv_bits = permute( it_permutation = mt_e iv_bits = iv_bits ).
   ENDMETHOD.
 
 
   METHOD permute_ip.
-    rv_bits = permute( it_permutation = mc_ip iv_bits = iv_bits ).
+    rv_bits = permute( it_permutation = mt_ip iv_bits = iv_bits ).
   ENDMETHOD.
 
 
   METHOD permute_ip1.
-    rv_bits = permute( it_permutation = mc_ip1 iv_bits = iv_bits ).
+    rv_bits = permute( it_permutation = mt_ip1 iv_bits = iv_bits ).
   ENDMETHOD.
 
 
   METHOD permute_p.
-    rv_bits = permute( it_permutation = mc_p iv_bits = iv_bits ).
+    rv_bits = permute( it_permutation = mt_p iv_bits = iv_bits ).
   ENDMETHOD.
 
 
   METHOD permute_pc1.
-    rv_bits = permute( it_permutation = mc_pc1 iv_bits = iv_bits ).
+    rv_bits = permute( it_permutation = mt_pc1 iv_bits = iv_bits ).
   ENDMETHOD.
 
 
   METHOD permute_pc2.
-    rv_bits = permute( it_permutation = mc_pc2 iv_bits = iv_bits ).
+    rv_bits = permute( it_permutation = mt_pc2 iv_bits = iv_bits ).
   ENDMETHOD.
 
 
@@ -645,7 +645,7 @@ CLASS ZCL_DES IMPLEMENTATION.
           lv_i     TYPE i.
 
     lv_index = ( row( iv_b ) * 16 ) + column( iv_b ) + 1.
-    READ TABLE mc_s1 INDEX lv_index INTO lv_i.
+    READ TABLE mt_s1 INDEX lv_index INTO lv_i.
     ASSERT sy-subrc = 0.
     rv_s = i_to_bits_4( lv_i ).
 
@@ -658,7 +658,7 @@ CLASS ZCL_DES IMPLEMENTATION.
           lv_i     TYPE i.
 
     lv_index = ( row( iv_b ) * 16 ) + column( iv_b ) + 1.
-    READ TABLE mc_s2 INDEX lv_index INTO lv_i.
+    READ TABLE mt_s2 INDEX lv_index INTO lv_i.
     ASSERT sy-subrc = 0.
     rv_s = i_to_bits_4( lv_i ).
 
@@ -671,7 +671,7 @@ CLASS ZCL_DES IMPLEMENTATION.
           lv_i     TYPE i.
 
     lv_index = ( row( iv_b ) * 16 ) + column( iv_b ) + 1.
-    READ TABLE mc_s3 INDEX lv_index INTO lv_i.
+    READ TABLE mt_s3 INDEX lv_index INTO lv_i.
     ASSERT sy-subrc = 0.
     rv_s = i_to_bits_4( lv_i ).
 
@@ -684,7 +684,7 @@ CLASS ZCL_DES IMPLEMENTATION.
           lv_i     TYPE i.
 
     lv_index = ( row( iv_b ) * 16 ) + column( iv_b ) + 1.
-    READ TABLE mc_s4 INDEX lv_index INTO lv_i.
+    READ TABLE mt_s4 INDEX lv_index INTO lv_i.
     ASSERT sy-subrc = 0.
     rv_s = i_to_bits_4( lv_i ).
 
@@ -697,7 +697,7 @@ CLASS ZCL_DES IMPLEMENTATION.
           lv_i     TYPE i.
 
     lv_index = ( row( iv_b ) * 16 ) + column( iv_b ) + 1.
-    READ TABLE mc_s5 INDEX lv_index INTO lv_i.
+    READ TABLE mt_s5 INDEX lv_index INTO lv_i.
     ASSERT sy-subrc = 0.
     rv_s = i_to_bits_4( lv_i ).
 
@@ -710,7 +710,7 @@ CLASS ZCL_DES IMPLEMENTATION.
           lv_i     TYPE i.
 
     lv_index = ( row( iv_b ) * 16 ) + column( iv_b ) + 1.
-    READ TABLE mc_s6 INDEX lv_index INTO lv_i.
+    READ TABLE mt_s6 INDEX lv_index INTO lv_i.
     ASSERT sy-subrc = 0.
     rv_s = i_to_bits_4( lv_i ).
 
@@ -723,7 +723,7 @@ CLASS ZCL_DES IMPLEMENTATION.
           lv_i     TYPE i.
 
     lv_index = ( row( iv_b ) * 16 ) + column( iv_b ) + 1.
-    READ TABLE mc_s7 INDEX lv_index INTO lv_i.
+    READ TABLE mt_s7 INDEX lv_index INTO lv_i.
     ASSERT sy-subrc = 0.
     rv_s = i_to_bits_4( lv_i ).
 
@@ -736,7 +736,7 @@ CLASS ZCL_DES IMPLEMENTATION.
           lv_i     TYPE i.
 
     lv_index = ( row( iv_b ) * 16 ) + column( iv_b ) + 1.
-    READ TABLE mc_s8 INDEX lv_index INTO lv_i.
+    READ TABLE mt_s8 INDEX lv_index INTO lv_i.
     ASSERT sy-subrc = 0.
     rv_s = i_to_bits_4( lv_i ).
 
