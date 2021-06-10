@@ -3,8 +3,6 @@ CLASS zcl_md4 DEFINITION
   CREATE PUBLIC .
 
   PUBLIC SECTION.
-    TYPE-POOLS abap .
-    CLASS zcl_md4 DEFINITION LOAD .
 
     TYPES:
 *"* public components of class ZCL_MD4
