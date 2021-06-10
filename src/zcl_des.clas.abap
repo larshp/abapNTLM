@@ -11,6 +11,8 @@ CLASS zcl_des DEFINITION
     TYPES:
       ty_byte8 TYPE x LENGTH 8 .
 
+    CLASS-METHODS class_constructor.
+
     CLASS-METHODS decrypt
       IMPORTING
         !iv_key             TYPE ty_byte8
@@ -31,6 +33,29 @@ CLASS zcl_des DEFINITION
   PROTECTED SECTION.
 *"* protected components of class ZCL_DES
 *"* do not include other source files here!!!
+
+    TYPES: tty_itab TYPE STANDARD TABLE OF i WITH DEFAULT KEY.
+    CLASS-DATA: mc_e   TYPE tty_itab,
+                mc_ip  TYPE tty_itab,
+                mc_ip1 TYPE tty_itab,
+                mc_p   TYPE tty_itab,
+                mc_pc1 TYPE tty_itab,
+                mc_pc2 TYPE tty_itab,
+                mc_s1  TYPE tty_itab,
+                mc_s2  TYPE tty_itab,
+                mc_s3  TYPE tty_itab,
+                mc_s4  TYPE tty_itab,
+                mc_s5  TYPE tty_itab,
+                mc_s6  TYPE tty_itab,
+                mc_s7  TYPE tty_itab,
+                mc_s8  TYPE tty_itab.
+
+    CLASS-METHODS permute
+      IMPORTING
+        iv_bits        TYPE clike
+        it_permutation TYPE tty_itab
+      RETURNING
+        VALUE(rv_bits) TYPE string .
 
     CLASS-METHODS xor
       IMPORTING
@@ -167,81 +192,171 @@ ENDCLASS.
 CLASS ZCL_DES IMPLEMENTATION.
 
 
+  METHOD class_constructor.
+    mc_e = VALUE #(
+     ( 32 ) ( 1 ) ( 2 ) ( 3 ) ( 4 ) ( 5 ) ( 4 ) ( 5 )
+     ( 6 ) ( 7 ) ( 8 ) ( 9 ) ( 8 ) ( 9 ) ( 10 ) ( 11 )
+     ( 12 ) ( 13 ) ( 12 ) ( 13 ) ( 14 ) ( 15 ) ( 16 ) ( 17 )
+     ( 16 ) ( 17 ) ( 18 ) ( 19 ) ( 20 ) ( 21 ) ( 20 ) ( 21 )
+     ( 22 ) ( 23 ) ( 24 ) ( 25 ) ( 24 ) ( 25 ) ( 26 ) ( 27 )
+     ( 28 ) ( 29 ) ( 28 ) ( 29 ) ( 30 ) ( 31 ) ( 32 ) ( 1 ) ).
+
+    mc_ip = VALUE #(
+     ( 58 ) ( 50 ) ( 42 ) ( 34 ) ( 26 ) ( 18 ) ( 10 ) ( 2 )
+     ( 60 ) ( 52 ) ( 44 ) ( 36 ) ( 28 ) ( 20 ) ( 12 ) ( 4 )
+     ( 62 ) ( 54 ) ( 46 ) ( 38 ) ( 30 ) ( 22 ) ( 14 ) ( 6 )
+     ( 64 ) ( 56 ) ( 48 ) ( 40 ) ( 32 ) ( 24 ) ( 16 ) ( 8 )
+     ( 57 ) ( 49 ) ( 41 ) ( 33 ) ( 25 ) ( 17 ) ( 9 ) ( 1 )
+     ( 59 ) ( 51 ) ( 43 ) ( 35 ) ( 27 ) ( 19 ) ( 11 ) ( 3 )
+     ( 61 ) ( 53 ) ( 45 ) ( 37 ) ( 29 ) ( 21 ) ( 13 ) ( 5 )
+     ( 63 ) ( 55 ) ( 47 ) ( 39 ) ( 31 ) ( 23 ) ( 15 ) ( 7 ) ).
+
+    mc_ip1 = VALUE #(
+     ( 40 ) ( 8 ) ( 48 ) ( 16 ) ( 56 ) ( 24 ) ( 64 ) ( 32 )
+     ( 39 ) ( 7 ) ( 47 ) ( 15 ) ( 55 ) ( 23 ) ( 63 ) ( 31 )
+     ( 38 ) ( 6 ) ( 46 ) ( 14 ) ( 54 ) ( 22 ) ( 62 ) ( 30 )
+     ( 37 ) ( 5 ) ( 45 ) ( 13 ) ( 53 ) ( 21 ) ( 61 ) ( 29 )
+     ( 36 ) ( 4 ) ( 44 ) ( 12 ) ( 52 ) ( 20 ) ( 60 ) ( 28 )
+     ( 35 ) ( 3 ) ( 43 ) ( 11 ) ( 51 ) ( 19 ) ( 59 ) ( 27 )
+     ( 34 ) ( 2 ) ( 42 ) ( 10 ) ( 50 ) ( 18 ) ( 58 ) ( 26 )
+     ( 33 ) ( 1 ) ( 41 ) ( 9 ) ( 49 ) ( 17 ) ( 57 ) ( 25 ) ).
+
+    mc_p = VALUE #(
+     ( 16 ) ( 7 ) ( 20 ) ( 21 ) ( 29 ) ( 12 ) ( 28 ) ( 17 )
+     ( 1 ) ( 15 ) ( 23 ) ( 26 ) ( 5 ) ( 18 ) ( 31 ) ( 10 )
+     ( 2 ) ( 8 ) ( 24 ) ( 14 ) ( 32 ) ( 27 ) ( 3 ) ( 9 )
+     ( 19 ) ( 13 ) ( 30 ) ( 6 ) ( 22 ) ( 11 ) ( 4 ) ( 25 ) ).
+
+    mc_pc1 = VALUE #(
+     ( 57 ) ( 49 ) ( 41 ) ( 33 ) ( 25 ) ( 17 ) ( 9 ) ( 1 )
+     ( 58 ) ( 50 ) ( 42 ) ( 34 ) ( 26 ) ( 18 ) ( 10 ) ( 2 )
+     ( 59 ) ( 51 ) ( 43 ) ( 35 ) ( 27 ) ( 19 ) ( 11 ) ( 3 )
+     ( 60 ) ( 52 ) ( 44 ) ( 36 ) ( 63 ) ( 55 ) ( 47 ) ( 39 )
+     ( 31 ) ( 23 ) ( 15 ) ( 7 ) ( 62 ) ( 54 ) ( 46 ) ( 38 )
+     ( 30 ) ( 22 ) ( 14 ) ( 6 ) ( 61 ) ( 53 ) ( 45 ) ( 37 )
+     ( 29 ) ( 21 ) ( 13 ) ( 5 ) ( 28 ) ( 20 ) ( 12 ) ( 4 ) ).
+
+    mc_pc2 = VALUE #(
+     ( 14 ) ( 17 ) ( 11 ) ( 24 ) ( 1 ) ( 5 ) ( 3 ) ( 28 )
+     ( 15 ) ( 6 ) ( 21 ) ( 10 ) ( 23 ) ( 19 ) ( 12 ) ( 4 )
+     ( 26 ) ( 8 ) ( 16 ) ( 7 ) ( 27 ) ( 20 ) ( 13 ) ( 2 )
+     ( 41 ) ( 52 ) ( 31 ) ( 37 ) ( 47 ) ( 55 ) ( 30 ) ( 40 )
+     ( 51 ) ( 45 ) ( 33 ) ( 48 ) ( 44 ) ( 49 ) ( 39 ) ( 56 )
+     ( 34 ) ( 53 ) ( 46 ) ( 42 ) ( 50 ) ( 36 ) ( 29 ) ( 32 ) ).
+
+    mc_s1 = VALUE #(
+      ( 14 ) ( 4 ) ( 13 ) ( 1 ) ( 2 ) ( 15 ) ( 11 ) ( 8 )
+      ( 3 ) ( 10 ) ( 6 ) ( 12 ) ( 5 ) ( 9 ) ( 0 ) ( 7 )
+      ( 0 ) ( 15 ) ( 7 ) ( 4 ) ( 14 ) ( 2 ) ( 13 ) ( 1 )
+      ( 10 ) ( 6 ) ( 12 ) ( 11 ) ( 9 ) ( 5 ) ( 3 ) ( 8 )
+      ( 4 ) ( 1 ) ( 14 ) ( 8 ) ( 13 ) ( 6 ) ( 2 ) ( 11 )
+      ( 15 ) ( 12 ) ( 9 ) ( 7 ) ( 3 ) ( 10 ) ( 5 ) ( 0 )
+      ( 15 ) ( 12 ) ( 8 ) ( 2 ) ( 4 ) ( 9 ) ( 1 ) ( 7 )
+      ( 5 ) ( 11 ) ( 3 ) ( 14 ) ( 10 ) ( 0 ) ( 6 ) ( 13 ) ).
+
+    mc_s2 = VALUE #(
+      ( 15 ) ( 1 ) ( 8 ) ( 14 ) ( 6 ) ( 11 ) ( 3 ) ( 4 )
+      ( 9 ) ( 7 ) ( 2 ) ( 13 ) ( 12 ) ( 0 ) ( 5 ) ( 10 )
+      ( 3 ) ( 13 ) ( 4 ) ( 7 ) ( 15 ) ( 2 ) ( 8 ) ( 14 )
+      ( 12 ) ( 0 ) ( 1 ) ( 10 ) ( 6 ) ( 9 ) ( 11 ) ( 5 )
+      ( 0 ) ( 14 ) ( 7 ) ( 11 ) ( 10 ) ( 4 ) ( 13 ) ( 1 )
+      ( 5 ) ( 8 ) ( 12 ) ( 6 ) ( 9 ) ( 3 ) ( 2 ) ( 15 )
+      ( 13 ) ( 8 ) ( 10 ) ( 1 ) ( 3 ) ( 15 ) ( 4 ) ( 2 )
+      ( 11 ) ( 6 ) ( 7 ) ( 12 ) ( 0 ) ( 5 ) ( 14 ) ( 9 ) ).
+
+    mc_s3 = VALUE #(
+      ( 10 ) ( 0 ) ( 9 ) ( 14 ) ( 6 ) ( 3 ) ( 15 ) ( 5 )
+      ( 1 ) ( 13 ) ( 12 ) ( 7 ) ( 11 ) ( 4 ) ( 2 ) ( 8 )
+      ( 13 ) ( 7 ) ( 0 ) ( 9 ) ( 3 ) ( 4 ) ( 6 ) ( 10 )
+      ( 2 ) ( 8 ) ( 5 ) ( 14 ) ( 12 ) ( 11 ) ( 15 ) ( 1 )
+      ( 13 ) ( 6 ) ( 4 ) ( 9 ) ( 8 ) ( 15 ) ( 3 ) ( 0 )
+      ( 11 ) ( 1 ) ( 2 ) ( 12 ) ( 5 ) ( 10 ) ( 14 ) ( 7 )
+      ( 1 ) ( 10 ) ( 13 ) ( 0 ) ( 6 ) ( 9 ) ( 8 ) ( 7 )
+      ( 4 ) ( 15 ) ( 14 ) ( 3 ) ( 11 ) ( 5 ) ( 2 ) ( 12 ) ).
+
+    mc_s4 = VALUE #(
+      ( 7 ) ( 13 ) ( 14 ) ( 3 ) ( 0 ) ( 6 ) ( 9 ) ( 10 )
+      ( 1 ) ( 2 ) ( 8 ) ( 5 ) ( 11 ) ( 12 ) ( 4 ) ( 15 )
+      ( 13 ) ( 8 ) ( 11 ) ( 5 ) ( 6 ) ( 15 ) ( 0 ) ( 3 )
+      ( 4 ) ( 7 ) ( 2 ) ( 12 ) ( 1 ) ( 10 ) ( 14 ) ( 9 )
+      ( 10 ) ( 6 ) ( 9 ) ( 0 ) ( 12 ) ( 11 ) ( 7 ) ( 13 )
+      ( 15 ) ( 1 ) ( 3 ) ( 14 ) ( 5 ) ( 2 ) ( 8 ) ( 4 )
+      ( 3 ) ( 15 ) ( 0 ) ( 6 ) ( 10 ) ( 1 ) ( 13 ) ( 8 )
+      ( 9 ) ( 4 ) ( 5 ) ( 11 ) ( 12 ) ( 7 ) ( 2 ) ( 14 ) ).
+
+    mc_s5 = VALUE #(
+      ( 2 ) ( 12 ) ( 4 ) ( 1 ) ( 7 ) ( 10 ) ( 11 ) ( 6 )
+      ( 8 ) ( 5 ) ( 3 ) ( 15 ) ( 13 ) ( 0 ) ( 14 ) ( 9 )
+      ( 14 ) ( 11 ) ( 2 ) ( 12 ) ( 4 ) ( 7 ) ( 13 ) ( 1 )
+      ( 5 ) ( 0 ) ( 15 ) ( 10 ) ( 3 ) ( 9 ) ( 8 ) ( 6 )
+      ( 4 ) ( 2 ) ( 1 ) ( 11 ) ( 10 ) ( 13 ) ( 7 ) ( 8 )
+      ( 15 ) ( 9 ) ( 12 ) ( 5 ) ( 6 ) ( 3 ) ( 0 ) ( 14 )
+      ( 11 ) ( 8 ) ( 12 ) ( 7 ) ( 1 ) ( 14 ) ( 2 ) ( 13 )
+      ( 6 ) ( 15 ) ( 0 ) ( 9 ) ( 10 ) ( 4 ) ( 5 ) ( 3 ) ).
+
+    mc_s6 = VALUE #(
+      ( 12 ) ( 1 ) ( 10 ) ( 15 ) ( 9 ) ( 2 ) ( 6 ) ( 8 )
+      ( 0 ) ( 13 ) ( 3 ) ( 4 ) ( 14 ) ( 7 ) ( 5 ) ( 11 )
+      ( 10 ) ( 15 ) ( 4 ) ( 2 ) ( 7 ) ( 12 ) ( 9 ) ( 5 )
+      ( 6 ) ( 1 ) ( 13 ) ( 14 ) ( 0 ) ( 11 ) ( 3 ) ( 8 )
+      ( 9 ) ( 14 ) ( 15 ) ( 5 ) ( 2 ) ( 8 ) ( 12 ) ( 3 )
+      ( 7 ) ( 0 ) ( 4 ) ( 10 ) ( 1 ) ( 13 ) ( 11 ) ( 6 )
+      ( 4 ) ( 3 ) ( 2 ) ( 12 ) ( 9 ) ( 5 ) ( 15 ) ( 10 )
+      ( 11 ) ( 14 ) ( 1 ) ( 7 ) ( 6 ) ( 0 ) ( 8 ) ( 13 ) ).
+
+    mc_s7 = VALUE #(
+      ( 4 ) ( 11 ) ( 2 ) ( 14 ) ( 15 ) ( 0 ) ( 8 ) ( 13 )
+      ( 3 ) ( 12 ) ( 9 ) ( 7 ) ( 5 ) ( 10 ) ( 6 ) ( 1 )
+      ( 13 ) ( 0 ) ( 11 ) ( 7 ) ( 4 ) ( 9 ) ( 1 ) ( 10 )
+      ( 14 ) ( 3 ) ( 5 ) ( 12 ) ( 2 ) ( 15 ) ( 8 ) ( 6 )
+      ( 1 ) ( 4 ) ( 11 ) ( 13 ) ( 12 ) ( 3 ) ( 7 ) ( 14 )
+      ( 10 ) ( 15 ) ( 6 ) ( 8 ) ( 0 ) ( 5 ) ( 9 ) ( 2 )
+      ( 6 ) ( 11 ) ( 13 ) ( 8 ) ( 1 ) ( 4 ) ( 10 ) ( 7 )
+      ( 9 ) ( 5 ) ( 0 ) ( 15 ) ( 14 ) ( 2 ) ( 3 ) ( 12 ) ).
+
+    mc_s8 = VALUE #(
+      ( 13 ) ( 2 ) ( 8 ) ( 4 ) ( 6 ) ( 15 ) ( 11 ) ( 1 )
+      ( 10 ) ( 9 ) ( 3 ) ( 14 ) ( 5 ) ( 0 ) ( 12 ) ( 7 )
+      ( 1 ) ( 15 ) ( 13 ) ( 8 ) ( 10 ) ( 3 ) ( 7 ) ( 4 )
+      ( 12 ) ( 5 ) ( 6 ) ( 11 ) ( 0 ) ( 14 ) ( 9 ) ( 2 )
+      ( 7 ) ( 11 ) ( 4 ) ( 1 ) ( 9 ) ( 12 ) ( 14 ) ( 2 )
+      ( 0 ) ( 6 ) ( 10 ) ( 13 ) ( 15 ) ( 3 ) ( 5 ) ( 8 )
+      ( 2 ) ( 1 ) ( 14 ) ( 7 ) ( 4 ) ( 10 ) ( 8 ) ( 13 )
+      ( 15 ) ( 12 ) ( 9 ) ( 0 ) ( 3 ) ( 5 ) ( 6 ) ( 11 ) ).
+
+  ENDMETHOD.
+
+
   METHOD column.
 
-    CASE iv_b+1(4).
-      WHEN '0000'.
-        rv_column = 0.
-      WHEN '0001'.
-        rv_column = 1.
-      WHEN '0010'.
-        rv_column = 2.
-      WHEN '0011'.
-        rv_column = 3.
-      WHEN '0100'.
-        rv_column = 4.
-      WHEN '0101'.
-        rv_column = 5.
-      WHEN '0110'.
-        rv_column = 6.
-      WHEN '0111'.
-        rv_column = 7.
-      WHEN '1000'.
-        rv_column = 8.
-      WHEN '1001'.
-        rv_column = 9.
-      WHEN '1010'.
-        rv_column = 10.
-      WHEN '1011'.
-        rv_column = 11.
-      WHEN '1100'.
-        rv_column = 12.
-      WHEN '1101'.
-        rv_column = 13.
-      WHEN '1110'.
-        rv_column = 14.
-      WHEN '1111'.
-        rv_column = 15.
-      WHEN OTHERS.
-        ASSERT 1 = 1 + 1.
-    ENDCASE.
+    rv_column = 8 * iv_b+1(1) + 4 * iv_b+2(1) + 2 * iv_b+3(1) + iv_b+4(1).
+
+    ASSERT rv_column >= 0.
+    ASSERT rv_column <= 15.
 
   ENDMETHOD.
 
 
   METHOD c_and_d.
 
-    DATA: lv_c_n TYPE c LENGTH 28,
-          lv_d_n TYPE c LENGTH 28,
-          lv_str TYPE string.
-
-    DEFINE _shift.
-      SHIFT lv_c_n LEFT BY &1 PLACES CIRCULAR.
-      SHIFT lv_d_n LEFT BY &1 PLACES CIRCULAR.
-      CONCATENATE lv_c_n lv_d_n INTO lv_str.
-      APPEND lv_str TO rt_bits.
-    END-OF-DEFINITION.
-
+    DATA: lv_shift TYPE i,
+          lv_c_n   TYPE c LENGTH 28,
+          lv_d_n   TYPE c LENGTH 28,
+          lv_str   TYPE string.
 
     lv_c_n = iv_c_0.
     lv_d_n = iv_d_0.
 
-    _shift 1.
-    _shift 1.
-    _shift 2.
-    _shift 2.
-    _shift 2.
-    _shift 2.
-    _shift 2.
-    _shift 2.
-    _shift 1.
-    _shift 2.
-    _shift 2.
-    _shift 2.
-    _shift 2.
-    _shift 2.
-    _shift 2.
-    _shift 1.
+    LOOP AT VALUE tty_itab(
+      ( 1 ) ( 1 ) ( 2 ) ( 2 ) ( 2 ) ( 2 ) ( 2 ) ( 2 )
+      ( 1 ) ( 2 ) ( 2 ) ( 2 ) ( 2 ) ( 2 ) ( 2 ) ( 1 )  ) INTO lv_shift.
+
+      SHIFT lv_c_n LEFT BY lv_shift PLACES CIRCULAR.
+      SHIFT lv_d_n LEFT BY lv_shift PLACES CIRCULAR.
+      CONCATENATE lv_c_n lv_d_n INTO lv_str.
+      APPEND lv_str TO rt_bits.
+
+    ENDLOOP.
 
   ENDMETHOD.
 
@@ -383,43 +498,11 @@ CLASS ZCL_DES IMPLEMENTATION.
 
 
   METHOD i_to_bits_4.
+    CONSTANTS cv_bits TYPE string VALUE '0000000100100011010001010110011110001001101010111100110111101111'.
+    DATA lv_index TYPE i.
 
-    CASE iv_i.
-      WHEN 0.
-        rv_bits = '0000'.
-      WHEN 1.
-        rv_bits = '0001'.
-      WHEN 2.
-        rv_bits = '0010'.
-      WHEN 3.
-        rv_bits = '0011'.
-      WHEN 4.
-        rv_bits = '0100'.
-      WHEN 5.
-        rv_bits = '0101'.
-      WHEN 6.
-        rv_bits = '0110'.
-      WHEN 7.
-        rv_bits = '0111'.
-      WHEN 8.
-        rv_bits = '1000'.
-      WHEN 9.
-        rv_bits = '1001'.
-      WHEN 10.
-        rv_bits = '1010'.
-      WHEN 11.
-        rv_bits = '1011'.
-      WHEN 12.
-        rv_bits = '1100'.
-      WHEN 13.
-        rv_bits = '1101'.
-      WHEN 14.
-        rv_bits = '1110'.
-      WHEN 15.
-        rv_bits = '1111'.
-      WHEN OTHERS.
-        ASSERT 1 = 1 + 1.
-    ENDCASE.
+    lv_index = iv_i * 4.
+    rv_bits = cv_bits+lv_index(4).
 
   ENDMETHOD.
 
@@ -503,498 +586,66 @@ CLASS ZCL_DES IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD permute_e.
+  METHOD permute.
+    DATA: lv_offset  TYPE i.
 
-    DATA: lv_offset TYPE i.
+    LOOP AT it_permutation INTO lv_offset.
 
-    DEFINE _bit.
-      lv_offset = &1 - 1.
+      lv_offset = lv_offset - 1.
       CONCATENATE rv_bits iv_bits+lv_offset(1) INTO rv_bits.
-    END-OF-DEFINITION.
+
+    ENDLOOP.
+
+  ENDMETHOD.
 
 
-    _bit 32.
-    _bit 1.
-    _bit 2.
-    _bit 3.
-    _bit 4.
-    _bit 5.
-    _bit 4.
-    _bit 5.
-    _bit 6.
-    _bit 7.
-    _bit 8.
-    _bit 9.
-    _bit 8.
-    _bit 9.
-    _bit 10.
-    _bit 11.
-    _bit 12.
-    _bit 13.
-    _bit 12.
-    _bit 13.
-    _bit 14.
-    _bit 15.
-    _bit 16.
-    _bit 17.
-    _bit 16.
-    _bit 17.
-    _bit 18.
-    _bit 19.
-    _bit 20.
-    _bit 21.
-    _bit 20.
-    _bit 21.
-    _bit 22.
-    _bit 23.
-    _bit 24.
-    _bit 25.
-    _bit 24.
-    _bit 25.
-    _bit 26.
-    _bit 27.
-    _bit 28.
-    _bit 29.
-    _bit 28.
-    _bit 29.
-    _bit 30.
-    _bit 31.
-    _bit 32.
-    _bit 1.
-
+  METHOD permute_e.
+    rv_bits = permute( it_permutation = mc_e iv_bits = iv_bits ).
   ENDMETHOD.
 
 
   METHOD permute_ip.
-
-    DATA: lv_offset TYPE i.
-
-    DEFINE _bit.
-      lv_offset = &1 - 1.
-      CONCATENATE rv_bits iv_bits+lv_offset(1) INTO rv_bits.
-    END-OF-DEFINITION.
-
-
-    _bit 58.
-    _bit 50.
-    _bit 42.
-    _bit 34.
-    _bit 26.
-    _bit 18.
-    _bit 10.
-    _bit 2.
-    _bit 60.
-    _bit 52.
-    _bit 44.
-    _bit 36.
-    _bit 28.
-    _bit 20.
-    _bit 12.
-    _bit 4.
-    _bit 62.
-    _bit 54.
-    _bit 46.
-    _bit 38.
-    _bit 30.
-    _bit 22.
-    _bit 14.
-    _bit 6.
-    _bit 64.
-    _bit 56.
-    _bit 48.
-    _bit 40.
-    _bit 32.
-    _bit 24.
-    _bit 16.
-    _bit 8.
-    _bit 57.
-    _bit 49.
-    _bit 41.
-    _bit 33.
-    _bit 25.
-    _bit 17.
-    _bit 9.
-    _bit 1.
-    _bit 59.
-    _bit 51.
-    _bit 43.
-    _bit 35.
-    _bit 27.
-    _bit 19.
-    _bit 11.
-    _bit 3.
-    _bit 61.
-    _bit 53.
-    _bit 45.
-    _bit 37.
-    _bit 29.
-    _bit 21.
-    _bit 13.
-    _bit 5.
-    _bit 63.
-    _bit 55.
-    _bit 47.
-    _bit 39.
-    _bit 31.
-    _bit 23.
-    _bit 15.
-    _bit 7.
-
+    rv_bits = permute( it_permutation = mc_ip iv_bits = iv_bits ).
   ENDMETHOD.
 
 
   METHOD permute_ip1.
-
-    DATA: lv_offset TYPE i.
-
-    DEFINE _bit.
-      lv_offset = &1 - 1.
-      CONCATENATE rv_bits iv_bits+lv_offset(1) INTO rv_bits.
-    END-OF-DEFINITION.
-
-
-    _bit 40.
-    _bit 8.
-    _bit 48.
-    _bit 16.
-    _bit 56.
-    _bit 24.
-    _bit 64.
-    _bit 32.
-    _bit 39.
-    _bit 7.
-    _bit 47.
-    _bit 15.
-    _bit 55.
-    _bit 23.
-    _bit 63.
-    _bit 31.
-    _bit 38.
-    _bit 6.
-    _bit 46.
-    _bit 14.
-    _bit 54.
-    _bit 22.
-    _bit 62.
-    _bit 30.
-    _bit 37.
-    _bit 5.
-    _bit 45.
-    _bit 13.
-    _bit 53.
-    _bit 21.
-    _bit 61.
-    _bit 29.
-    _bit 36.
-    _bit 4.
-    _bit 44.
-    _bit 12.
-    _bit 52.
-    _bit 20.
-    _bit 60.
-    _bit 28.
-    _bit 35.
-    _bit 3.
-    _bit 43.
-    _bit 11.
-    _bit 51.
-    _bit 19.
-    _bit 59.
-    _bit 27.
-    _bit 34.
-    _bit 2.
-    _bit 42.
-    _bit 10.
-    _bit 50.
-    _bit 18.
-    _bit 58.
-    _bit 26.
-    _bit 33.
-    _bit 1.
-    _bit 41.
-    _bit 9.
-    _bit 49.
-    _bit 17.
-    _bit 57.
-    _bit 25.
-
+    rv_bits = permute( it_permutation = mc_ip1 iv_bits = iv_bits ).
   ENDMETHOD.
 
 
   METHOD permute_p.
-
-    DATA: lv_offset TYPE i.
-
-    DEFINE _bit.
-      lv_offset = &1 - 1.
-      CONCATENATE rv_bits iv_bits+lv_offset(1) INTO rv_bits.
-    END-OF-DEFINITION.
-
-
-    _bit 16.
-    _bit 7.
-    _bit 20.
-    _bit 21.
-    _bit 29.
-    _bit 12.
-    _bit 28.
-    _bit 17.
-    _bit 1.
-    _bit 15.
-    _bit 23.
-    _bit 26.
-    _bit 5.
-    _bit 18.
-    _bit 31.
-    _bit 10.
-    _bit 2.
-    _bit 8.
-    _bit 24.
-    _bit 14.
-    _bit 32.
-    _bit 27.
-    _bit 3.
-    _bit 9.
-    _bit 19.
-    _bit 13.
-    _bit 30.
-    _bit 6.
-    _bit 22.
-    _bit 11.
-    _bit 4.
-    _bit 25.
-
+    rv_bits = permute( it_permutation = mc_p iv_bits = iv_bits ).
   ENDMETHOD.
 
 
   METHOD permute_pc1.
-
-    DATA: lv_offset TYPE i.
-
-    DEFINE _bit.
-      lv_offset = &1 - 1.
-      CONCATENATE rv_bits iv_bits+lv_offset(1) INTO rv_bits.
-    END-OF-DEFINITION.
-
-
-    _bit 57.
-    _bit 49.
-    _bit 41.
-    _bit 33.
-    _bit 25.
-    _bit 17.
-    _bit 9.
-    _bit 1.
-    _bit 58.
-    _bit 50.
-    _bit 42.
-    _bit 34.
-    _bit 26.
-    _bit 18.
-    _bit 10.
-    _bit 2.
-    _bit 59.
-    _bit 51.
-    _bit 43.
-    _bit 35.
-    _bit 27.
-    _bit 19.
-    _bit 11.
-    _bit 3.
-    _bit 60.
-    _bit 52.
-    _bit 44.
-    _bit 36.
-    _bit 63.
-    _bit 55.
-    _bit 47.
-    _bit 39.
-    _bit 31.
-    _bit 23.
-    _bit 15.
-    _bit 7.
-    _bit 62.
-    _bit 54.
-    _bit 46.
-    _bit 38.
-    _bit 30.
-    _bit 22.
-    _bit 14.
-    _bit 6.
-    _bit 61.
-    _bit 53.
-    _bit 45.
-    _bit 37.
-    _bit 29.
-    _bit 21.
-    _bit 13.
-    _bit 5.
-    _bit 28.
-    _bit 20.
-    _bit 12.
-    _bit 4.
-
+    rv_bits = permute( it_permutation = mc_pc1 iv_bits = iv_bits ).
   ENDMETHOD.
 
 
   METHOD permute_pc2.
-
-    DATA: lv_offset TYPE i.
-
-    DEFINE _bit.
-      lv_offset = &1 - 1.
-      CONCATENATE rv_bits iv_bits+lv_offset(1) INTO rv_bits.
-    END-OF-DEFINITION.
-
-
-    _bit 14.
-    _bit 17.
-    _bit 11.
-    _bit 24.
-    _bit 1.
-    _bit 5.
-    _bit 3.
-    _bit 28.
-    _bit 15.
-    _bit 6.
-    _bit 21.
-    _bit 10.
-    _bit 23.
-    _bit 19.
-    _bit 12.
-    _bit 4.
-    _bit 26.
-    _bit 8.
-    _bit 16.
-    _bit 7.
-    _bit 27.
-    _bit 20.
-    _bit 13.
-    _bit 2.
-    _bit 41.
-    _bit 52.
-    _bit 31.
-    _bit 37.
-    _bit 47.
-    _bit 55.
-    _bit 30.
-    _bit 40.
-    _bit 51.
-    _bit 45.
-    _bit 33.
-    _bit 48.
-    _bit 44.
-    _bit 49.
-    _bit 39.
-    _bit 56.
-    _bit 34.
-    _bit 53.
-    _bit 46.
-    _bit 42.
-    _bit 50.
-    _bit 36.
-    _bit 29.
-    _bit 32.
-
+    rv_bits = permute( it_permutation = mc_pc2 iv_bits = iv_bits ).
   ENDMETHOD.
 
 
   METHOD row.
 
-    DATA: lv_c TYPE c LENGTH 2.
+    rv_row = 2 * iv_b(1) + iv_b+5(1).
 
-
-    CONCATENATE iv_b(1) iv_b+5(1) INTO lv_c.
-    CASE lv_c.
-      WHEN '00'.
-        rv_row = 0.
-      WHEN '01'.
-        rv_row = 1.
-      WHEN '10'.
-        rv_row = 2.
-      WHEN '11'.
-        rv_row = 3.
-      WHEN OTHERS.
-        ASSERT 1 = 1 + 1.
-    ENDCASE.
+    ASSERT rv_row >= 0.
+    ASSERT rv_row <= 3.
 
   ENDMETHOD.
 
 
   METHOD s1.
 
-    DATA: lt_table TYPE TABLE OF i,
-          lv_index TYPE i,
+    DATA: lv_index TYPE i,
           lv_i     TYPE i.
 
-
-    APPEND 14 TO lt_table.
-    APPEND 4  TO lt_table.
-    APPEND 13 TO lt_table.
-    APPEND 1  TO lt_table.
-    APPEND 2  TO lt_table.
-    APPEND 15 TO lt_table.
-    APPEND 11 TO lt_table.
-    APPEND 8  TO lt_table.
-    APPEND 3  TO lt_table.
-    APPEND 10 TO lt_table.
-    APPEND 6  TO lt_table.
-    APPEND 12 TO lt_table.
-    APPEND 5  TO lt_table.
-    APPEND 9  TO lt_table.
-    APPEND 0  TO lt_table.
-    APPEND 7  TO lt_table.
-    APPEND 0  TO lt_table.
-    APPEND 15 TO lt_table.
-    APPEND 7  TO lt_table.
-    APPEND 4  TO lt_table.
-    APPEND 14 TO lt_table.
-    APPEND 2  TO lt_table.
-    APPEND 13 TO lt_table.
-    APPEND 1  TO lt_table.
-    APPEND 10 TO lt_table.
-    APPEND 6  TO lt_table.
-    APPEND 12 TO lt_table.
-    APPEND 11 TO lt_table.
-    APPEND 9  TO lt_table.
-    APPEND 5  TO lt_table.
-    APPEND 3  TO lt_table.
-    APPEND 8  TO lt_table.
-    APPEND 4  TO lt_table.
-    APPEND 1  TO lt_table.
-    APPEND 14 TO lt_table.
-    APPEND 8  TO lt_table.
-    APPEND 13 TO lt_table.
-    APPEND 6  TO lt_table.
-    APPEND 2  TO lt_table.
-    APPEND 11 TO lt_table.
-    APPEND 15 TO lt_table.
-    APPEND 12 TO lt_table.
-    APPEND 9  TO lt_table.
-    APPEND 7  TO lt_table.
-    APPEND 3  TO lt_table.
-    APPEND 10 TO lt_table.
-    APPEND 5  TO lt_table.
-    APPEND 0  TO lt_table.
-    APPEND 15 TO lt_table.
-    APPEND 12 TO lt_table.
-    APPEND 8  TO lt_table.
-    APPEND 2  TO lt_table.
-    APPEND 4  TO lt_table.
-    APPEND 9  TO lt_table.
-    APPEND 1  TO lt_table.
-    APPEND 7  TO lt_table.
-    APPEND 5  TO lt_table.
-    APPEND 11 TO lt_table.
-    APPEND 3  TO lt_table.
-    APPEND 14 TO lt_table.
-    APPEND 10 TO lt_table.
-    APPEND 0  TO lt_table.
-    APPEND 6  TO lt_table.
-    APPEND 13 TO lt_table.
-
     lv_index = ( row( iv_b ) * 16 ) + column( iv_b ) + 1.
-    READ TABLE lt_table INDEX lv_index INTO lv_i.
+    READ TABLE mc_s1 INDEX lv_index INTO lv_i.
     ASSERT sy-subrc = 0.
     rv_s = i_to_bits_4( lv_i ).
 
@@ -1003,78 +654,11 @@ CLASS ZCL_DES IMPLEMENTATION.
 
   METHOD s2.
 
-    DATA: lt_table TYPE TABLE OF i,
-          lv_index TYPE i,
+    DATA: lv_index TYPE i,
           lv_i     TYPE i.
 
-
-    APPEND 15 TO lt_table.
-    APPEND 1  TO lt_table.
-    APPEND 8  TO lt_table.
-    APPEND 14 TO lt_table.
-    APPEND 6  TO lt_table.
-    APPEND 11 TO lt_table.
-    APPEND 3  TO lt_table.
-    APPEND 4  TO lt_table.
-    APPEND 9  TO lt_table.
-    APPEND 7  TO lt_table.
-    APPEND 2  TO lt_table.
-    APPEND 13 TO lt_table.
-    APPEND 12 TO lt_table.
-    APPEND 0  TO lt_table.
-    APPEND 5  TO lt_table.
-    APPEND 10 TO lt_table.
-    APPEND 3  TO lt_table.
-    APPEND 13 TO lt_table.
-    APPEND 4  TO lt_table.
-    APPEND 7  TO lt_table.
-    APPEND 15 TO lt_table.
-    APPEND 2  TO lt_table.
-    APPEND 8  TO lt_table.
-    APPEND 14 TO lt_table.
-    APPEND 12 TO lt_table.
-    APPEND 0  TO lt_table.
-    APPEND 1  TO lt_table.
-    APPEND 10 TO lt_table.
-    APPEND 6  TO lt_table.
-    APPEND 9  TO lt_table.
-    APPEND 11 TO lt_table.
-    APPEND 5  TO lt_table.
-    APPEND 0  TO lt_table.
-    APPEND 14 TO lt_table.
-    APPEND 7  TO lt_table.
-    APPEND 11 TO lt_table.
-    APPEND 10 TO lt_table.
-    APPEND 4  TO lt_table.
-    APPEND 13 TO lt_table.
-    APPEND 1  TO lt_table.
-    APPEND 5  TO lt_table.
-    APPEND 8  TO lt_table.
-    APPEND 12 TO lt_table.
-    APPEND 6  TO lt_table.
-    APPEND 9  TO lt_table.
-    APPEND 3  TO lt_table.
-    APPEND 2  TO lt_table.
-    APPEND 15 TO lt_table.
-    APPEND 13 TO lt_table.
-    APPEND 8  TO lt_table.
-    APPEND 10 TO lt_table.
-    APPEND 1  TO lt_table.
-    APPEND 3  TO lt_table.
-    APPEND 15 TO lt_table.
-    APPEND 4  TO lt_table.
-    APPEND 2  TO lt_table.
-    APPEND 11 TO lt_table.
-    APPEND 6  TO lt_table.
-    APPEND 7  TO lt_table.
-    APPEND 12 TO lt_table.
-    APPEND 0  TO lt_table.
-    APPEND 5  TO lt_table.
-    APPEND 14 TO lt_table.
-    APPEND 9  TO lt_table.
-
     lv_index = ( row( iv_b ) * 16 ) + column( iv_b ) + 1.
-    READ TABLE lt_table INDEX lv_index INTO lv_i.
+    READ TABLE mc_s2 INDEX lv_index INTO lv_i.
     ASSERT sy-subrc = 0.
     rv_s = i_to_bits_4( lv_i ).
 
@@ -1083,78 +667,11 @@ CLASS ZCL_DES IMPLEMENTATION.
 
   METHOD s3.
 
-    DATA: lt_table TYPE TABLE OF i,
-          lv_index TYPE i,
+    DATA: lv_index TYPE i,
           lv_i     TYPE i.
 
-
-    APPEND 10 TO lt_table.
-    APPEND 0  TO lt_table.
-    APPEND 9  TO lt_table.
-    APPEND 14 TO lt_table.
-    APPEND 6  TO lt_table.
-    APPEND 3  TO lt_table.
-    APPEND 15 TO lt_table.
-    APPEND 5  TO lt_table.
-    APPEND 1  TO lt_table.
-    APPEND 13 TO lt_table.
-    APPEND 12 TO lt_table.
-    APPEND 7  TO lt_table.
-    APPEND 11 TO lt_table.
-    APPEND 4  TO lt_table.
-    APPEND 2  TO lt_table.
-    APPEND 8  TO lt_table.
-    APPEND 13 TO lt_table.
-    APPEND 7  TO lt_table.
-    APPEND 0  TO lt_table.
-    APPEND 9  TO lt_table.
-    APPEND 3  TO lt_table.
-    APPEND 4  TO lt_table.
-    APPEND 6  TO lt_table.
-    APPEND 10 TO lt_table.
-    APPEND 2  TO lt_table.
-    APPEND 8  TO lt_table.
-    APPEND 5  TO lt_table.
-    APPEND 14 TO lt_table.
-    APPEND 12 TO lt_table.
-    APPEND 11 TO lt_table.
-    APPEND 15 TO lt_table.
-    APPEND 1  TO lt_table.
-    APPEND 13 TO lt_table.
-    APPEND 6  TO lt_table.
-    APPEND 4  TO lt_table.
-    APPEND 9  TO lt_table.
-    APPEND 8  TO lt_table.
-    APPEND 15 TO lt_table.
-    APPEND 3  TO lt_table.
-    APPEND 0  TO lt_table.
-    APPEND 11 TO lt_table.
-    APPEND 1  TO lt_table.
-    APPEND 2  TO lt_table.
-    APPEND 12 TO lt_table.
-    APPEND 5  TO lt_table.
-    APPEND 10 TO lt_table.
-    APPEND 14 TO lt_table.
-    APPEND 7  TO lt_table.
-    APPEND 1  TO lt_table.
-    APPEND 10 TO lt_table.
-    APPEND 13 TO lt_table.
-    APPEND 0  TO lt_table.
-    APPEND 6  TO lt_table.
-    APPEND 9  TO lt_table.
-    APPEND 8  TO lt_table.
-    APPEND 7  TO lt_table.
-    APPEND 4  TO lt_table.
-    APPEND 15 TO lt_table.
-    APPEND 14 TO lt_table.
-    APPEND 3  TO lt_table.
-    APPEND 11 TO lt_table.
-    APPEND 5  TO lt_table.
-    APPEND 2  TO lt_table.
-    APPEND 12 TO lt_table.
-
     lv_index = ( row( iv_b ) * 16 ) + column( iv_b ) + 1.
-    READ TABLE lt_table INDEX lv_index INTO lv_i.
+    READ TABLE mc_s3 INDEX lv_index INTO lv_i.
     ASSERT sy-subrc = 0.
     rv_s = i_to_bits_4( lv_i ).
 
@@ -1163,78 +680,11 @@ CLASS ZCL_DES IMPLEMENTATION.
 
   METHOD s4.
 
-    DATA: lt_table TYPE TABLE OF i,
-          lv_index TYPE i,
+    DATA: lv_index TYPE i,
           lv_i     TYPE i.
 
-
-    APPEND 7  TO lt_table.
-    APPEND 13 TO lt_table.
-    APPEND 14 TO lt_table.
-    APPEND 3  TO lt_table.
-    APPEND 0  TO lt_table.
-    APPEND 6  TO lt_table.
-    APPEND 9  TO lt_table.
-    APPEND 10 TO lt_table.
-    APPEND 1  TO lt_table.
-    APPEND 2  TO lt_table.
-    APPEND 8  TO lt_table.
-    APPEND 5  TO lt_table.
-    APPEND 11 TO lt_table.
-    APPEND 12 TO lt_table.
-    APPEND 4  TO lt_table.
-    APPEND 15 TO lt_table.
-    APPEND 13 TO lt_table.
-    APPEND 8  TO lt_table.
-    APPEND 11 TO lt_table.
-    APPEND 5  TO lt_table.
-    APPEND 6  TO lt_table.
-    APPEND 15 TO lt_table.
-    APPEND 0  TO lt_table.
-    APPEND 3  TO lt_table.
-    APPEND 4  TO lt_table.
-    APPEND 7  TO lt_table.
-    APPEND 2  TO lt_table.
-    APPEND 12 TO lt_table.
-    APPEND 1  TO lt_table.
-    APPEND 10 TO lt_table.
-    APPEND 14 TO lt_table.
-    APPEND 9  TO lt_table.
-    APPEND 10 TO lt_table.
-    APPEND 6  TO lt_table.
-    APPEND 9  TO lt_table.
-    APPEND 0  TO lt_table.
-    APPEND 12 TO lt_table.
-    APPEND 11 TO lt_table.
-    APPEND 7  TO lt_table.
-    APPEND 13 TO lt_table.
-    APPEND 15 TO lt_table.
-    APPEND 1  TO lt_table.
-    APPEND 3  TO lt_table.
-    APPEND 14 TO lt_table.
-    APPEND 5  TO lt_table.
-    APPEND 2  TO lt_table.
-    APPEND 8  TO lt_table.
-    APPEND 4  TO lt_table.
-    APPEND 3  TO lt_table.
-    APPEND 15 TO lt_table.
-    APPEND 0  TO lt_table.
-    APPEND 6  TO lt_table.
-    APPEND 10 TO lt_table.
-    APPEND 1  TO lt_table.
-    APPEND 13 TO lt_table.
-    APPEND 8  TO lt_table.
-    APPEND 9  TO lt_table.
-    APPEND 4  TO lt_table.
-    APPEND 5  TO lt_table.
-    APPEND 11 TO lt_table.
-    APPEND 12 TO lt_table.
-    APPEND 7  TO lt_table.
-    APPEND 2  TO lt_table.
-    APPEND 14 TO lt_table.
-
     lv_index = ( row( iv_b ) * 16 ) + column( iv_b ) + 1.
-    READ TABLE lt_table INDEX lv_index INTO lv_i.
+    READ TABLE mc_s4 INDEX lv_index INTO lv_i.
     ASSERT sy-subrc = 0.
     rv_s = i_to_bits_4( lv_i ).
 
@@ -1243,78 +693,11 @@ CLASS ZCL_DES IMPLEMENTATION.
 
   METHOD s5.
 
-    DATA: lt_table TYPE TABLE OF i,
-          lv_index TYPE i,
+    DATA: lv_index TYPE i,
           lv_i     TYPE i.
 
-
-    APPEND 2  TO lt_table.
-    APPEND 12 TO lt_table.
-    APPEND 4  TO lt_table.
-    APPEND 1  TO lt_table.
-    APPEND 7  TO lt_table.
-    APPEND 10 TO lt_table.
-    APPEND 11 TO lt_table.
-    APPEND 6  TO lt_table.
-    APPEND 8  TO lt_table.
-    APPEND 5  TO lt_table.
-    APPEND 3  TO lt_table.
-    APPEND 15 TO lt_table.
-    APPEND 13 TO lt_table.
-    APPEND 0  TO lt_table.
-    APPEND 14 TO lt_table.
-    APPEND 9  TO lt_table.
-    APPEND 14 TO lt_table.
-    APPEND 11 TO lt_table.
-    APPEND 2  TO lt_table.
-    APPEND 12 TO lt_table.
-    APPEND 4  TO lt_table.
-    APPEND 7  TO lt_table.
-    APPEND 13 TO lt_table.
-    APPEND 1  TO lt_table.
-    APPEND 5  TO lt_table.
-    APPEND 0  TO lt_table.
-    APPEND 15 TO lt_table.
-    APPEND 10 TO lt_table.
-    APPEND 3  TO lt_table.
-    APPEND 9  TO lt_table.
-    APPEND 8  TO lt_table.
-    APPEND 6  TO lt_table.
-    APPEND 4  TO lt_table.
-    APPEND 2  TO lt_table.
-    APPEND 1  TO lt_table.
-    APPEND 11 TO lt_table.
-    APPEND 10 TO lt_table.
-    APPEND 13 TO lt_table.
-    APPEND 7  TO lt_table.
-    APPEND 8  TO lt_table.
-    APPEND 15 TO lt_table.
-    APPEND 9  TO lt_table.
-    APPEND 12 TO lt_table.
-    APPEND 5  TO lt_table.
-    APPEND 6  TO lt_table.
-    APPEND 3  TO lt_table.
-    APPEND 0  TO lt_table.
-    APPEND 14 TO lt_table.
-    APPEND 11 TO lt_table.
-    APPEND 8  TO lt_table.
-    APPEND 12 TO lt_table.
-    APPEND 7  TO lt_table.
-    APPEND 1  TO lt_table.
-    APPEND 14 TO lt_table.
-    APPEND 2  TO lt_table.
-    APPEND 13 TO lt_table.
-    APPEND 6  TO lt_table.
-    APPEND 15 TO lt_table.
-    APPEND 0  TO lt_table.
-    APPEND 9  TO lt_table.
-    APPEND 10 TO lt_table.
-    APPEND 4  TO lt_table.
-    APPEND 5  TO lt_table.
-    APPEND 3  TO lt_table.
-
     lv_index = ( row( iv_b ) * 16 ) + column( iv_b ) + 1.
-    READ TABLE lt_table INDEX lv_index INTO lv_i.
+    READ TABLE mc_s5 INDEX lv_index INTO lv_i.
     ASSERT sy-subrc = 0.
     rv_s = i_to_bits_4( lv_i ).
 
@@ -1323,78 +706,11 @@ CLASS ZCL_DES IMPLEMENTATION.
 
   METHOD s6.
 
-    DATA: lt_table TYPE TABLE OF i,
-          lv_index TYPE i,
+    DATA: lv_index TYPE i,
           lv_i     TYPE i.
 
-
-    APPEND 12 TO lt_table.
-    APPEND 1  TO lt_table.
-    APPEND 10 TO lt_table.
-    APPEND 15 TO lt_table.
-    APPEND 9  TO lt_table.
-    APPEND 2  TO lt_table.
-    APPEND 6  TO lt_table.
-    APPEND 8  TO lt_table.
-    APPEND 0  TO lt_table.
-    APPEND 13 TO lt_table.
-    APPEND 3  TO lt_table.
-    APPEND 4  TO lt_table.
-    APPEND 14 TO lt_table.
-    APPEND 7  TO lt_table.
-    APPEND 5  TO lt_table.
-    APPEND 11 TO lt_table.
-    APPEND 10 TO lt_table.
-    APPEND 15 TO lt_table.
-    APPEND 4  TO lt_table.
-    APPEND 2  TO lt_table.
-    APPEND 7  TO lt_table.
-    APPEND 12 TO lt_table.
-    APPEND 9  TO lt_table.
-    APPEND 5  TO lt_table.
-    APPEND 6  TO lt_table.
-    APPEND 1  TO lt_table.
-    APPEND 13 TO lt_table.
-    APPEND 14 TO lt_table.
-    APPEND 0  TO lt_table.
-    APPEND 11 TO lt_table.
-    APPEND 3  TO lt_table.
-    APPEND 8  TO lt_table.
-    APPEND 9  TO lt_table.
-    APPEND 14 TO lt_table.
-    APPEND 15 TO lt_table.
-    APPEND 5  TO lt_table.
-    APPEND 2  TO lt_table.
-    APPEND 8  TO lt_table.
-    APPEND 12 TO lt_table.
-    APPEND 3  TO lt_table.
-    APPEND 7  TO lt_table.
-    APPEND 0  TO lt_table.
-    APPEND 4  TO lt_table.
-    APPEND 10 TO lt_table.
-    APPEND 1  TO lt_table.
-    APPEND 13 TO lt_table.
-    APPEND 11 TO lt_table.
-    APPEND 6  TO lt_table.
-    APPEND 4  TO lt_table.
-    APPEND 3  TO lt_table.
-    APPEND 2  TO lt_table.
-    APPEND 12 TO lt_table.
-    APPEND 9  TO lt_table.
-    APPEND 5  TO lt_table.
-    APPEND 15 TO lt_table.
-    APPEND 10 TO lt_table.
-    APPEND 11 TO lt_table.
-    APPEND 14 TO lt_table.
-    APPEND 1  TO lt_table.
-    APPEND 7  TO lt_table.
-    APPEND 6  TO lt_table.
-    APPEND 0  TO lt_table.
-    APPEND 8  TO lt_table.
-    APPEND 13 TO lt_table.
-
     lv_index = ( row( iv_b ) * 16 ) + column( iv_b ) + 1.
-    READ TABLE lt_table INDEX lv_index INTO lv_i.
+    READ TABLE mc_s6 INDEX lv_index INTO lv_i.
     ASSERT sy-subrc = 0.
     rv_s = i_to_bits_4( lv_i ).
 
@@ -1403,78 +719,11 @@ CLASS ZCL_DES IMPLEMENTATION.
 
   METHOD s7.
 
-    DATA: lt_table TYPE TABLE OF i,
-          lv_index TYPE i,
+    DATA: lv_index TYPE i,
           lv_i     TYPE i.
 
-
-    APPEND 4  TO lt_table.
-    APPEND 11 TO lt_table.
-    APPEND 2  TO lt_table.
-    APPEND 14 TO lt_table.
-    APPEND 15 TO lt_table.
-    APPEND 0  TO lt_table.
-    APPEND 8  TO lt_table.
-    APPEND 13 TO lt_table.
-    APPEND 3  TO lt_table.
-    APPEND 12 TO lt_table.
-    APPEND 9  TO lt_table.
-    APPEND 7  TO lt_table.
-    APPEND 5  TO lt_table.
-    APPEND 10 TO lt_table.
-    APPEND 6  TO lt_table.
-    APPEND 1  TO lt_table.
-    APPEND 13 TO lt_table.
-    APPEND 0  TO lt_table.
-    APPEND 11 TO lt_table.
-    APPEND 7  TO lt_table.
-    APPEND 4  TO lt_table.
-    APPEND 9  TO lt_table.
-    APPEND 1  TO lt_table.
-    APPEND 10 TO lt_table.
-    APPEND 14 TO lt_table.
-    APPEND 3  TO lt_table.
-    APPEND 5  TO lt_table.
-    APPEND 12 TO lt_table.
-    APPEND 2  TO lt_table.
-    APPEND 15 TO lt_table.
-    APPEND 8  TO lt_table.
-    APPEND 6  TO lt_table.
-    APPEND 1  TO lt_table.
-    APPEND 4  TO lt_table.
-    APPEND 11 TO lt_table.
-    APPEND 13 TO lt_table.
-    APPEND 12 TO lt_table.
-    APPEND 3  TO lt_table.
-    APPEND 7  TO lt_table.
-    APPEND 14 TO lt_table.
-    APPEND 10 TO lt_table.
-    APPEND 15 TO lt_table.
-    APPEND 6  TO lt_table.
-    APPEND 8  TO lt_table.
-    APPEND 0  TO lt_table.
-    APPEND 5  TO lt_table.
-    APPEND 9  TO lt_table.
-    APPEND 2  TO lt_table.
-    APPEND 6  TO lt_table.
-    APPEND 11 TO lt_table.
-    APPEND 13 TO lt_table.
-    APPEND 8  TO lt_table.
-    APPEND 1  TO lt_table.
-    APPEND 4  TO lt_table.
-    APPEND 10 TO lt_table.
-    APPEND 7  TO lt_table.
-    APPEND 9  TO lt_table.
-    APPEND 5  TO lt_table.
-    APPEND 0  TO lt_table.
-    APPEND 15 TO lt_table.
-    APPEND 14 TO lt_table.
-    APPEND 2  TO lt_table.
-    APPEND 3  TO lt_table.
-    APPEND 12 TO lt_table.
-
     lv_index = ( row( iv_b ) * 16 ) + column( iv_b ) + 1.
-    READ TABLE lt_table INDEX lv_index INTO lv_i.
+    READ TABLE mc_s7 INDEX lv_index INTO lv_i.
     ASSERT sy-subrc = 0.
     rv_s = i_to_bits_4( lv_i ).
 
@@ -1483,78 +732,11 @@ CLASS ZCL_DES IMPLEMENTATION.
 
   METHOD s8.
 
-    DATA: lt_table TYPE TABLE OF i,
-          lv_index TYPE i,
+    DATA: lv_index TYPE i,
           lv_i     TYPE i.
 
-
-    APPEND 13 TO lt_table.
-    APPEND 2  TO lt_table.
-    APPEND 8  TO lt_table.
-    APPEND 4  TO lt_table.
-    APPEND 6  TO lt_table.
-    APPEND 15 TO lt_table.
-    APPEND 11 TO lt_table.
-    APPEND 1  TO lt_table.
-    APPEND 10 TO lt_table.
-    APPEND 9  TO lt_table.
-    APPEND 3  TO lt_table.
-    APPEND 14 TO lt_table.
-    APPEND 5  TO lt_table.
-    APPEND 0  TO lt_table.
-    APPEND 12 TO lt_table.
-    APPEND 7  TO lt_table.
-    APPEND 1  TO lt_table.
-    APPEND 15 TO lt_table.
-    APPEND 13 TO lt_table.
-    APPEND 8  TO lt_table.
-    APPEND 10 TO lt_table.
-    APPEND 3  TO lt_table.
-    APPEND 7  TO lt_table.
-    APPEND 4  TO lt_table.
-    APPEND 12 TO lt_table.
-    APPEND 5  TO lt_table.
-    APPEND 6  TO lt_table.
-    APPEND 11 TO lt_table.
-    APPEND 0  TO lt_table.
-    APPEND 14 TO lt_table.
-    APPEND 9  TO lt_table.
-    APPEND 2  TO lt_table.
-    APPEND 7  TO lt_table.
-    APPEND 11 TO lt_table.
-    APPEND 4  TO lt_table.
-    APPEND 1  TO lt_table.
-    APPEND 9  TO lt_table.
-    APPEND 12 TO lt_table.
-    APPEND 14 TO lt_table.
-    APPEND 2  TO lt_table.
-    APPEND 0  TO lt_table.
-    APPEND 6  TO lt_table.
-    APPEND 10 TO lt_table.
-    APPEND 13 TO lt_table.
-    APPEND 15 TO lt_table.
-    APPEND 3  TO lt_table.
-    APPEND 5  TO lt_table.
-    APPEND 8  TO lt_table.
-    APPEND 2  TO lt_table.
-    APPEND 1  TO lt_table.
-    APPEND 14 TO lt_table.
-    APPEND 7  TO lt_table.
-    APPEND 4  TO lt_table.
-    APPEND 10 TO lt_table.
-    APPEND 8  TO lt_table.
-    APPEND 13 TO lt_table.
-    APPEND 15 TO lt_table.
-    APPEND 12 TO lt_table.
-    APPEND 9  TO lt_table.
-    APPEND 0  TO lt_table.
-    APPEND 3  TO lt_table.
-    APPEND 5  TO lt_table.
-    APPEND 6  TO lt_table.
-    APPEND 11 TO lt_table.
-
     lv_index = ( row( iv_b ) * 16 ) + column( iv_b ) + 1.
-    READ TABLE lt_table INDEX lv_index INTO lv_i.
+    READ TABLE mc_s8 INDEX lv_index INTO lv_i.
     ASSERT sy-subrc = 0.
     rv_s = i_to_bits_4( lv_i ).
 
