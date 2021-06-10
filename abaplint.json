@@ -13,7 +13,7 @@
     }
   ],
   "syntax": {
-    "version": "v702",
+    "version": "v740sp02",
     "errorNamespace": "^(Z|Y)",
     "globalConstants": [],
     "globalMacros": []
@@ -285,7 +285,7 @@
     "space_before_colon": true,
     "space_before_dot": true,
     "start_at_tab": true,
-    "superclass_final": true,
+    "superclass_final": false,
     "tabl_enhancement_category": true,
     "type_form_parameters": true,
     "unreachable_code": true,
