@@ -425,8 +425,7 @@ CLASS lcl_ff IMPLEMENTATION.
       ( word = 0 shift = 3 ) ( word = 1 shift = 7 ) ( word = 2 shift = 11 ) ( word = 3 shift = 19 )
       ( word = 4 shift = 3 ) ( word = 5 shift = 7 ) ( word = 6 shift = 11 ) ( word = 7 shift = 19 )
       ( word = 8 shift = 3 ) ( word = 9 shift = 7 ) ( word = 10 shift = 11 ) ( word = 11 shift = 19 )
-      ( word = 12 shift = 3 ) ( word = 13 shift = 7 ) ( word = 14 shift = 11 ) ( word = 15 shift = 19 )
-    ).
+      ( word = 12 shift = 3 ) ( word = 13 shift = 7 ) ( word = 14 shift = 11 ) ( word = 15 shift = 19 ) ).
 
     mv_add = '000000'.
 
@@ -452,8 +451,7 @@ CLASS lcl_gg IMPLEMENTATION.
       ( word = 0 shift = 3 ) ( word = 4 shift = 5 ) ( word = 8 shift = 9 ) ( word = 12 shift = 13 )
       ( word = 1 shift = 3 ) ( word = 5 shift = 5 ) ( word = 9 shift = 9 ) ( word = 13 shift = 13 )
       ( word = 2 shift = 3 ) ( word = 6 shift = 5 ) ( word = 10 shift = 9 ) ( word = 14 shift = 13 )
-      ( word = 3 shift = 3 ) ( word = 7 shift = 5 ) ( word = 11 shift = 9 ) ( word = 15 shift = 13 )
-    ).
+      ( word = 3 shift = 3 ) ( word = 7 shift = 5 ) ( word = 11 shift = 9 ) ( word = 15 shift = 13 ) ).
 
     mv_add = '5A827999'.
 
@@ -481,8 +479,7 @@ CLASS lcl_hh IMPLEMENTATION.
       ( word = 0 shift = 3 ) ( word = 8 shift = 9 ) ( word = 4 shift = 11 ) ( word = 12 shift = 15 )
       ( word = 2 shift = 3 ) ( word = 10 shift = 9 ) ( word = 6 shift = 11 ) ( word = 14 shift = 15 )
       ( word = 1 shift = 3 ) ( word = 9 shift = 9 ) ( word = 5 shift = 11 ) ( word = 13 shift = 15 )
-      ( word = 3 shift = 3 ) ( word = 11 shift = 9 ) ( word = 7 shift = 11 ) ( word = 15 shift = 15 )
-    ).
+      ( word = 3 shift = 3 ) ( word = 11 shift = 9 ) ( word = 7 shift = 11 ) ( word = 15 shift = 15 ) ).
 
     mv_add = '6ED9EBA1'.
   ENDMETHOD.
