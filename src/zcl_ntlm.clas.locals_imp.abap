@@ -196,19 +196,19 @@ CLASS lcl_util IMPLEMENTATION.
 
   METHOD hmac_md5.
 
-    DATA: lo_hmac TYPE REF TO cl_abap_hmac,
-          lv_key  TYPE xstring.
-
+    DATA lv_key  TYPE xstring.
 
     lv_key = iv_key. " convert type
-    lo_hmac = cl_abap_hmac=>get_instance(
-                if_algorithm = 'MD5'
-                if_key       = lv_key ).
-    lo_hmac->update( iv_data ).
-    lo_hmac->final( ).
-    rv_hash = lo_hmac->get_hmac( ).
 
-  ENDMETHOD.                    "hmac_md5
+    cl_abap_hmac=>calculate_hmac_for_raw(
+      EXPORTING
+        if_algorithm   = 'MD5'
+        if_key         = lv_key
+        if_data        = iv_data
+      IMPORTING
+        ef_hmacxstring = rv_hash ).
+
+  ENDMETHOD.
 
   METHOD since_epoc.
 * tenths of a microsecond since 1 jan 1601, encoded as little endian signed 64 bit value
