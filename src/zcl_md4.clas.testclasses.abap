@@ -6,23 +6,26 @@ CLASS zcl_md4 DEFINITION LOCAL FRIENDS lcl_test.
 *----------------------------------------------------------------------*
 *
 *----------------------------------------------------------------------*
-CLASS lcl_test DEFINITION FOR TESTING
+CLASS lcl_test DEFINITION FOR TESTING INHERITING FROM lcl_bit_flipper
   DURATION SHORT
   RISK LEVEL HARMLESS
   FINAL.
 
   PRIVATE SECTION.
+
 * ================
-    METHODS: test1    FOR TESTING,
-             test2    FOR TESTING,
-             test3    FOR TESTING,
-             test4    FOR TESTING,
-             test5    FOR TESTING,
-             test6    FOR TESTING,
-             test7    FOR TESTING,
-             x        FOR TESTING,
-             shift1   FOR TESTING,
-             overflow FOR TESTING.
+    METHODS:
+      test1         FOR TESTING,
+      test2         FOR TESTING,
+      test3         FOR TESTING,
+      test4         FOR TESTING,
+      test5         FOR TESTING,
+      test6         FOR TESTING,
+      test7         FOR TESTING,
+      buffer        FOR TESTING,
+      barrel        FOR TESTING,
+      test_shift    FOR TESTING,
+      test_overflow FOR TESTING.
 
 ENDCLASS.       "lcl_Test
 
@@ -32,13 +35,13 @@ ENDCLASS.       "lcl_Test
 *
 *----------------------------------------------------------------------*
 CLASS lcl_test IMPLEMENTATION.
+
 * ==============================
 
   METHOD test1.
 * ===========
 
     DATA: lv_hash TYPE zcl_md4=>ty_byte16.
-
 
     lv_hash = zcl_md4=>hash( '' ). " empty string
 
@@ -134,13 +137,12 @@ CLASS lcl_test IMPLEMENTATION.
 
   ENDMETHOD.                    "test7
 
-  METHOD shift1.
+  METHOD test_shift.
 * ===========
 
-    DATA: lv_byte4 TYPE zcl_md4=>ty_byte4.
+    DATA: lv_byte4  TYPE zcl_md4=>ty_byte4.
 
-
-    lv_byte4 = zcl_md4=>shift(
+    lv_byte4 = shift(
         iv_input  = 'FFAA0033'
         iv_places = 1 ).
 
@@ -150,46 +152,47 @@ CLASS lcl_test IMPLEMENTATION.
 
   ENDMETHOD.                    "shift1
 
-  METHOD x.
+  METHOD buffer.
 * ===========
 
-    DATA: lv_word TYPE zcl_md4=>ty_byte4,
-          lv_xstr TYPE xstring.
+    DATA: lv_word   TYPE zcl_md4=>ty_byte4,
+          lo_buffer TYPE REF TO lcl_buffer.
 
+    lo_buffer = NEW lcl_buffer( zcl_md4=>codepage( 'a' ) ).
 
-    lv_xstr = zcl_md4=>padding_length( zcl_md4=>codepage( 'a' ) ).
+    cl_abap_unit_assert=>assert_equals(
+      exp  = 1
+      act  = lo_buffer->get_blocks( )
+      quit = if_aunit_constants=>no ).
 
-    lv_word = zcl_md4=>x(
-        iv_xstr  = lv_xstr
-        iv_block = 1
-        iv_word  = 0 ).
+    lo_buffer->set_block( 1 ).
+    lv_word = lo_buffer->get_word( 0 ).
+
     cl_abap_unit_assert=>assert_equals(
       exp  = '00008061'
       act  = lv_word
       quit = if_aunit_constants=>no ).
 
-    lv_word = zcl_md4=>x(
-        iv_xstr  = lv_xstr
-        iv_block = 1
-        iv_word  = 14 ).
+    lo_buffer->set_block( 1 ).
+    lv_word = lo_buffer->get_word( 14 ).
+
     cl_abap_unit_assert=>assert_equals(
       exp = '00000008'
       act = lv_word
       quit = if_aunit_constants=>no ).
 
-    lv_word = zcl_md4=>x(
-        iv_xstr  = lv_xstr
-        iv_block = 1
-        iv_word  = 15 ).
+    lo_buffer->set_block( 1 ).
+    lv_word = lo_buffer->get_word( 15 ).
+
     cl_abap_unit_assert=>assert_equals(
       exp = '00000000'
       act = lv_word
       quit = if_aunit_constants=>no ).
 
-    lv_word = zcl_md4=>x(
-        iv_xstr  = 'FF0000FF'
-        iv_block = 1
-        iv_word  = 0 ).
+    lo_buffer = NEW #( 'FF0000FF' ).
+    lo_buffer->set_block( 1 ).
+    lv_word = lo_buffer->get_word( 0 ).
+
     cl_abap_unit_assert=>assert_equals(
       exp  = 'FF0000FF'
       act  = lv_word
@@ -197,42 +200,184 @@ CLASS lcl_test IMPLEMENTATION.
 
   ENDMETHOD.                    "x1
 
-  METHOD overflow.
+  METHOD test_overflow.
 * ===========
 
     DATA: lv_word TYPE zcl_md4=>ty_byte4.
 
 
-    lv_word = zcl_md4=>overflow( 2147483647 ).
+    lv_word = overflow( 2147483647 ).
     cl_abap_unit_assert=>assert_equals(
       exp = '7FFFFFFF'
       act = lv_word
       quit = if_aunit_constants=>no ).
 
-    lv_word = zcl_md4=>overflow( -2147483648 ).
+    lv_word = overflow( -2147483648 ).
     cl_abap_unit_assert=>assert_equals(
       exp = '80000000'
       act = lv_word
       quit = if_aunit_constants=>no ).
 
-    lv_word = zcl_md4=>overflow( 2147483647 + 1 ).
+    lv_word = overflow( 2147483647 + 1 ).
     cl_abap_unit_assert=>assert_equals(
       exp = '80000000'
       act = lv_word
       quit = if_aunit_constants=>no ).
 
-    lv_word = zcl_md4=>overflow( -2147483648 - 1 ).
+    lv_word = overflow( -2147483648 - 1 ).
     cl_abap_unit_assert=>assert_equals(
       exp = '7FFFFFFF'
       act = lv_word
       quit = if_aunit_constants=>no ).
 
-    lv_word = zcl_md4=>overflow( 2 ).
+    lv_word = overflow( 2 ).
     cl_abap_unit_assert=>assert_equals(
       exp = '00000002'
       act = lv_word
       quit = if_aunit_constants=>no ).
 
   ENDMETHOD.                    "overflow1
+
+
+  METHOD barrel.
+
+    DATA: lv_word   TYPE zcl_md4=>ty_byte4,
+          lo_barrel TYPE REF TO lcl_barrel.
+
+    lo_barrel = NEW #( ).
+
+    lo_barrel->reset( ).
+    lv_word = lo_barrel->get( 0 ).
+    cl_abap_unit_assert=>assert_equals(
+      exp = '67452301'
+      act = lv_word
+      quit = if_aunit_constants=>no ).
+
+    lv_word = lo_barrel->get( 1 ).
+    cl_abap_unit_assert=>assert_equals(
+      exp = 'EFCDAB89'
+      act = lv_word
+      quit = if_aunit_constants=>no ).
+
+    lv_word = lo_barrel->get( 2 ).
+    cl_abap_unit_assert=>assert_equals(
+      exp = '98BADCFE'
+      act = lv_word
+      quit = if_aunit_constants=>no ).
+
+    lv_word = lo_barrel->get( 3 ).
+    cl_abap_unit_assert=>assert_equals(
+      exp = '10325476'
+      act = lv_word
+      quit = if_aunit_constants=>no ).
+
+    lo_barrel->roll( ).
+
+    lv_word = lo_barrel->get( 0 ).
+    cl_abap_unit_assert=>assert_equals(
+      exp = '10325476'
+      act = lv_word
+      quit = if_aunit_constants=>no ).
+
+    lo_barrel->roll( ).
+
+    lv_word = lo_barrel->get( 0 ).
+    cl_abap_unit_assert=>assert_equals(
+      exp = '98BADCFE'
+      act = lv_word
+      quit = if_aunit_constants=>no ).
+
+    lo_barrel->roll( ).
+
+    lv_word = lo_barrel->get( 0 ).
+    cl_abap_unit_assert=>assert_equals(
+      exp = 'EFCDAB89'
+      act = lv_word
+      quit = if_aunit_constants=>no ).
+
+    lo_barrel->roll( ).
+
+    lv_word = lo_barrel->get( 0 ).
+    cl_abap_unit_assert=>assert_equals(
+      exp = '67452301'
+      act = lv_word
+      quit = if_aunit_constants=>no ).
+
+    lo_barrel->reset( ).
+
+    lo_barrel->roll( ).
+    lo_barrel->set( '00000004' ).
+
+    lv_word = lo_barrel->get( 0 ).
+    cl_abap_unit_assert=>assert_equals(
+      exp = '00000004'
+      act = lv_word
+      quit = if_aunit_constants=>no ).
+
+    lo_barrel->roll( ).
+    lo_barrel->set( '00000003' ).
+
+    lv_word = lo_barrel->get( 0 ).
+    cl_abap_unit_assert=>assert_equals(
+      exp = '00000003'
+      act = lv_word
+      quit = if_aunit_constants=>no ).
+
+    lo_barrel->roll( ).
+    lo_barrel->set( '00000002' ).
+
+    lv_word = lo_barrel->get( 0 ).
+    cl_abap_unit_assert=>assert_equals(
+      exp = '00000002'
+      act = lv_word
+      quit = if_aunit_constants=>no ).
+
+    lo_barrel->roll( ).
+    lo_barrel->set( '00000001' ).
+
+    lv_word = lo_barrel->get( 0 ).
+    cl_abap_unit_assert=>assert_equals(
+      exp = '00000001'
+      act = lv_word
+      quit = if_aunit_constants=>no ).
+
+    lo_barrel->snapshot( ).
+    lo_barrel->accumulate( ).
+    lo_barrel->reset( ).
+
+    lv_word = lo_barrel->get( 0 ).
+    cl_abap_unit_assert=>assert_equals(
+      exp = '00000002'
+      act = lv_word
+      quit = if_aunit_constants=>no ).
+
+    lv_word = lo_barrel->get( 1 ).
+    cl_abap_unit_assert=>assert_equals(
+      exp = '00000004'
+      act = lv_word
+      quit = if_aunit_constants=>no ).
+
+    lv_word = lo_barrel->get( 2 ).
+    cl_abap_unit_assert=>assert_equals(
+      exp = '00000006'
+      act = lv_word
+      quit = if_aunit_constants=>no ).
+
+    lv_word = lo_barrel->get( 3 ).
+    cl_abap_unit_assert=>assert_equals(
+      exp = '00000008'
+      act = lv_word
+      quit = if_aunit_constants=>no ).
+
+    lo_barrel->snapshot( ).
+    lo_barrel->set( 'FFFFFFFF' ).
+    lo_barrel->accumulate( ).
+    lv_word = lo_barrel->get( 0 ).
+    cl_abap_unit_assert=>assert_equals(
+      exp = '00000001'
+      act = lv_word
+      quit = if_aunit_constants=>no ).
+
+  ENDMETHOD.
 
 ENDCLASS.       "lcl_Test
