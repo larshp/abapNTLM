@@ -1,37 +1,37 @@
-class ZCL_MD4 definition
-  public
-  create public .
+CLASS zcl_md4 DEFINITION
+  PUBLIC
+  CREATE PUBLIC .
 
-  public section.
-    type-pools ABAP .
-    class ZCL_MD4 definition load .
+  PUBLIC SECTION.
+    TYPE-POOLS abap .
+    CLASS zcl_md4 DEFINITION LOAD .
 
-  types:
+    TYPES:
 *"* public components of class ZCL_MD4
 *"* do not include other source files here!!!
-    ty_byte4 TYPE x LENGTH 4 .
-  types:
-    ty_byte16 TYPE x LENGTH 16 .
+      ty_byte4 TYPE x LENGTH 4 .
+    TYPES:
+      ty_byte16 TYPE x LENGTH 16 .
 
-  class-methods HASH
-    importing
-      !IV_STRING type CLIKE
-      !IV_ENCODING type ABAP_ENCODING default 'UTF-8'
-    returning
-      value(RV_HASH) type TY_BYTE16 .
-  class-methods HASH_HEX
-    importing
-      !IV_XSTR type XSTRING
-    returning
-      value(RV_HASH) type TY_BYTE16 .
-protected section.
+    CLASS-METHODS hash
+      IMPORTING
+        !iv_string     TYPE clike
+        !iv_encoding   TYPE abap_encoding DEFAULT 'UTF-8'
+      RETURNING
+        VALUE(rv_hash) TYPE ty_byte16 .
+    CLASS-METHODS hash_hex
+      IMPORTING
+        !iv_xstr       TYPE xstring
+      RETURNING
+        VALUE(rv_hash) TYPE ty_byte16 .
+  PROTECTED SECTION.
 
-  class-methods CODEPAGE
-    importing
-      !IV_ENCODING type ABAP_ENCODING default 'UTF-8'
-      !IV_STRING type CLIKE
-    returning
-      value(RV_XSTRING) type XSTRING .
+    CLASS-METHODS codepage
+      IMPORTING
+        !iv_encoding      TYPE abap_encoding DEFAULT 'UTF-8'
+        !iv_string        TYPE clike
+      RETURNING
+        VALUE(rv_xstring) TYPE xstring .
   PRIVATE SECTION.
 *"* private components of class ZCL_MD4
 *"* do not include other source files here!!!
@@ -42,7 +42,7 @@ ENDCLASS.
 CLASS ZCL_MD4 IMPLEMENTATION.
 
 
-  METHOD CODEPAGE.
+  METHOD codepage.
 
     DATA: lo_obj TYPE REF TO cl_abap_conv_out_ce.
 
@@ -57,7 +57,7 @@ CLASS ZCL_MD4 IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD HASH.
+  METHOD hash.
 
 * The MIT License (MIT)
 *
@@ -94,7 +94,7 @@ CLASS ZCL_MD4 IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD HASH_HEX.
+  METHOD hash_hex.
 
 * The MIT License (MIT)
 *
