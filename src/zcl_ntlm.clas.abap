@@ -649,7 +649,7 @@ CLASS ZCL_NTLM IMPLEMENTATION.
 
     DATA: lo_reader TYPE REF TO lcl_reader.
 
-    lo_reader = new #(
+    lo_reader = NEW #(
       iv_value = iv_msg
       iv_type  = c_message_type_1 ).
 
