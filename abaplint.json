@@ -111,7 +111,7 @@
     "check_syntax": true,
     "class_attribute_names": {
       "ignoreExceptions": true,
-      "statics": "^G._.*$",
+      "statics": "^M._.*$",
       "constants": "",
       "ignoreInterfaces": false,
       "ignoreLocal": false,
