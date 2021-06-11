@@ -635,7 +635,8 @@ CLASS lcl_reader DEFINITION FINAL.
   PUBLIC SECTION.
     METHODS constructor
       IMPORTING iv_value TYPE string
-                iv_type  TYPE xstring.
+                iv_type  TYPE xstring
+      RAISING zcx_ntlm_protocol_error.
 
     METHODS flags
       RETURNING
@@ -643,13 +644,15 @@ CLASS lcl_reader DEFINITION FINAL.
 
     METHODS data_raw
       RETURNING
-        VALUE(rv_data) TYPE xstring.
+        VALUE(rv_data) TYPE xstring
+      RAISING zcx_ntlm_protocol_error.
 
     METHODS data_str
       IMPORTING
         iv_oem         TYPE abap_bool
       RETURNING
-        VALUE(rv_data) TYPE string.
+        VALUE(rv_data) TYPE string
+      RAISING zcx_ntlm_protocol_error.
 
     METHODS skip
       IMPORTING
@@ -692,12 +695,12 @@ CLASS lcl_reader IMPLEMENTATION.
     mv_original = lcl_convert=>base64_decode( iv_value ).
 
     IF xstrlen( mv_original ) < 8 OR mv_original(8) <> zcl_ntlm=>c_signature.
-      BREAK-POINT.
+      RAISE EXCEPTION TYPE zcx_ntlm_protocol_error.
     ENDIF.
     mv_current = mv_original+8.
 
     IF xstrlen( mv_current ) < 4 OR mv_current(4) <> iv_type.
-      BREAK-POINT.
+      RAISE EXCEPTION TYPE zcx_ntlm_protocol_error.
     ENDIF.
     mv_current = mv_current+4.
 
@@ -728,7 +731,7 @@ CLASS lcl_reader IMPLEMENTATION.
       RETURN.
     ENDIF.
     IF ls_fields-len <> ls_fields-maxlen.
-      BREAK-POINT.
+      RAISE EXCEPTION TYPE zcx_ntlm_protocol_error.
     ENDIF.
     rv_data = mv_original+ls_fields-offset(ls_fields-len).
 
