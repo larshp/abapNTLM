@@ -20,10 +20,10 @@ CLASS zcl_ntlm DEFINITION
       RAISING
         cx_static_check .
   PROTECTED SECTION.
-*"* protected components of class ZCL_NTLM
-*"* do not include other source files here!!!
 
     TYPES:
+*"* protected components of class ZCL_NTLM
+*"* do not include other source files here!!!
       ty_byte2 TYPE x LENGTH 2 .
     TYPES:
       ty_byte4 TYPE x LENGTH 4 .
@@ -94,10 +94,10 @@ CLASS zcl_ntlm DEFINITION
         version     TYPE ty_byte8,
       END OF ty_type3 .
 
-    CONSTANTS c_message_type_1 TYPE xstring VALUE '01000000'. "#EC NOTEXT
-    CONSTANTS c_signature TYPE xstring VALUE '4E544C4D53535000'. "#EC NOTEXT
-    CONSTANTS c_message_type_2 TYPE xstring VALUE '02000000'. "#EC NOTEXT
-    CONSTANTS c_message_type_3 TYPE xstring VALUE '03000000'. "#EC NOTEXT
+    CONSTANTS c_message_type_1 TYPE xstring VALUE '01000000' ##NO_TEXT.
+    CONSTANTS c_signature TYPE xstring VALUE '4E544C4D53535000' ##NO_TEXT.
+    CONSTANTS c_message_type_2 TYPE xstring VALUE '02000000' ##NO_TEXT.
+    CONSTANTS c_message_type_3 TYPE xstring VALUE '03000000' ##NO_TEXT.
 
     CLASS-METHODS ntlm2_session_response
       IMPORTING
@@ -124,15 +124,18 @@ CLASS zcl_ntlm DEFINITION
         !iv_url          TYPE clike
         !iv_ssl_id       TYPE ssfapplssl
       RETURNING
-        VALUE(ri_client) TYPE REF TO if_http_client .
-    TYPE-POOLS abap .
+        VALUE(ri_client) TYPE REF TO if_http_client
+      RAISING
+        zcx_ntlm_error .
     CLASS-METHODS http_2
       IMPORTING
         !iv_authorization       TYPE string
         !ii_client              TYPE REF TO if_http_client
         !iv_ignore              TYPE abap_bool DEFAULT abap_false
       RETURNING
-        VALUE(rv_authorization) TYPE string .
+        VALUE(rv_authorization) TYPE string
+      RAISING
+        zcx_ntlm_error .
     CLASS-METHODS lmv2_response
       IMPORTING
         !iv_password       TYPE clike
@@ -194,7 +197,9 @@ CLASS zcl_ntlm DEFINITION
       IMPORTING
         !iv_msg        TYPE string
       RETURNING
-        VALUE(rs_data) TYPE ty_type1 .
+        VALUE(rs_data) TYPE ty_type1
+      RAISING
+        zcx_ntlm_protocol_error .
     CLASS-METHODS type_2_encode
       IMPORTING
         !is_data      TYPE ty_type2
@@ -205,7 +210,9 @@ CLASS zcl_ntlm DEFINITION
         !iv_msg        TYPE string
         !iv_oem        TYPE abap_bool DEFAULT abap_false
       RETURNING
-        VALUE(rs_data) TYPE ty_type3 .
+        VALUE(rs_data) TYPE ty_type3
+      RAISING
+        zcx_ntlm_protocol_error .
     CLASS-METHODS type_1_encode
       IMPORTING
         !is_data      TYPE ty_type1
@@ -213,10 +220,11 @@ CLASS zcl_ntlm DEFINITION
         VALUE(rv_msg) TYPE string .
     CLASS-METHODS type_2_decode
       IMPORTING
-        !iv_msg        TYPE string
-        !iv_oem        TYPE abap_bool DEFAULT abap_false
+                !iv_msg        TYPE string
+                !iv_oem        TYPE abap_bool DEFAULT abap_false
       RETURNING
-        VALUE(rs_data) TYPE ty_type2 .
+                VALUE(rs_data) TYPE ty_type2
+      RAISING   zcx_ntlm_protocol_error.
     CLASS-METHODS type_3_encode
       IMPORTING
         !is_data      TYPE ty_type3
@@ -281,8 +289,7 @@ CLASS ZCL_NTLM IMPLEMENTATION.
                        ii_client        = ri_client ).
 
     IF strlen( lv_value ) <= 5.
-      BREAK-POINT.
-      RETURN.
+      RAISE EXCEPTION TYPE zcx_ntlm_protocol_error.
     ENDIF.
 
 * decode type 2 message
@@ -334,8 +341,7 @@ CLASS ZCL_NTLM IMPLEMENTATION.
         http_processing_failed     = 3
         OTHERS                     = 4 ).
     IF sy-subrc <> 0.
-* todo
-      BREAK-POINT.
+      RAISE EXCEPTION TYPE zcx_ntlm_network_error.
     ENDIF.
 
     ri_client->response->get_header_fields( CHANGING fields = lt_fields ).
@@ -344,7 +350,7 @@ CLASS ZCL_NTLM IMPLEMENTATION.
       WITH KEY name = 'www-authenticate' value = 'NTLM'.    "#EC NOTEXT
     IF sy-subrc <> 0.
 * no NTML destination
-      BREAK-POINT.
+      RAISE EXCEPTION TYPE zcx_ntlm_protocol_error.
     ENDIF.
 
   ENDMETHOD.
@@ -374,8 +380,7 @@ CLASS ZCL_NTLM IMPLEMENTATION.
         http_processing_failed     = 3
         OTHERS                     = 4 ).
     IF sy-subrc <> 0.
-* todo
-      BREAK-POINT.
+      RAISE EXCEPTION TYPE zcx_ntlm_network_error.
     ENDIF.
 
     IF iv_ignore = abap_false.
@@ -385,7 +390,7 @@ CLASS ZCL_NTLM IMPLEMENTATION.
         WITH KEY name = 'www-authenticate'.                 "#EC NOTEXT
       IF sy-subrc <> 0.
 * no NTML destination
-        BREAK-POINT.
+        RAISE EXCEPTION TYPE zcx_ntlm_protocol_error.
       ENDIF.
 
       rv_authorization = <ls_field>-value.
@@ -592,7 +597,6 @@ CLASS ZCL_NTLM IMPLEMENTATION.
 
     IF iv_time IS INITIAL.
       lv_time = lcl_util=>since_epoc_hex( ).
-      WRITE: / 'ntlmv2 time', lv_time.
     ELSE.
       lv_time = iv_time.
     ENDIF.
@@ -751,13 +755,10 @@ CLASS ZCL_NTLM IMPLEMENTATION.
 
     DATA: lv_nonce TYPE ty_byte8.
 
-
-    WRITE: / 'server challenge', is_data2-challenge.
-
     IF iv_lmv2_nonce IS INITIAL.
       iv_lmv2_nonce = lcl_util=>random_nonce( ).
-      WRITE: / 'lmv2 nonce', iv_lmv2_nonce.
     ENDIF.
+
     rs_data3-lm_resp = lmv2_response( iv_password  = iv_password
                                       iv_domain    = iv_domain
                                       iv_username  = iv_username
@@ -766,8 +767,8 @@ CLASS ZCL_NTLM IMPLEMENTATION.
 
     IF iv_ntlmv2_nonce IS INITIAL.
       iv_ntlmv2_nonce = lcl_util=>random_nonce( ).
-      WRITE: / 'ntlmv2 nonce', iv_ntlmv2_nonce.
     ENDIF.
+
     rs_data3-ntlm_resp = ntlmv2_response( iv_password  = iv_password
                                           iv_username  = iv_username
                                           iv_target    = iv_domain

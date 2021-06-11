@@ -257,7 +257,11 @@ CLASS lcl_test IMPLEMENTATION.
              '0000000F574F524B53544154494F4E444F4D' &&
              '41494E'.
 
-    ls_data1 = zcl_ntlm=>type_1_decode( lcl_convert=>base64_encode( lv_raw ) ).
+    TRY.
+        ls_data1 = zcl_ntlm=>type_1_decode( lcl_convert=>base64_encode( lv_raw ) ).
+      CATCH zcx_ntlm_error.
+        cl_abap_unit_assert=>fail( quit = if_aunit_constants=>no ).
+    ENDTRY.
 
     cl_abap_unit_assert=>assert_equals(
         exp  = 'DOMAIN'
@@ -299,7 +303,12 @@ CLASS lcl_test IMPLEMENTATION.
                'RABPAE0AQQBJAE4AAgAMAEQATwBNAEEASQBOAAEADABTAEUAUgBWAEUAUgAEABQAZA' &&
                'BvAG0AYQBpAG4ALgBjAG8AbQADACIAcwBlAHIAdgBlAHIALgBkAG8AbQBhAGkAbgAu' &&
                'AGMAbwBtAAAAAAA='.
-    zcl_ntlm=>type_2_decode( lv_value ).
+
+    TRY.
+        zcl_ntlm=>type_2_decode( lv_value ).
+      CATCH zcx_ntlm_error.
+        cl_abap_unit_assert=>fail( quit = if_aunit_constants=>no ).
+    ENDTRY.
 
 
     lv_xstr = '4E544C4D53535000020000000C000C00' &&
@@ -308,7 +317,12 @@ CLASS lcl_test IMPLEMENTATION.
               '060070170000000F5300650072007600' &&
               '65007200'.
     lv_value = lcl_convert=>base64_encode( lv_xstr ).
-    zcl_ntlm=>type_2_decode( lv_value ).
+
+    TRY.
+        zcl_ntlm=>type_2_decode( lv_value ).
+      CATCH zcx_ntlm_error.
+        cl_abap_unit_assert=>fail( quit = if_aunit_constants=>no ).
+    ENDTRY.
 
 
   ENDMETHOD.                    "type_2_decode

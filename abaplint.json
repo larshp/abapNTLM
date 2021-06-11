@@ -268,7 +268,7 @@
     },
     "release_idoc": true,
     "remove_descriptions": {
-      "ignoreExceptions": false,
+      "ignoreExceptions": true,
       "ignoreWorkflow": false
     },
     "rfc_error_handling": false,
