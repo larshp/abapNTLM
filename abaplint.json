@@ -13,7 +13,7 @@
     }
   ],
   "syntax": {
-    "version": "v702",
+    "version": "v740sp02",
     "errorNamespace": "^(Z|Y)",
     "globalConstants": [],
     "globalMacros": []
@@ -111,7 +111,7 @@
     "check_syntax": true,
     "class_attribute_names": {
       "ignoreExceptions": true,
-      "statics": "^G._.*$",
+      "statics": "^M._.*$",
       "constants": "",
       "ignoreInterfaces": false,
       "ignoreLocal": false,
@@ -268,7 +268,7 @@
     },
     "release_idoc": true,
     "remove_descriptions": {
-      "ignoreExceptions": false,
+      "ignoreExceptions": true,
       "ignoreWorkflow": false
     },
     "rfc_error_handling": false,
@@ -285,7 +285,7 @@
     "space_before_colon": true,
     "space_before_dot": true,
     "start_at_tab": true,
-    "superclass_final": true,
+    "superclass_final": false,
     "tabl_enhancement_category": true,
     "type_form_parameters": true,
     "unreachable_code": true,
