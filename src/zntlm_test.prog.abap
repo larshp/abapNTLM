@@ -1,7 +1,7 @@
 REPORT zntlm_test.
 
-PARAMETERS: p_get    TYPE xfeld RADIOBUTTON GROUP 1,
-            p_post   TYPE xfeld RADIOBUTTON GROUP 1,
+PARAMETERS: p_get    TYPE abap_bool RADIOBUTTON GROUP 1,
+            p_post   TYPE abap_bool RADIOBUTTON GROUP 1,
             p_url    TYPE text100,
             p_user   TYPE text20,
             p_passw  TYPE text20,
