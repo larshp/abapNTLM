@@ -271,12 +271,18 @@ CLASS lcl_barrel IMPLEMENTATION.
 
   METHOD accumulate.
     DATA:
-      lv_f TYPE f.
+      lv_val1 TYPE zcl_md4=>ty_byte4,
+      lv_val2 TYPE zcl_md4=>ty_byte4,
+      lv_f    TYPE f.
 
     reset( ).
 
     DO lines( mt_barrel ) TIMES.
-      lv_f = mt_barrel[ mv_index + 1 ] + mt_old_barrel[ mv_index + 1 ].
+      READ TABLE mt_barrel INDEX mv_index + 1 INTO lv_val1.
+      ASSERT sy-subrc = 0.
+      READ TABLE mt_old_barrel INDEX mv_index + 1 INTO lv_val2.
+      ASSERT sy-subrc = 0.
+      lv_f = lv_val1 + lv_val2.
       set( overflow( lv_f ) ).
       roll( ).
     ENDDO.
