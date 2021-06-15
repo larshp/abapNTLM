@@ -9,16 +9,31 @@ CLASS zcl_ntlm DEFINITION
 
     CLASS-METHODS get
       IMPORTING
-        !iv_username     TYPE clike
-        !iv_password     TYPE clike
-        !iv_domain       TYPE clike
-        !iv_workstation  TYPE clike
-        !iv_url          TYPE clike
-        !iv_ssl_id       TYPE ssfapplssl DEFAULT 'ANONYM'
+        iv_username      TYPE clike
+        iv_password      TYPE clike
+        iv_domain        TYPE clike
+        iv_workstation   TYPE clike
+        iv_ssl_id        TYPE ssfapplssl DEFAULT 'ANONYM'
+        iv_url           TYPE clike
       RETURNING
-        VALUE(ri_client) TYPE REF TO if_http_client
+        VALUE(ro_client) TYPE REF TO if_http_client
       RAISING
-        cx_static_check .
+        cx_static_check.
+    CLASS-METHODS post
+      IMPORTING
+        iv_username      TYPE clike
+        iv_password      TYPE clike
+        iv_domain        TYPE clike
+        iv_workstation   TYPE clike
+        iv_ssl_id        TYPE ssfapplssl DEFAULT 'ANONYM'
+        iv_url           TYPE clike
+        iv_content_type  TYPE clike
+        iv_body          TYPE clike
+      RETURNING
+        VALUE(ro_client) TYPE REF TO if_http_client
+      RAISING
+        cx_static_check.
+
   PROTECTED SECTION.
 
     TYPES:
@@ -98,6 +113,19 @@ CLASS zcl_ntlm DEFINITION
     CONSTANTS c_signature TYPE xstring VALUE '4E544C4D53535000' ##NO_TEXT.
     CONSTANTS c_message_type_2 TYPE xstring VALUE '02000000' ##NO_TEXT.
     CONSTANTS c_message_type_3 TYPE xstring VALUE '03000000' ##NO_TEXT.
+
+    CLASS-METHODS authenticated_client
+      IMPORTING
+                iv_username    TYPE clike
+                iv_password    TYPE clike
+                iv_domain      TYPE clike
+                iv_workstation TYPE clike
+                iv_ssl_id      TYPE ssfapplssl
+                iv_url         TYPE clike
+      EXPORTING
+                eo_client      TYPE REF TO if_http_client
+                ev_auth        TYPE string
+      RAISING   cx_static_check.
 
     CLASS-METHODS ntlm2_session_response
       IMPORTING
@@ -242,6 +270,44 @@ ENDCLASS.
 CLASS ZCL_NTLM IMPLEMENTATION.
 
 
+  METHOD authenticated_client.
+    DATA: lv_value TYPE string,
+          ls_data1 TYPE ty_type1,
+          ls_data2 TYPE ty_type2,
+          ls_data3 TYPE ty_type3.
+
+
+    eo_client = http_1( iv_url    = iv_url
+                        iv_ssl_id = iv_ssl_id ).
+
+* build type 1 message
+    ls_data1 = type_1_build( ).
+    lv_value = type_1_encode( ls_data1 ).
+    CONCATENATE 'NTLM' lv_value INTO lv_value SEPARATED BY space.
+
+    lv_value = http_2( iv_authorization = lv_value
+                       ii_client        = eo_client ).
+
+    IF strlen( lv_value ) <= 5.
+      RAISE EXCEPTION TYPE zcx_ntlm_protocol_error.
+    ENDIF.
+
+* decode type 2 message
+    lv_value = lv_value+5.
+    ls_data2 = type_2_decode( lv_value ).
+
+* build type 3 message
+    ls_data3 = type_3_build( iv_username    = iv_username
+                             iv_password    = iv_password
+                             iv_domain      = iv_domain
+                             iv_workstation = iv_workstation
+                             is_data2       = ls_data2 ).
+    lv_value = type_3_encode( ls_data3 ).
+    CONCATENATE 'NTLM' lv_value INTO ev_auth SEPARATED BY space.
+
+  ENDMETHOD.
+
+
   METHOD get.
 
 * The MIT License (MIT)
@@ -271,43 +337,37 @@ CLASS ZCL_NTLM IMPLEMENTATION.
 * http://blogs.msdn.com/b/chiranth/archive/2013/09/21/ntlm-want-to-know-how-it-works.aspx
 * http://www.innovation.ch/personal/ronald/ntlm.html
 
-    DATA: lv_value TYPE string,
-          ls_data1 TYPE ty_type1,
-          ls_data2 TYPE ty_type2,
-          ls_data3 TYPE ty_type3.
+    DATA: lv_auth   TYPE string.
 
+    authenticated_client(
+      EXPORTING
+        iv_domain = iv_domain
+        iv_username = iv_username
+        iv_password = iv_password
+        iv_workstation = iv_workstation
+        iv_url = iv_url
+        iv_ssl_id = iv_ssl_id
+      IMPORTING
+        eo_client = ro_client
+        ev_auth = lv_auth ).
 
-    ri_client = http_1( iv_url    = iv_url
-                        iv_ssl_id = iv_ssl_id ).
+    ro_client->request->set_header_field(
+        name  = 'authorization'
+        value = lv_auth ).                                  "#EC NOTEXT
+    ro_client->request->set_header_field(
+        name  = 'Connection'
+        value = 'Keep-Alive' ).
 
-* build type 1 message
-    ls_data1 = type_1_build( ).
-    lv_value = type_1_encode( ls_data1 ).
-    CONCATENATE 'NTLM' lv_value INTO lv_value SEPARATED BY space.
-
-    lv_value = http_2( iv_authorization = lv_value
-                       ii_client        = ri_client ).
-
-    IF strlen( lv_value ) <= 5.
-      RAISE EXCEPTION TYPE zcx_ntlm_protocol_error.
+    ro_client->send( ).
+    ro_client->receive(
+      EXCEPTIONS
+        http_communication_failure = 1
+        http_invalid_state         = 2
+        http_processing_failed     = 3
+        OTHERS                     = 4 ).
+    IF sy-subrc <> 0.
+      RAISE EXCEPTION TYPE zcx_ntlm_network_error.
     ENDIF.
-
-* decode type 2 message
-    lv_value = lv_value+5.
-    ls_data2 = type_2_decode( lv_value ).
-
-* build type 3 message
-    ls_data3 = type_3_build( iv_username    = iv_username
-                             iv_password    = iv_password
-                             iv_domain      = iv_domain
-                             iv_workstation = iv_workstation
-                             is_data2       = ls_data2 ).
-    lv_value = type_3_encode( ls_data3 ).
-    CONCATENATE 'NTLM' lv_value INTO lv_value SEPARATED BY space.
-
-    http_2( iv_authorization = lv_value
-            ii_client        = ri_client
-            iv_ignore        = abap_true ).
 
   ENDMETHOD.
 
@@ -611,6 +671,78 @@ CLASS ZCL_NTLM IMPLEMENTATION.
                                   iv_data = lv_data ).
 
     CONCATENATE lv_hmac lv_blob INTO rv_response IN BYTE MODE.
+
+  ENDMETHOD.
+
+
+  METHOD post.
+
+* The MIT License (MIT)
+*
+* Copyright (c) 2015 Lars Hvam
+*
+* Permission is hereby granted, free of charge, to any person obtaining a copy
+* of this software and associated documentation files (the "Software"), to deal
+* in the Software without restriction, including without limitation the rights
+* to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+* copies of the Software, and to permit persons to whom the Software is
+* furnished to do so, subject to the following conditions:
+*
+* The above copyright notice and this permission notice shall be included in all
+* copies or substantial portions of the Software.
+*
+* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+* FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+* AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+* LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+* OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+* SOFTWARE.
+
+* https://msdn.microsoft.com/en-us/library/cc236621.aspx
+* http://davenport.sourceforge.net/ntlm.html
+* http://blogs.msdn.com/b/chiranth/archive/2013/09/21/ntlm-want-to-know-how-it-works.aspx
+* http://www.innovation.ch/personal/ronald/ntlm.html
+
+    DATA: lv_auth         TYPE string.
+
+    authenticated_client(
+      EXPORTING
+        iv_domain = iv_domain
+        iv_username = iv_username
+        iv_password = iv_password
+        iv_workstation = iv_workstation
+        iv_url = iv_url
+        iv_ssl_id = iv_ssl_id
+      IMPORTING
+        eo_client = ro_client
+        ev_auth = lv_auth ).
+
+    " Set POST values
+    ro_client->request->set_method( 'POST' ).
+    ro_client->request->set_header_field(
+        name  = 'Content-Type'
+        value = |{ iv_content_type }| ).
+    ro_client->request->set_cdata( |{ iv_body }| ).
+
+    " Set NTLM values
+    ro_client->request->set_header_field(
+        name  = 'authorization'
+        value = lv_auth ).                                  "#EC NOTEXT
+    ro_client->request->set_header_field(
+        name  = 'Connection'
+        value = 'Keep-Alive' ).
+
+    ro_client->send( ).
+    ro_client->receive(
+      EXCEPTIONS
+        http_communication_failure = 1
+        http_invalid_state         = 2
+        http_processing_failed     = 3
+        OTHERS                     = 4 ).
+    IF sy-subrc <> 0.
+      RAISE EXCEPTION TYPE zcx_ntlm_network_error.
+    ENDIF.
 
   ENDMETHOD.
 

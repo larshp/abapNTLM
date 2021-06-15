@@ -1,10 +1,14 @@
 REPORT zntlm_test.
 
-PARAMETERS: p_url    TYPE text100,
+PARAMETERS: p_get    TYPE abap_bool RADIOBUTTON GROUP 1,
+            p_post   TYPE abap_bool RADIOBUTTON GROUP 1,
+            p_url    TYPE text100,
             p_user   TYPE text20,
             p_passw  TYPE text20,
             p_domain TYPE text20,
-            p_workst TYPE text20.
+            p_workst TYPE text20,
+            p_ct     TYPE text50,
+            p_body   TYPE text100.
 
 INITIALIZATION.
   PERFORM initialization.
@@ -25,12 +29,24 @@ FORM run RAISING cx_static_check.
 
   FIELD-SYMBOLS: <ls_field> LIKE LINE OF lt_fields.
 
+  IF p_get = 'X'.
+    li_client = zcl_ntlm=>get( iv_username = p_user
+                               iv_password = p_passw
+                               iv_domain   = p_domain
+                               iv_workstation = p_workst
+                               iv_url      = p_url ).
+  ENDIF.
 
-  li_client = zcl_ntlm=>get( iv_username = p_user
-                             iv_password = p_passw
-                             iv_domain   = p_domain
-                             iv_workstation = p_workst
-                             iv_url      = p_url ).
+  IF p_post = 'X'.
+    li_client = zcl_ntlm=>post( iv_username = p_user
+                                iv_password = p_passw
+                                iv_domain   = p_domain
+                                iv_workstation = p_workst
+                                iv_url      = p_url
+                                iv_content_type = p_ct
+                                iv_body = p_body ).
+  ENDIF.
+
   li_client->response->get_header_fields( CHANGING fields = lt_fields ).
   lv_string = li_client->response->get_cdata( ).
   li_client->close( ).

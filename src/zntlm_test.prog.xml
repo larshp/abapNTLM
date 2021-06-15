@@ -17,8 +17,26 @@
     </item>
     <item>
      <ID>S</ID>
+     <KEY>P_BODY</KEY>
+     <ENTRY>POST Body</ENTRY>
+     <LENGTH>17</LENGTH>
+    </item>
+    <item>
+     <ID>S</ID>
+     <KEY>P_CT</KEY>
+     <ENTRY>POST Content-Type</ENTRY>
+     <LENGTH>25</LENGTH>
+    </item>
+    <item>
+     <ID>S</ID>
      <KEY>P_DOMAIN</KEY>
      <ENTRY>Domain</ENTRY>
+     <LENGTH>14</LENGTH>
+    </item>
+    <item>
+     <ID>S</ID>
+     <KEY>P_GET</KEY>
+     <ENTRY>Do GET</ENTRY>
      <LENGTH>14</LENGTH>
     </item>
     <item>
@@ -26,6 +44,12 @@
      <KEY>P_PASSW</KEY>
      <ENTRY>Password</ENTRY>
      <LENGTH>16</LENGTH>
+    </item>
+    <item>
+     <ID>S</ID>
+     <KEY>P_POST</KEY>
+     <ENTRY>Do POST</ENTRY>
+     <LENGTH>15</LENGTH>
     </item>
     <item>
      <ID>S</ID>
