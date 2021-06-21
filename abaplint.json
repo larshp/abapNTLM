@@ -100,9 +100,9 @@
     },
     "ambiguous_statement": true,
     "avoid_use": {
-      "define": false,
+      "define": true,
       "defaultKey": false,
-      "break": false,
+      "break": true,
       "describeLines": true,
       "statics": true
     },
