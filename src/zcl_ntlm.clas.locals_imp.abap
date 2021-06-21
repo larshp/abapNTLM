@@ -169,9 +169,7 @@ CLASS lcl_util IMPLEMENTATION.
         param_error    = 2
         internal_error = 3
         OTHERS         = 4.
-    IF sy-subrc <> 0.
-      BREAK-POINT.
-    ENDIF.
+    ASSERT sy-subrc = 0.
 
     rv_hash = lv_xstr.
 
@@ -803,9 +801,7 @@ CLASS lcl_writer IMPLEMENTATION.
 
 
     lv_len = xstrlen( mv_header ).
-    IF lv_len > 200.
-      BREAK-POINT.
-    ENDIF.
+    ASSERT lv_len <= 200.
     lv_header = mv_header.
     lv_offset = xstrlen( mv_header ).
     LOOP AT mt_fix ASSIGNING <ls_fix>.
