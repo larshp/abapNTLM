@@ -480,84 +480,115 @@ CLASS lcl_convert IMPLEMENTATION.
 
   METHOD flags_encode.
 
-    DATA: lv_c TYPE c LENGTH 1,
-          lv_x TYPE x LENGTH 1.
+    DATA lv_x TYPE x LENGTH 1.
 
 
     CLEAR lv_x.
-    lv_c = COND #( WHEN is_flags-negotiate_unicode = abap_true THEN '1' ELSE '0' ).
-    SET BIT 8 OF lv_x TO lv_c.
-    lv_c = COND #( WHEN is_flags-negotiate_oem = abap_true THEN '1' ELSE '0' ).
-    SET BIT 7 OF lv_x TO lv_c.
-    lv_c = COND #( WHEN is_flags-request_target = abap_true THEN '1' ELSE '0' ).
-    SET BIT 6 OF lv_x TO lv_c.
-    lv_c = COND #( WHEN is_flags-r10 = abap_true THEN '1' ELSE '0' ).
-    SET BIT 5 OF lv_x TO lv_c.
-    lv_c = COND #( WHEN is_flags-negotiate_sign = abap_true THEN '1' ELSE '0' ).
-    SET BIT 4 OF lv_x TO lv_c.
-    lv_c = COND #( WHEN is_flags-negotiate_seal = abap_true THEN '1' ELSE '0' ).
-    SET BIT 3 OF lv_x TO lv_c.
-    lv_c = COND #( WHEN is_flags-negotiate_datagram = abap_true THEN '1' ELSE '0' ).
-    SET BIT 2 OF lv_x TO lv_c.
-    lv_c = COND #( WHEN is_flags-negotiate_lm_key = abap_true THEN '1' ELSE '0' ).
-    SET BIT 1 OF lv_x TO lv_c.
+    IF is_flags-negotiate_unicode = abap_true.
+      SET BIT 8 OF lv_x.
+    ENDIF.
+    IF is_flags-negotiate_oem = abap_true.
+      SET BIT 7 OF lv_x.
+    ENDIF.
+    IF is_flags-request_target = abap_true.
+      SET BIT 6 OF lv_x.
+    ENDIF.
+    IF is_flags-r10 = abap_true.
+      SET BIT 5 OF lv_x.
+    ENDIF.
+    IF is_flags-negotiate_sign = abap_true.
+      SET BIT 4 OF lv_x.
+    ENDIF.
+    IF is_flags-negotiate_seal = abap_true.
+      SET BIT 3 OF lv_x.
+    ENDIF.
+    IF is_flags-negotiate_datagram = abap_true.
+      SET BIT 2 OF lv_x.
+    ENDIF.
+    IF is_flags-negotiate_lm_key = abap_true.
+      SET BIT 1 OF lv_x.
+    ENDIF.
     rv_hex(1) = lv_x.
 
     CLEAR lv_x.
-    lv_c = COND #( WHEN is_flags-r9 = abap_true THEN '1' ELSE '0' ).
-    SET BIT 8 OF lv_x TO lv_c.
-    lv_c = COND #( WHEN is_flags-negotiate_ntlm = abap_true THEN '1' ELSE '0' ).
-    SET BIT 7 OF lv_x TO lv_c.
-    lv_c = COND #( WHEN is_flags-r8 = abap_true THEN '1' ELSE '0' ).
-    SET BIT 6 OF lv_x TO lv_c.
-    lv_c = COND #( WHEN is_flags-anonymous = abap_true THEN '1' ELSE '0' ).
-    SET BIT 5 OF lv_x TO lv_c.
-    lv_c = COND #( WHEN is_flags-negotiate_oem_domain_supplied = abap_true THEN '1' ELSE '0' ).
-    SET BIT 4 OF lv_x TO lv_c.
-    lv_c = COND #( WHEN is_flags-negotiate_oem_workstation_sup = abap_true THEN '1' ELSE '0' ).
-    SET BIT 3 OF lv_x TO lv_c.
-    lv_c = COND #( WHEN is_flags-r7 = abap_true THEN '1' ELSE '0' ).
-    SET BIT 2 OF lv_x TO lv_c.
-    lv_c = COND #( WHEN is_flags-negotiate_always_sign = abap_true THEN '1' ELSE '0' ).
-    SET BIT 1 OF lv_x TO lv_c.
+    IF is_flags-r9 = abap_true.
+      SET BIT 8 OF lv_x.
+    ENDIF.
+    IF is_flags-negotiate_ntlm = abap_true.
+      SET BIT 7 OF lv_x.
+    ENDIF.
+    IF is_flags-r8 = abap_true.
+      SET BIT 6 OF lv_x.
+    ENDIF.
+    IF is_flags-anonymous = abap_true.
+      SET BIT 5 OF lv_x.
+    ENDIF.
+    IF is_flags-negotiate_oem_domain_supplied = abap_true.
+      SET BIT 4 OF lv_x.
+    ENDIF.
+    IF is_flags-negotiate_oem_workstation_sup = abap_true.
+      SET BIT 3 OF lv_x.
+    ENDIF.
+    IF is_flags-r7 = abap_true.
+      SET BIT 2 OF lv_x.
+    ENDIF.
+    IF is_flags-negotiate_always_sign = abap_true.
+      SET BIT 1 OF lv_x.
+    ENDIF.
     rv_hex+1(1) = lv_x.
 
     CLEAR lv_x.
-    lv_c = COND #( WHEN is_flags-target_type_domain = abap_true THEN '1' ELSE '0' ).
-    SET BIT 8 OF lv_x TO lv_c.
-    lv_c = COND #( WHEN is_flags-target_type_server = abap_true THEN '1' ELSE '0' ).
-    SET BIT 7 OF lv_x TO lv_c.
-    lv_c = COND #( WHEN is_flags-r6 = abap_true THEN '1' ELSE '0' ).
-    SET BIT 6 OF lv_x TO lv_c.
-    lv_c = COND #( WHEN is_flags-negotiate_extended_session_sec = abap_true THEN '1' ELSE '0' ).
-    SET BIT 5 OF lv_x TO lv_c.
-    lv_c = COND #( WHEN is_flags-negotiate_identity = abap_true THEN '1' ELSE '0' ).
-    SET BIT 4 OF lv_x TO lv_c.
-    lv_c = COND #( WHEN is_flags-r5 = abap_true THEN '1' ELSE '0' ).
-    SET BIT 3 OF lv_x TO lv_c.
-    lv_c = COND #( WHEN is_flags-request_non_nt_session_key = abap_true THEN '1' ELSE '0' ).
-    SET BIT 2 OF lv_x TO lv_c.
-    lv_c = COND #( WHEN is_flags-negotiate_target_info = abap_true THEN '1' ELSE '0' ).
-    SET BIT 1 OF lv_x TO lv_c.
+    IF is_flags-target_type_domain = abap_true.
+      SET BIT 8 OF lv_x.
+    ENDIF.
+    IF is_flags-target_type_server = abap_true.
+      SET BIT 7 OF lv_x.
+    ENDIF.
+    IF is_flags-r6 = abap_true.
+      SET BIT 6 OF lv_x.
+    ENDIF.
+    IF is_flags-negotiate_extended_session_sec = abap_true.
+      SET BIT 5 OF lv_x.
+    ENDIF.
+    IF is_flags-negotiate_identity = abap_true.
+      SET BIT 4 OF lv_x.
+    ENDIF.
+    IF is_flags-r5 = abap_true.
+      SET BIT 3 OF lv_x.
+    ENDIF.
+    IF is_flags-request_non_nt_session_key = abap_true.
+      SET BIT 2 OF lv_x.
+    ENDIF.
+    IF is_flags-negotiate_target_info = abap_true.
+      SET BIT 1 OF lv_x.
+    ENDIF.
     rv_hex+2(1) = lv_x.
 
     CLEAR lv_x.
-    lv_c = COND #( WHEN is_flags-r4 = abap_true THEN '1' ELSE '0' ).
-    SET BIT 1 OF lv_x TO lv_c.
-    lv_c = COND #( WHEN is_flags-negotiate_version = abap_true THEN '1' ELSE '0' ).
-    SET BIT 2 OF lv_x TO lv_c.
-    lv_c = COND #( WHEN is_flags-r3 = abap_true THEN '1' ELSE '0' ).
-    SET BIT 3 OF lv_x TO lv_c.
-    lv_c = COND #( WHEN is_flags-r2 = abap_true THEN '1' ELSE '0' ).
-    SET BIT 4 OF lv_x TO lv_c.
-    lv_c = COND #( WHEN is_flags-r1 = abap_true THEN '1' ELSE '0' ).
-    SET BIT 5 OF lv_x TO lv_c.
-    lv_c = COND #( WHEN is_flags-negotiate_128 = abap_true THEN '1' ELSE '0' ).
-    SET BIT 6 OF lv_x TO lv_c.
-    lv_c = COND #( WHEN is_flags-negotiate_key_exch = abap_true THEN '1' ELSE '0' ).
-    SET BIT 7 OF lv_x TO lv_c.
-    lv_c = COND #( WHEN is_flags-negotiate_56 = abap_true THEN '1' ELSE '0' ).
-    SET BIT 8 OF lv_x TO lv_c.
+    IF is_flags-r4 = abap_true.
+      SET BIT 1 OF lv_x.
+    ENDIF.
+    IF is_flags-negotiate_version = abap_true.
+      SET BIT 2 OF lv_x.
+    ENDIF.
+    IF is_flags-r3 = abap_true.
+      SET BIT 3 OF lv_x.
+    ENDIF.
+    IF is_flags-r2 = abap_true.
+      SET BIT 4 OF lv_x.
+    ENDIF.
+    IF is_flags-r1 = abap_true.
+      SET BIT 5 OF lv_x.
+    ENDIF.
+    IF is_flags-negotiate_128 = abap_true.
+      SET BIT 6 OF lv_x.
+    ENDIF.
+    IF is_flags-negotiate_key_exch = abap_true.
+      SET BIT 7 OF lv_x.
+    ENDIF.
+    IF is_flags-negotiate_56 = abap_true.
+      SET BIT 8 OF lv_x.
+    ENDIF.
     rv_hex+3(1) = lv_x.
 
   ENDMETHOD.                    "flags_encode
