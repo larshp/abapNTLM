@@ -5,45 +5,6 @@ CLASS lcl_convert_test DEFINITION DEFERRED.
 CLASS zcl_ntlm DEFINITION LOCAL FRIENDS lcl_convert_test.
 
 *----------------------------------------------------------------------*
-*       CLASS lcl_util_test DEFINITION
-*----------------------------------------------------------------------*
-*
-*----------------------------------------------------------------------*
-CLASS lcl_util_test DEFINITION FOR TESTING
-  DURATION SHORT
-  RISK LEVEL HARMLESS
-  FINAL.
-
-  PRIVATE SECTION.
-* ================
-    METHODS: since_epoc            FOR TESTING.
-
-ENDCLASS.                    "lcl_util_test DEFINITION
-
-*----------------------------------------------------------------------*
-*       CLASS lcl_util_test IMPLEMENTATION
-*----------------------------------------------------------------------*
-*
-*----------------------------------------------------------------------*
-CLASS lcl_util_test IMPLEMENTATION.
-
-  METHOD since_epoc.
-
-    DATA: lv_num TYPE db02_blid.
-
-
-    lv_num = lcl_util=>since_epoc( iv_date = '20150101'
-                                   iv_time = '103040' ).
-
-    cl_abap_unit_assert=>assert_equals(
-        exp = '130645782400000000'
-        act = lv_num ).
-
-  ENDMETHOD.                    "since_epoc
-
-ENDCLASS.                    "lcl_util_test IMPLEMENTATION
-
-*----------------------------------------------------------------------*
 *       CLASS lcl_test DEFINITION
 *----------------------------------------------------------------------*
 *
