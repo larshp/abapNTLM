@@ -485,88 +485,80 @@ CLASS lcl_convert IMPLEMENTATION.
     DATA: lv_c TYPE c LENGTH 1,
           lv_x TYPE x LENGTH 1.
 
-    DEFINE _flag.
-      IF is_flags-&1 = abap_true.
-        lv_c = '1'.
-      ELSE.
-        lv_c = '0'.
-      ENDIF.
-    END-OF-DEFINITION.
-
 
     CLEAR lv_x.
-    _flag negotiate_unicode.
+    lv_c = COND #( WHEN is_flags-negotiate_unicode = abap_true THEN '1' ELSE '0' ).
     SET BIT 8 OF lv_x TO lv_c.
-    _flag negotiate_oem.
+    lv_c = COND #( WHEN is_flags-negotiate_oem = abap_true THEN '1' ELSE '0' ).
     SET BIT 7 OF lv_x TO lv_c.
-    _flag request_target.
+    lv_c = COND #( WHEN is_flags-request_target = abap_true THEN '1' ELSE '0' ).
     SET BIT 6 OF lv_x TO lv_c.
-    _flag r10.
+    lv_c = COND #( WHEN is_flags-r10 = abap_true THEN '1' ELSE '0' ).
     SET BIT 5 OF lv_x TO lv_c.
-    _flag negotiate_sign.
+    lv_c = COND #( WHEN is_flags-negotiate_sign = abap_true THEN '1' ELSE '0' ).
     SET BIT 4 OF lv_x TO lv_c.
-    _flag negotiate_seal.
+    lv_c = COND #( WHEN is_flags-negotiate_seal = abap_true THEN '1' ELSE '0' ).
     SET BIT 3 OF lv_x TO lv_c.
-    _flag negotiate_datagram.
+    lv_c = COND #( WHEN is_flags-negotiate_datagram = abap_true THEN '1' ELSE '0' ).
     SET BIT 2 OF lv_x TO lv_c.
-    _flag negotiate_lm_key.
+    lv_c = COND #( WHEN is_flags-negotiate_lm_key = abap_true THEN '1' ELSE '0' ).
     SET BIT 1 OF lv_x TO lv_c.
     rv_hex(1) = lv_x.
 
     CLEAR lv_x.
-    _flag r9.
+    lv_c = COND #( WHEN is_flags-r9 = abap_true THEN '1' ELSE '0' ).
     SET BIT 8 OF lv_x TO lv_c.
-    _flag negotiate_ntlm.
+    lv_c = COND #( WHEN is_flags-negotiate_ntlm = abap_true THEN '1' ELSE '0' ).
     SET BIT 7 OF lv_x TO lv_c.
-    _flag r8.
+    lv_c = COND #( WHEN is_flags-r8 = abap_true THEN '1' ELSE '0' ).
     SET BIT 6 OF lv_x TO lv_c.
-    _flag anonymous.
+    lv_c = COND #( WHEN is_flags-anonymous = abap_true THEN '1' ELSE '0' ).
     SET BIT 5 OF lv_x TO lv_c.
-    _flag negotiate_oem_domain_supplied.
+    lv_c = COND #( WHEN is_flags-negotiate_oem_domain_supplied = abap_true THEN '1' ELSE '0' ).
     SET BIT 4 OF lv_x TO lv_c.
-    _flag negotiate_oem_workstation_sup.
+    lv_c = COND #( WHEN is_flags-negotiate_oem_workstation_sup = abap_true THEN '1' ELSE '0' ).
     SET BIT 3 OF lv_x TO lv_c.
-    _flag r7.
+    lv_c = COND #( WHEN is_flags-r7 = abap_true THEN '1' ELSE '0' ).
     SET BIT 2 OF lv_x TO lv_c.
-    _flag negotiate_always_sign.
+    lv_c = COND #( WHEN is_flags-negotiate_always_sign = abap_true THEN '1' ELSE '0' ).
     SET BIT 1 OF lv_x TO lv_c.
     rv_hex+1(1) = lv_x.
 
     CLEAR lv_x.
-    _flag target_type_domain.
+    lv_c = COND #( WHEN is_flags-target_type_domain = abap_true THEN '1' ELSE '0' ).
     SET BIT 8 OF lv_x TO lv_c.
-    _flag target_type_server.
+    lv_c = COND #( WHEN is_flags-target_type_server = abap_true THEN '1' ELSE '0' ).
     SET BIT 7 OF lv_x TO lv_c.
-    _flag r6.
+    lv_c = COND #( WHEN is_flags-r6 = abap_true THEN '1' ELSE '0' ).
     SET BIT 6 OF lv_x TO lv_c.
-    _flag negotiate_extended_session_sec.
+    lv_c = COND #( WHEN is_flags-negotiate_extended_session_sec = abap_true THEN '1' ELSE '0' ).
     SET BIT 5 OF lv_x TO lv_c.
-    _flag negotiate_identity.
+    lv_c = COND #( WHEN is_flags-negotiate_identity = abap_true THEN '1' ELSE '0' ).
     SET BIT 4 OF lv_x TO lv_c.
-    _flag r5.
+    lv_c = COND #( WHEN is_flags-r5 = abap_true THEN '1' ELSE '0' ).
     SET BIT 3 OF lv_x TO lv_c.
-    _flag request_non_nt_session_key.
+    lv_c = COND #( WHEN is_flags-request_non_nt_session_key = abap_true THEN '1' ELSE '0' ).
     SET BIT 2 OF lv_x TO lv_c.
-    _flag negotiate_target_info.
+    lv_c = COND #( WHEN is_flags-negotiate_target_info = abap_true THEN '1' ELSE '0' ).
     SET BIT 1 OF lv_x TO lv_c.
     rv_hex+2(1) = lv_x.
 
     CLEAR lv_x.
-    _flag r4.
+    lv_c = COND #( WHEN is_flags-r4 = abap_true THEN '1' ELSE '0' ).
     SET BIT 1 OF lv_x TO lv_c.
-    _flag negotiate_version.
+    lv_c = COND #( WHEN is_flags-negotiate_version = abap_true THEN '1' ELSE '0' ).
     SET BIT 2 OF lv_x TO lv_c.
-    _flag r3.
+    lv_c = COND #( WHEN is_flags-r3 = abap_true THEN '1' ELSE '0' ).
     SET BIT 3 OF lv_x TO lv_c.
-    _flag r2.
+    lv_c = COND #( WHEN is_flags-r2 = abap_true THEN '1' ELSE '0' ).
     SET BIT 4 OF lv_x TO lv_c.
-    _flag r1.
+    lv_c = COND #( WHEN is_flags-r1 = abap_true THEN '1' ELSE '0' ).
     SET BIT 5 OF lv_x TO lv_c.
-    _flag negotiate_128.
+    lv_c = COND #( WHEN is_flags-negotiate_128 = abap_true THEN '1' ELSE '0' ).
     SET BIT 6 OF lv_x TO lv_c.
-    _flag negotiate_key_exch.
+    lv_c = COND #( WHEN is_flags-negotiate_key_exch = abap_true THEN '1' ELSE '0' ).
     SET BIT 7 OF lv_x TO lv_c.
-    _flag negotiate_56.
+    lv_c = COND #( WHEN is_flags-negotiate_56 = abap_true THEN '1' ELSE '0' ).
     SET BIT 8 OF lv_x TO lv_c.
     rv_hex+3(1) = lv_x.
 
@@ -630,7 +622,7 @@ CLASS lcl_reader DEFINITION FINAL.
     METHODS constructor
       IMPORTING iv_value TYPE string
                 iv_type  TYPE xstring
-      RAISING zcx_ntlm_protocol_error.
+      RAISING   zcx_ntlm_protocol_error.
 
     METHODS flags
       RETURNING
@@ -638,15 +630,15 @@ CLASS lcl_reader DEFINITION FINAL.
 
     METHODS data_raw
       RETURNING
-        VALUE(rv_data) TYPE xstring
-      RAISING zcx_ntlm_protocol_error.
+                VALUE(rv_data) TYPE xstring
+      RAISING   zcx_ntlm_protocol_error.
 
     METHODS data_str
       IMPORTING
-        iv_oem         TYPE abap_bool
+                iv_oem         TYPE abap_bool
       RETURNING
-        VALUE(rv_data) TYPE string
-      RAISING zcx_ntlm_protocol_error.
+                VALUE(rv_data) TYPE string
+      RAISING   zcx_ntlm_protocol_error.
 
     METHODS skip
       IMPORTING
