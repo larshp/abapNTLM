@@ -405,84 +405,78 @@ CLASS lcl_convert IMPLEMENTATION.
     DATA: lv_c TYPE c LENGTH 1,
           lv_x TYPE x LENGTH 1.
 
-    DEFINE _flag1.
-      IF lv_c = '1'.
-        rs_flags-&1 = abap_true.
-      ENDIF.
-    END-OF-DEFINITION.
-
 
     lv_x = iv_hex.
     GET BIT 8 OF lv_x INTO lv_c.
-    _flag1 negotiate_unicode.
+    rs_flags-negotiate_unicode = boolc( lv_c = '1' ).
     GET BIT 7 OF lv_x INTO lv_c.
-    _flag1 negotiate_oem.
+    rs_flags-negotiate_oem = boolc( lv_c = '1' ).
     GET BIT 6 OF lv_x INTO lv_c.
-    _flag1 request_target.
+    rs_flags-request_target = boolc( lv_c = '1' ).
     GET BIT 5 OF lv_x INTO lv_c.
-    _flag1 r10.
+    rs_flags-r10 = boolc( lv_c = '1' ).
     GET BIT 4 OF lv_x INTO lv_c.
-    _flag1 negotiate_sign.
+    rs_flags-negotiate_sign = boolc( lv_c = '1' ).
     GET BIT 3 OF lv_x INTO lv_c.
-    _flag1 negotiate_seal.
+    rs_flags-negotiate_seal = boolc( lv_c = '1' ).
     GET BIT 2 OF lv_x INTO lv_c.
-    _flag1 negotiate_datagram.
+    rs_flags-negotiate_datagram = boolc( lv_c = '1' ).
     GET BIT 1 OF lv_x INTO lv_c.
-    _flag1 negotiate_lm_key.
+    rs_flags-negotiate_lm_key = boolc( lv_c = '1' ).
 
     lv_x = iv_hex+1.
     GET BIT 8 OF lv_x INTO lv_c.
-    _flag1 r9.
+    rs_flags-r9 = boolc( lv_c = '1' ).
     GET BIT 7 OF lv_x INTO lv_c.
-    _flag1 negotiate_ntlm.
+    rs_flags-negotiate_ntlm = boolc( lv_c = '1' ).
     GET BIT 6 OF lv_x INTO lv_c.
-    _flag1 r8.
+    rs_flags-r8 = boolc( lv_c = '1' ).
     GET BIT 5 OF lv_x INTO lv_c.
-    _flag1 anonymous.
+    rs_flags-anonymous = boolc( lv_c = '1' ).
     GET BIT 4 OF lv_x INTO lv_c.
-    _flag1 negotiate_oem_domain_supplied.
+    rs_flags-negotiate_oem_domain_supplied = boolc( lv_c = '1' ).
     GET BIT 3 OF lv_x INTO lv_c.
-    _flag1 negotiate_oem_workstation_sup.
+    rs_flags-negotiate_oem_workstation_sup = boolc( lv_c = '1' ).
     GET BIT 2 OF lv_x INTO lv_c.
-    _flag1 r7.
+    rs_flags-r7 = boolc( lv_c = '1' ).
     GET BIT 1 OF lv_x INTO lv_c.
-    _flag1 negotiate_always_sign.
+    rs_flags-negotiate_always_sign = boolc( lv_c = '1' ).
 
     lv_x = iv_hex+2.
     GET BIT 8 OF lv_x INTO lv_c.
-    _flag1 target_type_domain.
+    rs_flags-target_type_domain = boolc( lv_c = '1' ).
     GET BIT 7 OF lv_x INTO lv_c.
-    _flag1 target_type_server.
+    rs_flags-target_type_server = boolc( lv_c = '1' ).
     GET BIT 6 OF lv_x INTO lv_c.
-    _flag1 r6.
+    rs_flags-r6 = boolc( lv_c = '1' ).
     GET BIT 5 OF lv_x INTO lv_c.
-    _flag1 negotiate_extended_session_sec.
+    rs_flags-negotiate_extended_session_sec = boolc( lv_c = '1' ).
     GET BIT 4 OF lv_x INTO lv_c.
-    _flag1 negotiate_identity.
+    rs_flags-negotiate_identity = boolc( lv_c = '1' ).
     GET BIT 3 OF lv_x INTO lv_c.
-    _flag1 r5.
+    rs_flags-r5 = boolc( lv_c = '1' ).
     GET BIT 2 OF lv_x INTO lv_c.
-    _flag1 request_non_nt_session_key.
+    rs_flags-request_non_nt_session_key = boolc( lv_c = '1' ).
     GET BIT 1 OF lv_x INTO lv_c.
-    _flag1 negotiate_target_info.
+    rs_flags-negotiate_target_info = boolc( lv_c = '1' ).
 
     lv_x = iv_hex+3.
     GET BIT 1 OF lv_x INTO lv_c.
-    _flag1 r4.
+    rs_flags-r4 = boolc( lv_c = '1' ).
     GET BIT 2 OF lv_x INTO lv_c.
-    _flag1 negotiate_version.
+    rs_flags-negotiate_version = boolc( lv_c = '1' ).
     GET BIT 3 OF lv_x INTO lv_c.
-    _flag1 r3.
+    rs_flags-r3 = boolc( lv_c = '1' ).
     GET BIT 4 OF lv_x INTO lv_c.
-    _flag1 r2.
+    rs_flags-r2 = boolc( lv_c = '1' ).
     GET BIT 5 OF lv_x INTO lv_c.
-    _flag1 r1.
+    rs_flags-r1 = boolc( lv_c = '1' ).
     GET BIT 6 OF lv_x INTO lv_c.
-    _flag1 negotiate_128.
+    rs_flags-negotiate_128 = boolc( lv_c = '1' ).
     GET BIT 7 OF lv_x INTO lv_c.
-    _flag1 negotiate_key_exch.
+    rs_flags-negotiate_key_exch = boolc( lv_c = '1' ).
     GET BIT 8 OF lv_x INTO lv_c.
-    _flag1 negotiate_56.
+    rs_flags-negotiate_56 = boolc( lv_c = '1' ).
 
   ENDMETHOD.                    "flags_decode
 
