@@ -9,6 +9,8 @@
     "addFilenames": true,
     "addCommonJS": true,
     "unknownTypes": "runtimeError",
-    "skip": []
+    "skip": [
+      {"object": "ZCL_DES", "class": "lcl_test", "method": "parity_adjust", "note": "?"}
+    ]
   }
 }
