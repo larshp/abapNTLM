@@ -156,6 +156,7 @@
       "ignoreExceptions": true,
       "alignTryCatch": false,
       "globalClassSkipFirst": false,
+      "selectionScreenBlockIndentation": false,
       "ignoreGlobalClassDefinition": false,
       "ignoreGlobalInterface": false
     },
