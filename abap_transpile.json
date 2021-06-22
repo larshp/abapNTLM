@@ -20,7 +20,7 @@
       {"object": "ZCL_MD4", "class": "lcl_test", "method": "test7", "note": "?"},
       {"object": "ZCL_MD4", "class": "lcl_test", "method": "barrel", "note": "uses overflow() method"},
       {"object": "ZCL_MD4", "class": "lcl_test", "method": "test_overflow", "note": "float into hex, fixed in next transpiler release"},
-      {"object": "ZCL_NTLM", "class": "lcl_test", "method": "type_1 a", "note": "codepage 4103 needed in open-abap"},
+      {"object": "ZCL_NTLM", "class": "lcl_test", "method": "type_1", "note": "codepage 4103 needed in open-abap, new Buffer(workstation, 'utf16le');"},
       {"object": "ZCL_NTLM", "class": "lcl_test", "method": "type_1_decode_1", "note": "?"},
       {"object": "ZCL_NTLM", "class": "lcl_test", "method": "type_1_encode", "note": "?"},
       {"object": "ZCL_NTLM", "class": "lcl_test", "method": "type_2_decode_1", "note": "?"},
