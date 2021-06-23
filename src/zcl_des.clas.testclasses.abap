@@ -75,6 +75,7 @@ CLASS lcl_test IMPLEMENTATION.
   METHOD c_and_d.
 
     DATA lt_bits TYPE string_table.
+    DATA lv_str TYPE string.
 
     lt_bits = zcl_des=>c_and_d(
       iv_c_0  = '1111000011001100101010101111'
@@ -83,6 +84,12 @@ CLASS lcl_test IMPLEMENTATION.
     cl_abap_unit_assert=>assert_equals(
       act = lines( lt_bits )
       exp = 16 ).
+
+    LOOP AT lt_bits INTO lv_str.
+      cl_abap_unit_assert=>assert_equals(
+        act = strlen( lv_str )
+        exp = 56 ).
+    ENDLOOP.
 
   ENDMETHOD.
 
