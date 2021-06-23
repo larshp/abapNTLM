@@ -356,47 +356,15 @@ CLASS lcl_convert IMPLEMENTATION.
 
   METHOD base64_decode.
 
-    CALL FUNCTION 'SSFC_BASE64_DECODE'
-      EXPORTING
-        b64data                  = iv_string
-      IMPORTING
-        bindata                  = rv_xstring
-      EXCEPTIONS
-        ssf_krn_error            = 1
-        ssf_krn_noop             = 2
-        ssf_krn_nomemory         = 3
-        ssf_krn_opinv            = 4
-        ssf_krn_input_data_error = 5
-        ssf_krn_invalid_par      = 6
-        ssf_krn_invalid_parlen   = 7
-        OTHERS                   = 8.
-    IF sy-subrc <> 0.
-      ASSERT 1 = 1 + 1.
-    ENDIF.
+    rv_xstring = cl_http_utility=>decode_x_base64( iv_string ).
 
-  ENDMETHOD.                    "base64_decode
+  ENDMETHOD.
 
   METHOD base64_encode.
 
-    CALL FUNCTION 'SSFC_BASE64_ENCODE'
-      EXPORTING
-        bindata                  = iv_xstring
-      IMPORTING
-        b64data                  = rv_string
-      EXCEPTIONS
-        ssf_krn_error            = 1
-        ssf_krn_noop             = 2
-        ssf_krn_nomemory         = 3
-        ssf_krn_opinv            = 4
-        ssf_krn_input_data_error = 5
-        ssf_krn_invalid_par      = 6
-        ssf_krn_invalid_parlen   = 7
-        OTHERS                   = 8.
-    IF sy-subrc <> 0.
-      ASSERT 1 = 1 + 1.
-    ENDIF.
+    rv_string = cl_http_utility=>encode_x_base64( iv_xstring ).
 
-  ENDMETHOD.                    "base64_encode
+  ENDMETHOD.
 
   METHOD flags_decode.
 
