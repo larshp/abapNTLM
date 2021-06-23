@@ -23,6 +23,7 @@ CLASS lcl_test DEFINITION FOR TESTING
     METHODS permute_ip FOR TESTING RAISING cx_static_check.
     METHODS xor FOR TESTING RAISING cx_static_check.
     METHODS from_bits FOR TESTING RAISING cx_static_check.
+    METHODS f FOR TESTING RAISING cx_static_check.
 
 ENDCLASS.
 
@@ -32,6 +33,20 @@ ENDCLASS.
 *
 *----------------------------------------------------------------------*
 CLASS lcl_test IMPLEMENTATION.
+
+  METHOD f.
+
+    DATA lv_res TYPE string.
+
+    lv_res = zcl_des=>f(
+      iv_r = '11110000101010101111000010101010'
+      iv_k = '000110110000001011101111111111000111000001110010' ).
+
+    cl_abap_unit_assert=>assert_equals(
+      act = lv_res
+      exp = '00100011010010101010100110111011' ).
+
+  ENDMETHOD.
 
   METHOD to_bits.
 
