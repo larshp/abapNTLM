@@ -19,7 +19,7 @@
       {"object": "ZCL_MD4", "class": "lcl_test", "method": "test6", "note": "?"},
       {"object": "ZCL_MD4", "class": "lcl_test", "method": "test7", "note": "?"},
       {"object": "ZCL_MD4", "class": "lcl_test", "method": "barrel", "note": "uses overflow() method"},
-      {"object": "ZCL_MD4", "class": "lcl_test", "method": "test_overflow", "note": "float into hex, fixed in next transpiler release"},
+      {"object": "ZCL_MD4", "class": "lcl_test", "method": "test_overflow", "note": "float to float bug, fixed in next transpiler release"},
       {"object": "ZCL_NTLM", "class": "lcl_test", "method": "type_1", "note": "SSFC_BASE64_ENCODE is not a function"},
       {"object": "ZCL_NTLM", "class": "lcl_test", "method": "type_1_decode_1", "note": "SSFC_BASE64_ENCODE is not a function"},
       {"object": "ZCL_NTLM", "class": "lcl_test", "method": "type_1_encode", "note": "?"},
