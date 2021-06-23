@@ -26,7 +26,8 @@ CLASS lcl_test DEFINITION FOR TESTING INHERITING FROM lcl_bit_flipper
       barrel        FOR TESTING,
       barrel2       FOR TESTING,
       test_shift    FOR TESTING,
-      test_overflow FOR TESTING.
+      test_overflow FOR TESTING,
+      test_overflow4 FOR TESTING..
 
 ENDCLASS.       "lcl_Test
 
@@ -199,10 +200,9 @@ CLASS lcl_test IMPLEMENTATION.
       act  = lv_word
       quit = if_aunit_constants=>no ).
 
-  ENDMETHOD.                    "x1
+  ENDMETHOD.
 
   METHOD test_overflow.
-* ===========
 
     DATA: lv_word TYPE zcl_md4=>ty_byte4.
 
@@ -237,8 +237,18 @@ CLASS lcl_test IMPLEMENTATION.
       act = lv_word
       quit = if_aunit_constants=>no ).
 
-  ENDMETHOD.                    "overflow1
+  ENDMETHOD.
 
+  METHOD test_overflow4.
+
+    DATA lv_word TYPE zcl_md4=>ty_byte4.
+
+    lv_word = overflow( 4 ).
+    cl_abap_unit_assert=>assert_equals(
+      exp = '00000004'
+      act = lv_word ).
+
+  ENDMETHOD.
 
   METHOD barrel.
 
