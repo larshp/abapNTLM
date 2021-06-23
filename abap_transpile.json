@@ -19,7 +19,7 @@
       {"object": "ZCL_MD4", "class": "lcl_test", "method": "test6", "note": "?"},
       {"object": "ZCL_MD4", "class": "lcl_test", "method": "test7", "note": "?"},
       {"object": "ZCL_MD4", "class": "lcl_test", "method": "barrel", "note": "calls overflow() method"},
-      {"object": "ZCL_MD4", "class": "lcl_test", "method": "test_overflow", "note": "float to float bug, fixed in next transpiler release"},
+      {"object": "ZCL_MD4", "class": "lcl_test", "method": "test_overflow", "note": "negative float to hex bug, fixed in next transpiler release"},
       {"object": "ZCL_NTLM", "class": "lcl_test", "method": "type_3_build", "note": "calls DES"},
       {"object": "ZCL_NTLM", "class": "lcl_test", "method": "lmv1_response", "note": "calls DES"},
       {"object": "ZCL_NTLM", "class": "lcl_test", "method": "ntlmv1_response", "note": "calls DES"},
