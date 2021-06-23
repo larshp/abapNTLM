@@ -27,7 +27,7 @@ CLASS lcl_test DEFINITION FOR TESTING INHERITING FROM lcl_bit_flipper
       barrel2       FOR TESTING,
       test_shift    FOR TESTING,
       test_overflow FOR TESTING,
-      test_overflow4 FOR TESTING..
+      test_overflow4 FOR TESTING.
 
 ENDCLASS.       "lcl_Test
 
