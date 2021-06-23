@@ -13,7 +13,10 @@ CLASS lcl_test DEFINITION FOR TESTING
 
   PRIVATE SECTION.
     METHODS parity_adjust FOR TESTING RAISING cx_static_check.
-    METHODS encrypt FOR TESTING RAISING cx_static_check.
+    METHODS encrypt1 FOR TESTING RAISING cx_static_check.
+    METHODS encrypt2 FOR TESTING RAISING cx_static_check.
+    METHODS encrypt3 FOR TESTING RAISING cx_static_check.
+    METHODS encrypt4 FOR TESTING RAISING cx_static_check.
     METHODS to_bits FOR TESTING RAISING cx_static_check.
     METHODS permute_pc1 FOR TESTING RAISING cx_static_check.
     METHODS c_and_d FOR TESTING RAISING cx_static_check.
@@ -106,42 +109,55 @@ CLASS lcl_test IMPLEMENTATION.
 
   ENDMETHOD.
 
-  METHOD encrypt.
+  METHOD encrypt1.
 
     DATA: lv_cipher TYPE xstring.
-
 
     lv_cipher = zcl_des=>encrypt(
       iv_key       = '133457799BBCDFF1'
       iv_plaintext = '0123456789ABCDEF' ).
     cl_abap_unit_assert=>assert_equals(
       exp  = '85E813540F0AB405'
-      act  = lv_cipher
-      quit = if_aunit_constants=>no ).
+      act  = lv_cipher ).
+
+  ENDMETHOD.
+
+  METHOD encrypt2.
+
+    DATA: lv_cipher TYPE xstring.
 
     lv_cipher = zcl_des=>encrypt(
       iv_key       = 'CD83B34FC7F14392'
       iv_plaintext = '0123456789ABCDEF' ).
     cl_abap_unit_assert=>assert_equals(
       exp  = '25A98C1C31E81847'
-      act  = lv_cipher
-      quit = if_aunit_constants=>no ).
+      act  = lv_cipher ).
+
+  ENDMETHOD.
+
+  METHOD encrypt3.
+
+    DATA: lv_cipher TYPE xstring.
 
     lv_cipher = zcl_des=>encrypt(
       iv_key       = '9B8F4C767543685D'
       iv_plaintext = '0123456789ABCDEF' ).
     cl_abap_unit_assert=>assert_equals(
       exp  = '466B29B2DF4680F3'
-      act  = lv_cipher
-      quit = if_aunit_constants=>no ).
+      act  = lv_cipher ).
+
+  ENDMETHOD.
+
+  METHOD encrypt4.
+
+    DATA: lv_cipher TYPE xstring.
 
     lv_cipher = zcl_des=>encrypt(
       iv_key       = 'D904010101010101'
       iv_plaintext = '0123456789ABCDEF' ).
     cl_abap_unit_assert=>assert_equals(
       exp  = '9958FB8C213A9CC6'
-      act  = lv_cipher
-      quit = if_aunit_constants=>no ).
+      act  = lv_cipher ).
 
   ENDMETHOD.
 
