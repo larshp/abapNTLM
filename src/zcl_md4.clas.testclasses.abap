@@ -24,6 +24,7 @@ CLASS lcl_test DEFINITION FOR TESTING INHERITING FROM lcl_bit_flipper
       test7         FOR TESTING,
       buffer        FOR TESTING,
       barrel        FOR TESTING,
+      barrel2       FOR TESTING,
       test_shift    FOR TESTING,
       test_overflow FOR TESTING.
 
@@ -300,8 +301,7 @@ CLASS lcl_test IMPLEMENTATION.
     lv_word = lo_barrel->get( 0 ).
     cl_abap_unit_assert=>assert_equals(
       exp = '67452301'
-      act = lv_word
-      quit = if_aunit_constants=>no ).
+      act = lv_word ).
 
     lo_barrel->reset( ).
 
@@ -311,8 +311,7 @@ CLASS lcl_test IMPLEMENTATION.
     lv_word = lo_barrel->get( 0 ).
     cl_abap_unit_assert=>assert_equals(
       exp = '00000004'
-      act = lv_word
-      quit = if_aunit_constants=>no ).
+      act = lv_word ).
 
     lo_barrel->roll( ).
     lo_barrel->set( '00000003' ).
@@ -320,8 +319,7 @@ CLASS lcl_test IMPLEMENTATION.
     lv_word = lo_barrel->get( 0 ).
     cl_abap_unit_assert=>assert_equals(
       exp = '00000003'
-      act = lv_word
-      quit = if_aunit_constants=>no ).
+      act = lv_word ).
 
     lo_barrel->roll( ).
     lo_barrel->set( '00000002' ).
@@ -329,8 +327,7 @@ CLASS lcl_test IMPLEMENTATION.
     lv_word = lo_barrel->get( 0 ).
     cl_abap_unit_assert=>assert_equals(
       exp = '00000002'
-      act = lv_word
-      quit = if_aunit_constants=>no ).
+      act = lv_word ).
 
     lo_barrel->roll( ).
     lo_barrel->set( '00000001' ).
@@ -338,8 +335,7 @@ CLASS lcl_test IMPLEMENTATION.
     lv_word = lo_barrel->get( 0 ).
     cl_abap_unit_assert=>assert_equals(
       exp = '00000001'
-      act = lv_word
-      quit = if_aunit_constants=>no ).
+      act = lv_word ).
 
     lo_barrel->snapshot( ).
     lo_barrel->accumulate( ).
@@ -348,26 +344,22 @@ CLASS lcl_test IMPLEMENTATION.
     lv_word = lo_barrel->get( 0 ).
     cl_abap_unit_assert=>assert_equals(
       exp = '00000002'
-      act = lv_word
-      quit = if_aunit_constants=>no ).
+      act = lv_word ).
 
     lv_word = lo_barrel->get( 1 ).
     cl_abap_unit_assert=>assert_equals(
       exp = '00000004'
-      act = lv_word
-      quit = if_aunit_constants=>no ).
+      act = lv_word ).
 
     lv_word = lo_barrel->get( 2 ).
     cl_abap_unit_assert=>assert_equals(
       exp = '00000006'
-      act = lv_word
-      quit = if_aunit_constants=>no ).
+      act = lv_word ).
 
     lv_word = lo_barrel->get( 3 ).
     cl_abap_unit_assert=>assert_equals(
       exp = '00000008'
-      act = lv_word
-      quit = if_aunit_constants=>no ).
+      act = lv_word ).
 
     lo_barrel->snapshot( ).
     lo_barrel->set( 'FFFFFFFF' ).
@@ -375,9 +367,34 @@ CLASS lcl_test IMPLEMENTATION.
     lv_word = lo_barrel->get( 0 ).
     cl_abap_unit_assert=>assert_equals(
       exp = '00000001'
-      act = lv_word
-      quit = if_aunit_constants=>no ).
+      act = lv_word ).
 
   ENDMETHOD.
 
-ENDCLASS.       "lcl_Test
+  METHOD barrel2.
+
+    DATA lv_word   TYPE zcl_md4=>ty_byte4.
+    DATA lo_barrel TYPE REF TO lcl_barrel.
+
+    lo_barrel = NEW #( ).
+
+    lo_barrel->set( '00000001' ).
+    lo_barrel->roll( ).
+    lo_barrel->set( '00000002' ).
+    lo_barrel->roll( ).
+    lo_barrel->set( '00000003' ).
+    lo_barrel->roll( ).
+    lo_barrel->set( '00000004' ).
+
+    lo_barrel->snapshot( ).
+    lo_barrel->accumulate( ).
+    lo_barrel->reset( ).
+
+    lv_word = lo_barrel->get( 1 ).
+    cl_abap_unit_assert=>assert_equals(
+      exp = '00000008'
+      act = lv_word ).
+
+  ENDMETHOD.
+
+ENDCLASS.
