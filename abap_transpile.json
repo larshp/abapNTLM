@@ -10,7 +10,10 @@
     "addCommonJS": true,
     "unknownTypes": "runtimeError",
     "skip": [
-      {"object": "ZCL_DES", "class": "lcl_test", "method": "encrypt", "note": "more unit tests, https://github.com/larshp/abapNTLM/issues/21"},
+      {"object": "ZCL_DES", "class": "lcl_test", "method": "encrypt1", "note": "ASSERT failed in l_and_r()"},
+      {"object": "ZCL_DES", "class": "lcl_test", "method": "encrypt2", "note": "ASSERT failed in l_and_r()"},
+      {"object": "ZCL_DES", "class": "lcl_test", "method": "encrypt3", "note": "ASSERT failed in l_and_r()"},
+      {"object": "ZCL_DES", "class": "lcl_test", "method": "encrypt4", "note": "ASSERT failed in l_and_r()"},
       {"object": "ZCL_MD4", "class": "lcl_test", "method": "test1", "note": "fix overflow() first"},
       {"object": "ZCL_MD4", "class": "lcl_test", "method": "test2", "note": "fix overflow() first"},
       {"object": "ZCL_MD4", "class": "lcl_test", "method": "test3", "note": "fix overflow() first"},
