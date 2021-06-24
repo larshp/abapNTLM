@@ -26,8 +26,12 @@ CLASS lcl_test DEFINITION FOR TESTING INHERITING FROM lcl_bit_flipper
       barrel        FOR TESTING,
       barrel2       FOR TESTING,
       test_shift    FOR TESTING,
-      test_overflow FOR TESTING,
-      test_overflow4 FOR TESTING.
+      test_overflow1 FOR TESTING,
+      test_overflow2 FOR TESTING,
+      test_overflow3 FOR TESTING,
+      test_overflow4 FOR TESTING,
+      test_overflow5 FOR TESTING,
+      test_overflow6 FOR TESTING.
 
 ENDCLASS.       "lcl_Test
 
@@ -202,44 +206,62 @@ CLASS lcl_test IMPLEMENTATION.
 
   ENDMETHOD.
 
-  METHOD test_overflow.
+  METHOD test_overflow1.
 
     DATA: lv_word TYPE zcl_md4=>ty_byte4.
-
 
     lv_word = overflow( 2147483647 ).
     cl_abap_unit_assert=>assert_equals(
       exp = '7FFFFFFF'
-      act = lv_word
-      quit = if_aunit_constants=>no ).
+      act = lv_word ).
+
+  ENDMETHOD.
+
+  METHOD test_overflow2.
+
+    DATA: lv_word TYPE zcl_md4=>ty_byte4.
 
     lv_word = overflow( -2147483648 ).
     cl_abap_unit_assert=>assert_equals(
       exp = '80000000'
-      act = lv_word
-      quit = if_aunit_constants=>no ).
+      act = lv_word ).
+
+  ENDMETHOD.
+
+  METHOD test_overflow3.
+
+    DATA: lv_word TYPE zcl_md4=>ty_byte4.
 
     lv_word = overflow( 2147483647 + 1 ).
     cl_abap_unit_assert=>assert_equals(
       exp = '80000000'
-      act = lv_word
-      quit = if_aunit_constants=>no ).
-
-    lv_word = overflow( -2147483648 - 1 ).
-    cl_abap_unit_assert=>assert_equals(
-      exp = '7FFFFFFF'
-      act = lv_word
-      quit = if_aunit_constants=>no ).
-
-    lv_word = overflow( 2 ).
-    cl_abap_unit_assert=>assert_equals(
-      exp = '00000002'
-      act = lv_word
-      quit = if_aunit_constants=>no ).
+      act = lv_word ).
 
   ENDMETHOD.
 
   METHOD test_overflow4.
+
+    DATA: lv_word TYPE zcl_md4=>ty_byte4.
+
+    lv_word = overflow( -2147483648 - 1 ).
+    cl_abap_unit_assert=>assert_equals(
+      exp = '7FFFFFFF'
+      act = lv_word ).
+
+  ENDMETHOD.
+
+  METHOD test_overflow5.
+
+    DATA: lv_word TYPE zcl_md4=>ty_byte4.
+
+    lv_word = overflow( 2 ).
+    cl_abap_unit_assert=>assert_equals(
+      exp = '00000002'
+      act = lv_word ).
+
+  ENDMETHOD.
+
+  METHOD test_overflow6.
 
     DATA lv_word TYPE zcl_md4=>ty_byte4.
 
