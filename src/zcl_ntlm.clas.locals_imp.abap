@@ -162,7 +162,7 @@ CLASS lcl_util IMPLEMENTATION.
 
   METHOD class_constructor.
 
-    mo_random = cl_abap_random=>create( cl_abap_random=>seed( ) ).
+    mo_random = cl_abap_random=>create( ).
 
   ENDMETHOD.
 
@@ -189,7 +189,8 @@ CLASS lcl_util IMPLEMENTATION.
 
   METHOD random_nonce.
 
-    rv_data = mo_random->int8( ).
+    rv_data+4 = mo_random->int( ).
+    rv_data(4) = mo_random->int( ).
 
   ENDMETHOD.
 
