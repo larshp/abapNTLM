@@ -3,7 +3,7 @@ class ZCL_NTLM_ARC4 definition
   final
   create public .
 
-public section.
+  public section.
 
 *"* public components of class ZCL_NTLM_ARC4
 *"* do not include other source files here!!!
