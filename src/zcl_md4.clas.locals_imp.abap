@@ -83,7 +83,7 @@ CLASS lcl_hasher DEFINITION ABSTRACT INHERITING FROM lcl_bit_flipper.
         word  TYPE i,
         shift TYPE i,
       END OF ty_hash_def.
-
+    TYPES ty_hash_tab TYPE STANDARD TABLE OF ty_hash_def WITH DEFAULT KEY.
     METHODS:
       constructor
         IMPORTING
@@ -97,7 +97,7 @@ CLASS lcl_hasher DEFINITION ABSTRACT INHERITING FROM lcl_bit_flipper.
     DATA:
       mo_buffer   TYPE REF TO lcl_buffer,
       mo_barrel   TYPE REF TO lcl_barrel,
-      mt_hash_def TYPE STANDARD TABLE OF ty_hash_def,
+      mt_hash_def TYPE ty_hash_tab,
       mv_add      TYPE x LENGTH 4.
 
 
