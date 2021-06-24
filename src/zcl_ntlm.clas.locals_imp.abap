@@ -29,6 +29,8 @@ CLASS zcl_ntlm DEFINITION LOCAL FRIENDS lcl_util.
 CLASS lcl_util DEFINITION FINAL.
 
   PUBLIC SECTION.
+    CLASS-METHODS class_constructor.
+
     CLASS-METHODS since_epoc_hex
       RETURNING
                 VALUE(rv_hex) TYPE zcl_ntlm=>ty_byte8
@@ -57,6 +59,11 @@ CLASS lcl_util DEFINITION FINAL.
         iv_data        TYPE xstring
       RETURNING
         VALUE(rv_hash) TYPE zcl_ntlm=>ty_byte16.
+
+  PRIVATE SECTION.
+
+    CLASS-DATA:
+      mo_random TYPE REF TO cl_abap_random.
 
 ENDCLASS.                    "lcl_time DEFINITION
 
@@ -153,6 +160,12 @@ ENDCLASS.                    "lcl_convert DEFINITION
 *----------------------------------------------------------------------*
 CLASS lcl_util IMPLEMENTATION.
 
+  METHOD class_constructor.
+
+    mo_random = cl_abap_random=>create( cl_abap_random=>seed( ) ).
+
+  ENDMETHOD.
+
   METHOD md5.
 
     DATA lv_empty TYPE xstring.
@@ -176,18 +189,8 @@ CLASS lcl_util IMPLEMENTATION.
 
   METHOD random_nonce.
 
-    DATA: lv_output TYPE c LENGTH 16.
-
-
-    CALL FUNCTION 'RSEC_GENERATE_PASSWORD'
-      EXPORTING
-        alphabet        = '0123456789ABCDEF'
-        alphabet_length = 16
-        output_length   = 16
-      IMPORTING
-        output          = lv_output.
-
-    rv_data = lv_output.
+    rv_data+4 = mo_random->int( ).
+    rv_data(4) = mo_random->int( ).
 
   ENDMETHOD.
 
