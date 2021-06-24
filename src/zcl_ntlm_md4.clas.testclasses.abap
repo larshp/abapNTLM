@@ -1,5 +1,5 @@
 CLASS lcl_test DEFINITION DEFERRED.
-CLASS zcl_md4 DEFINITION LOCAL FRIENDS lcl_test.
+CLASS zcl_ntlm_md4 DEFINITION LOCAL FRIENDS lcl_test.
 
 *----------------------------------------------------------------------*
 *       CLASS lcl_Test DEFINITION
@@ -47,9 +47,9 @@ CLASS lcl_test IMPLEMENTATION.
   METHOD test1.
 * ===========
 
-    DATA: lv_hash TYPE zcl_md4=>ty_byte16.
+    DATA: lv_hash TYPE zcl_ntlm_md4=>ty_byte16.
 
-    lv_hash = zcl_md4=>hash( '' ). " empty string
+    lv_hash = zcl_ntlm_md4=>hash( '' ). " empty string
 
     cl_abap_unit_assert=>assert_equals(
         exp = '31D6CFE0D16AE931B73C59D7E0C089C0'
@@ -60,10 +60,10 @@ CLASS lcl_test IMPLEMENTATION.
   METHOD test2.
 * ===========
 
-    DATA: lv_hash TYPE zcl_md4=>ty_byte16.
+    DATA: lv_hash TYPE zcl_ntlm_md4=>ty_byte16.
 
 
-    lv_hash = zcl_md4=>hash( 'a' ).
+    lv_hash = zcl_ntlm_md4=>hash( 'a' ).
 
     cl_abap_unit_assert=>assert_equals(
         exp = 'BDE52CB31DE33E46245E05FBDBD6FB24'
@@ -74,10 +74,10 @@ CLASS lcl_test IMPLEMENTATION.
   METHOD test3.
 * ===========
 
-    DATA: lv_hash TYPE zcl_md4=>ty_byte16.
+    DATA: lv_hash TYPE zcl_ntlm_md4=>ty_byte16.
 
 
-    lv_hash = zcl_md4=>hash( 'abc' ).
+    lv_hash = zcl_ntlm_md4=>hash( 'abc' ).
 
     cl_abap_unit_assert=>assert_equals(
         exp = 'A448017AAF21D8525FC10AE87AA6729D'
@@ -88,10 +88,10 @@ CLASS lcl_test IMPLEMENTATION.
   METHOD test4.
 * ===========
 
-    DATA: lv_hash TYPE zcl_md4=>ty_byte16.
+    DATA: lv_hash TYPE zcl_ntlm_md4=>ty_byte16.
 
 
-    lv_hash = zcl_md4=>hash( 'message digest' ).
+    lv_hash = zcl_ntlm_md4=>hash( 'message digest' ).
 
     cl_abap_unit_assert=>assert_equals(
         exp = 'D9130A8164549FE818874806E1C7014B'
@@ -102,10 +102,10 @@ CLASS lcl_test IMPLEMENTATION.
   METHOD test5.
 * ===========
 
-    DATA: lv_hash TYPE zcl_md4=>ty_byte16.
+    DATA: lv_hash TYPE zcl_ntlm_md4=>ty_byte16.
 
 
-    lv_hash = zcl_md4=>hash( 'abcdefghijklmnopqrstuvwxyz' ).
+    lv_hash = zcl_ntlm_md4=>hash( 'abcdefghijklmnopqrstuvwxyz' ).
 
     cl_abap_unit_assert=>assert_equals(
         exp = 'D79E1C308AA5BBCDEEA8ED63DF412DA9'
@@ -116,10 +116,10 @@ CLASS lcl_test IMPLEMENTATION.
   METHOD test6.
 * ===========
 
-    DATA: lv_hash TYPE zcl_md4=>ty_byte16.
+    DATA: lv_hash TYPE zcl_ntlm_md4=>ty_byte16.
 
 
-    lv_hash = zcl_md4=>hash(
+    lv_hash = zcl_ntlm_md4=>hash(
       'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789' ).
 
     cl_abap_unit_assert=>assert_equals(
@@ -131,10 +131,10 @@ CLASS lcl_test IMPLEMENTATION.
   METHOD test7.
 * ===========
 
-    DATA: lv_hash TYPE zcl_md4=>ty_byte16.
+    DATA: lv_hash TYPE zcl_ntlm_md4=>ty_byte16.
 
 * 4103 = UTF-16LE Unicode
-    lv_hash = zcl_md4=>hash( iv_encoding = '4103'
+    lv_hash = zcl_ntlm_md4=>hash( iv_encoding = '4103'
                              iv_string   = 'SecREt01' ).
 
     cl_abap_unit_assert=>assert_equals(
@@ -146,7 +146,7 @@ CLASS lcl_test IMPLEMENTATION.
   METHOD test_shift.
 * ===========
 
-    DATA: lv_byte4  TYPE zcl_md4=>ty_byte4.
+    DATA: lv_byte4  TYPE zcl_ntlm_md4=>ty_byte4.
 
     lv_byte4 = shift(
         iv_input  = 'FFAA0033'
@@ -161,10 +161,10 @@ CLASS lcl_test IMPLEMENTATION.
   METHOD buffer.
 * ===========
 
-    DATA: lv_word   TYPE zcl_md4=>ty_byte4,
+    DATA: lv_word   TYPE zcl_ntlm_md4=>ty_byte4,
           lo_buffer TYPE REF TO lcl_buffer.
 
-    lo_buffer = NEW lcl_buffer( zcl_md4=>codepage( 'a' ) ).
+    lo_buffer = NEW lcl_buffer( zcl_ntlm_md4=>codepage( 'a' ) ).
 
     cl_abap_unit_assert=>assert_equals(
       exp  = 1
@@ -208,7 +208,7 @@ CLASS lcl_test IMPLEMENTATION.
 
   METHOD test_overflow1.
 
-    DATA: lv_word TYPE zcl_md4=>ty_byte4.
+    DATA: lv_word TYPE zcl_ntlm_md4=>ty_byte4.
 
     lv_word = overflow( 2147483647 ).
     cl_abap_unit_assert=>assert_equals(
@@ -219,7 +219,7 @@ CLASS lcl_test IMPLEMENTATION.
 
   METHOD test_overflow2.
 
-    DATA: lv_word TYPE zcl_md4=>ty_byte4.
+    DATA: lv_word TYPE zcl_ntlm_md4=>ty_byte4.
 
     lv_word = overflow( -2147483648 ).
     cl_abap_unit_assert=>assert_equals(
@@ -230,7 +230,7 @@ CLASS lcl_test IMPLEMENTATION.
 
   METHOD test_overflow3.
 
-    DATA: lv_word TYPE zcl_md4=>ty_byte4.
+    DATA: lv_word TYPE zcl_ntlm_md4=>ty_byte4.
 
     lv_word = overflow( 2147483647 + 1 ).
     cl_abap_unit_assert=>assert_equals(
@@ -241,7 +241,7 @@ CLASS lcl_test IMPLEMENTATION.
 
   METHOD test_overflow4.
 
-    DATA: lv_word TYPE zcl_md4=>ty_byte4.
+    DATA: lv_word TYPE zcl_ntlm_md4=>ty_byte4.
 
     lv_word = overflow( -2147483648 - 1 ).
     cl_abap_unit_assert=>assert_equals(
@@ -252,7 +252,7 @@ CLASS lcl_test IMPLEMENTATION.
 
   METHOD test_overflow5.
 
-    DATA: lv_word TYPE zcl_md4=>ty_byte4.
+    DATA: lv_word TYPE zcl_ntlm_md4=>ty_byte4.
 
     lv_word = overflow( 2 ).
     cl_abap_unit_assert=>assert_equals(
@@ -263,7 +263,7 @@ CLASS lcl_test IMPLEMENTATION.
 
   METHOD test_overflow6.
 
-    DATA lv_word TYPE zcl_md4=>ty_byte4.
+    DATA lv_word TYPE zcl_ntlm_md4=>ty_byte4.
 
     lv_word = overflow( 4 ).
     cl_abap_unit_assert=>assert_equals(
@@ -274,7 +274,7 @@ CLASS lcl_test IMPLEMENTATION.
 
   METHOD barrel.
 
-    DATA: lv_word   TYPE zcl_md4=>ty_byte4,
+    DATA: lv_word   TYPE zcl_ntlm_md4=>ty_byte4,
           lo_barrel TYPE REF TO lcl_barrel.
 
     lo_barrel = NEW #( ).
@@ -405,7 +405,7 @@ CLASS lcl_test IMPLEMENTATION.
 
   METHOD barrel2.
 
-    DATA lv_word   TYPE zcl_md4=>ty_byte4.
+    DATA lv_word   TYPE zcl_ntlm_md4=>ty_byte4.
     DATA lo_barrel TYPE REF TO lcl_barrel.
 
     lo_barrel = NEW #( ).

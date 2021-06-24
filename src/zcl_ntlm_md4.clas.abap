@@ -1,27 +1,27 @@
-CLASS zcl_md4 DEFINITION
-  PUBLIC
-  CREATE PUBLIC .
+class ZCL_NTLM_MD4 definition
+  public
+  create public .
 
-  PUBLIC SECTION.
+public section.
 
-    TYPES:
-*"* public components of class ZCL_MD4
+  types:
+*"* public components of class ZCL_NTLM_MD4
 *"* do not include other source files here!!!
-      ty_byte4 TYPE x LENGTH 4 .
-    TYPES:
-      ty_byte16 TYPE x LENGTH 16 .
+    ty_byte4 TYPE x LENGTH 4 .
+  types:
+    ty_byte16 TYPE x LENGTH 16 .
 
-    CLASS-METHODS hash
-      IMPORTING
-        !iv_string     TYPE clike
-        !iv_encoding   TYPE abap_encoding DEFAULT 'UTF-8'
-      RETURNING
-        VALUE(rv_hash) TYPE ty_byte16 .
-    CLASS-METHODS hash_hex
-      IMPORTING
-        !iv_xstr       TYPE xstring
-      RETURNING
-        VALUE(rv_hash) TYPE ty_byte16 .
+  class-methods HASH
+    importing
+      !IV_STRING type CLIKE
+      !IV_ENCODING type ABAP_ENCODING default 'UTF-8'
+    returning
+      value(RV_HASH) type TY_BYTE16 .
+  class-methods HASH_HEX
+    importing
+      !IV_XSTR type XSTRING
+    returning
+      value(RV_HASH) type TY_BYTE16 .
   PROTECTED SECTION.
 
     CLASS-METHODS codepage
@@ -31,16 +31,16 @@ CLASS zcl_md4 DEFINITION
       RETURNING
         VALUE(rv_xstring) TYPE xstring .
   PRIVATE SECTION.
-*"* private components of class ZCL_MD4
+*"* private components of class ZCL_NTLM_MD4
 *"* do not include other source files here!!!
 ENDCLASS.
 
 
 
-CLASS ZCL_MD4 IMPLEMENTATION.
+CLASS ZCL_NTLM_MD4 IMPLEMENTATION.
 
 
-  METHOD codepage.
+  METHOD CODEPAGE.
 
     DATA: lo_obj TYPE REF TO cl_abap_conv_out_ce.
 
@@ -55,7 +55,7 @@ CLASS ZCL_MD4 IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD hash.
+  METHOD HASH.
 
 * The MIT License (MIT)
 *
@@ -92,7 +92,7 @@ CLASS ZCL_MD4 IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD hash_hex.
+  METHOD HASH_HEX.
 
 * The MIT License (MIT)
 *
