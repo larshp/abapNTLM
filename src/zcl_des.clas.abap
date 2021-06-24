@@ -3,22 +3,13 @@ CLASS zcl_des DEFINITION
   CREATE PUBLIC .
 
   PUBLIC SECTION.
-*"* public components of class ZCL_DES
-*"* do not include other source files here!!!
 
     TYPES:
       ty_byte7 TYPE x LENGTH 7 .
     TYPES:
       ty_byte8 TYPE x LENGTH 8 .
 
-    CLASS-METHODS class_constructor.
-
-    CLASS-METHODS decrypt
-      IMPORTING
-        !iv_key             TYPE ty_byte8
-        !iv_ciphertext      TYPE xsequence
-      RETURNING
-        VALUE(rv_plaintext) TYPE xstring .
+    CLASS-METHODS class_constructor .
     CLASS-METHODS encrypt
       IMPORTING
         !iv_key              TYPE ty_byte8
@@ -30,7 +21,6 @@ CLASS zcl_des DEFINITION
         !iv_byte7       TYPE ty_byte7
       RETURNING
         VALUE(rv_byte8) TYPE ty_byte8 .
-
   PROTECTED SECTION.
 
     TYPES:
@@ -359,14 +349,6 @@ CLASS ZCL_DES IMPLEMENTATION.
       APPEND lv_str TO rt_bits.
 
     ENDLOOP.
-
-  ENDMETHOD.
-
-
-  METHOD decrypt.
-
-* todo
-    RETURN.
 
   ENDMETHOD.
 

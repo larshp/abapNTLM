@@ -1,6 +1,6 @@
 {
   "input_folder": "downport",
-  "input_filter": [],
+  "input_filter": [".clas.", ".intf.", ".dtel.", ".doma."],
   "output_folder": "output",
   "lib": "https://github.com/open-abap/open-abap",
   "write_unit_tests": true,
@@ -9,6 +9,12 @@
     "addFilenames": true,
     "addCommonJS": true,
     "unknownTypes": "runtimeError",
-    "skip": []
+    "skip": [
+      {"object": "ZCL_NTLM", "class": "lcl_convert_test", "method": "bit64_1", "note": "abap.builtin.round is not a function"},
+      {"object": "ZCL_NTLM", "class": "lcl_convert_test", "method": "bit64_2", "note": "abap.builtin.round is not a function"},
+      {"object": "ZCL_NTLM", "class": "lcl_convert_test", "method": "bit64_3", "note": "?"},
+      {"object": "ZCL_NTLM", "class": "lcl_convert_test", "method": "bit64_4", "note": "?"},
+      {"object": "ZCL_NTLM", "class": "lcl_convert_test", "method": "bit64_5", "note": "?"}
+    ]
   }
 }

@@ -37,7 +37,7 @@ CLASS lcl_util DEFINITION FINAL.
     CLASS-METHODS since_epoc
       IMPORTING iv_time       TYPE t DEFAULT sy-uzeit
                 iv_date       TYPE d DEFAULT sy-datum
-      RETURNING VALUE(rv_num) TYPE db02_blid.
+      RETURNING VALUE(rv_num) TYPE zntlm_dec_22.
 
     CLASS-METHODS hmac_md5
       IMPORTING
@@ -70,7 +70,7 @@ CLASS lcl_convert DEFINITION FINAL.
   PUBLIC SECTION.
     CLASS-METHODS to_64bit
       IMPORTING
-        iv_num        TYPE db02_blid
+        iv_num        TYPE zntlm_dec_22
       RETURNING
         VALUE(rv_hex) TYPE zcl_ntlm=>ty_byte8.
     CLASS-METHODS fields_decode
@@ -155,27 +155,24 @@ CLASS lcl_util IMPLEMENTATION.
 
   METHOD md5.
 
-    DATA: lv_xstr TYPE xstring.
+    DATA lv_empty TYPE xstring.
+    DATA lv_hash TYPE xstring.
 
+    TRY.
+        cl_abap_hmac=>calculate_hmac_for_raw(
+          EXPORTING
+            if_algorithm   = 'MD5'
+            if_key         = lv_empty
+            if_data        = iv_data
+          IMPORTING
+            ef_hmacxstring = lv_hash ).
+      CATCH cx_abap_message_digest.
+        ASSERT 1 = 2.
+    ENDTRY.
 
-    CALL FUNCTION 'CALCULATE_HASH_FOR_RAW'
-      EXPORTING
-        alg            = 'MD5'
-        data           = iv_data
-      IMPORTING
-        hashxstring    = lv_xstr
-      EXCEPTIONS
-        unknown_alg    = 1
-        param_error    = 2
-        internal_error = 3
-        OTHERS         = 4.
-    IF sy-subrc <> 0.
-      BREAK-POINT.
-    ENDIF.
+    rv_hash = lv_hash.
 
-    rv_hash = lv_xstr.
-
-  ENDMETHOD.                    "md5
+  ENDMETHOD.
 
   METHOD random_nonce.
 
@@ -192,7 +189,7 @@ CLASS lcl_util IMPLEMENTATION.
 
     rv_data = lv_output.
 
-  ENDMETHOD.                    "random_nonce
+  ENDMETHOD.
 
   METHOD hmac_md5.
 
@@ -231,19 +228,19 @@ CLASS lcl_util IMPLEMENTATION.
         tstmp2 = lv_tstmp2 ).
     rv_num = lv_secs * ( 10 ** 7 ).
 
-  ENDMETHOD.                    "since_epoc
+  ENDMETHOD.
 
   METHOD since_epoc_hex.
 
-    DATA: lv_lsec TYPE db02_blid.
+    DATA lv_lsec TYPE zntlm_dec_22.
 
 
     lv_lsec = since_epoc( ).
     rv_hex = lcl_convert=>to_64bit( lv_lsec ).
 
-  ENDMETHOD.                    "since_epoc
+  ENDMETHOD.
 
-ENDCLASS.                    "lcl_time IMPLEMENTATION
+ENDCLASS.
 
 *----------------------------------------------------------------------*
 *       CLASS lcl_convert IMPLMENTATION.
@@ -358,222 +355,207 @@ CLASS lcl_convert IMPLEMENTATION.
 
   METHOD base64_decode.
 
-    CALL FUNCTION 'SSFC_BASE64_DECODE'
-      EXPORTING
-        b64data                  = iv_string
-      IMPORTING
-        bindata                  = rv_xstring
-      EXCEPTIONS
-        ssf_krn_error            = 1
-        ssf_krn_noop             = 2
-        ssf_krn_nomemory         = 3
-        ssf_krn_opinv            = 4
-        ssf_krn_input_data_error = 5
-        ssf_krn_invalid_par      = 6
-        ssf_krn_invalid_parlen   = 7
-        OTHERS                   = 8.
-    IF sy-subrc <> 0.
-      ASSERT 1 = 1 + 1.
-    ENDIF.
+    rv_xstring = cl_http_utility=>decode_x_base64( iv_string ).
 
-  ENDMETHOD.                    "base64_decode
+  ENDMETHOD.
 
   METHOD base64_encode.
 
-    CALL FUNCTION 'SSFC_BASE64_ENCODE'
-      EXPORTING
-        bindata                  = iv_xstring
-      IMPORTING
-        b64data                  = rv_string
-      EXCEPTIONS
-        ssf_krn_error            = 1
-        ssf_krn_noop             = 2
-        ssf_krn_nomemory         = 3
-        ssf_krn_opinv            = 4
-        ssf_krn_input_data_error = 5
-        ssf_krn_invalid_par      = 6
-        ssf_krn_invalid_parlen   = 7
-        OTHERS                   = 8.
-    IF sy-subrc <> 0.
-      ASSERT 1 = 1 + 1.
-    ENDIF.
+    rv_string = cl_http_utility=>encode_x_base64( iv_xstring ).
 
-  ENDMETHOD.                    "base64_encode
+  ENDMETHOD.
 
   METHOD flags_decode.
 
     DATA: lv_c TYPE c LENGTH 1,
           lv_x TYPE x LENGTH 1.
 
-    DEFINE _flag1.
-      IF lv_c = '1'.
-        rs_flags-&1 = abap_true.
-      ENDIF.
-    END-OF-DEFINITION.
-
 
     lv_x = iv_hex.
     GET BIT 8 OF lv_x INTO lv_c.
-    _flag1 negotiate_unicode.
+    rs_flags-negotiate_unicode = boolc( lv_c = '1' ).
     GET BIT 7 OF lv_x INTO lv_c.
-    _flag1 negotiate_oem.
+    rs_flags-negotiate_oem = boolc( lv_c = '1' ).
     GET BIT 6 OF lv_x INTO lv_c.
-    _flag1 request_target.
+    rs_flags-request_target = boolc( lv_c = '1' ).
     GET BIT 5 OF lv_x INTO lv_c.
-    _flag1 r10.
+    rs_flags-r10 = boolc( lv_c = '1' ).
     GET BIT 4 OF lv_x INTO lv_c.
-    _flag1 negotiate_sign.
+    rs_flags-negotiate_sign = boolc( lv_c = '1' ).
     GET BIT 3 OF lv_x INTO lv_c.
-    _flag1 negotiate_seal.
+    rs_flags-negotiate_seal = boolc( lv_c = '1' ).
     GET BIT 2 OF lv_x INTO lv_c.
-    _flag1 negotiate_datagram.
+    rs_flags-negotiate_datagram = boolc( lv_c = '1' ).
     GET BIT 1 OF lv_x INTO lv_c.
-    _flag1 negotiate_lm_key.
+    rs_flags-negotiate_lm_key = boolc( lv_c = '1' ).
 
     lv_x = iv_hex+1.
     GET BIT 8 OF lv_x INTO lv_c.
-    _flag1 r9.
+    rs_flags-r9 = boolc( lv_c = '1' ).
     GET BIT 7 OF lv_x INTO lv_c.
-    _flag1 negotiate_ntlm.
+    rs_flags-negotiate_ntlm = boolc( lv_c = '1' ).
     GET BIT 6 OF lv_x INTO lv_c.
-    _flag1 r8.
+    rs_flags-r8 = boolc( lv_c = '1' ).
     GET BIT 5 OF lv_x INTO lv_c.
-    _flag1 anonymous.
+    rs_flags-anonymous = boolc( lv_c = '1' ).
     GET BIT 4 OF lv_x INTO lv_c.
-    _flag1 negotiate_oem_domain_supplied.
+    rs_flags-negotiate_oem_domain_supplied = boolc( lv_c = '1' ).
     GET BIT 3 OF lv_x INTO lv_c.
-    _flag1 negotiate_oem_workstation_sup.
+    rs_flags-negotiate_oem_workstation_sup = boolc( lv_c = '1' ).
     GET BIT 2 OF lv_x INTO lv_c.
-    _flag1 r7.
+    rs_flags-r7 = boolc( lv_c = '1' ).
     GET BIT 1 OF lv_x INTO lv_c.
-    _flag1 negotiate_always_sign.
+    rs_flags-negotiate_always_sign = boolc( lv_c = '1' ).
 
     lv_x = iv_hex+2.
     GET BIT 8 OF lv_x INTO lv_c.
-    _flag1 target_type_domain.
+    rs_flags-target_type_domain = boolc( lv_c = '1' ).
     GET BIT 7 OF lv_x INTO lv_c.
-    _flag1 target_type_server.
+    rs_flags-target_type_server = boolc( lv_c = '1' ).
     GET BIT 6 OF lv_x INTO lv_c.
-    _flag1 r6.
+    rs_flags-r6 = boolc( lv_c = '1' ).
     GET BIT 5 OF lv_x INTO lv_c.
-    _flag1 negotiate_extended_session_sec.
+    rs_flags-negotiate_extended_session_sec = boolc( lv_c = '1' ).
     GET BIT 4 OF lv_x INTO lv_c.
-    _flag1 negotiate_identity.
+    rs_flags-negotiate_identity = boolc( lv_c = '1' ).
     GET BIT 3 OF lv_x INTO lv_c.
-    _flag1 r5.
+    rs_flags-r5 = boolc( lv_c = '1' ).
     GET BIT 2 OF lv_x INTO lv_c.
-    _flag1 request_non_nt_session_key.
+    rs_flags-request_non_nt_session_key = boolc( lv_c = '1' ).
     GET BIT 1 OF lv_x INTO lv_c.
-    _flag1 negotiate_target_info.
+    rs_flags-negotiate_target_info = boolc( lv_c = '1' ).
 
     lv_x = iv_hex+3.
     GET BIT 1 OF lv_x INTO lv_c.
-    _flag1 r4.
+    rs_flags-r4 = boolc( lv_c = '1' ).
     GET BIT 2 OF lv_x INTO lv_c.
-    _flag1 negotiate_version.
+    rs_flags-negotiate_version = boolc( lv_c = '1' ).
     GET BIT 3 OF lv_x INTO lv_c.
-    _flag1 r3.
+    rs_flags-r3 = boolc( lv_c = '1' ).
     GET BIT 4 OF lv_x INTO lv_c.
-    _flag1 r2.
+    rs_flags-r2 = boolc( lv_c = '1' ).
     GET BIT 5 OF lv_x INTO lv_c.
-    _flag1 r1.
+    rs_flags-r1 = boolc( lv_c = '1' ).
     GET BIT 6 OF lv_x INTO lv_c.
-    _flag1 negotiate_128.
+    rs_flags-negotiate_128 = boolc( lv_c = '1' ).
     GET BIT 7 OF lv_x INTO lv_c.
-    _flag1 negotiate_key_exch.
+    rs_flags-negotiate_key_exch = boolc( lv_c = '1' ).
     GET BIT 8 OF lv_x INTO lv_c.
-    _flag1 negotiate_56.
+    rs_flags-negotiate_56 = boolc( lv_c = '1' ).
 
   ENDMETHOD.                    "flags_decode
 
   METHOD flags_encode.
 
-    DATA: lv_c TYPE c LENGTH 1,
-          lv_x TYPE x LENGTH 1.
-
-    DEFINE _flag.
-      IF is_flags-&1 = abap_true.
-        lv_c = '1'.
-      ELSE.
-        lv_c = '0'.
-      ENDIF.
-    END-OF-DEFINITION.
+    DATA lv_x TYPE x LENGTH 1.
 
 
     CLEAR lv_x.
-    _flag negotiate_unicode.
-    SET BIT 8 OF lv_x TO lv_c.
-    _flag negotiate_oem.
-    SET BIT 7 OF lv_x TO lv_c.
-    _flag request_target.
-    SET BIT 6 OF lv_x TO lv_c.
-    _flag r10.
-    SET BIT 5 OF lv_x TO lv_c.
-    _flag negotiate_sign.
-    SET BIT 4 OF lv_x TO lv_c.
-    _flag negotiate_seal.
-    SET BIT 3 OF lv_x TO lv_c.
-    _flag negotiate_datagram.
-    SET BIT 2 OF lv_x TO lv_c.
-    _flag negotiate_lm_key.
-    SET BIT 1 OF lv_x TO lv_c.
+    IF is_flags-negotiate_unicode = abap_true.
+      SET BIT 8 OF lv_x.
+    ENDIF.
+    IF is_flags-negotiate_oem = abap_true.
+      SET BIT 7 OF lv_x.
+    ENDIF.
+    IF is_flags-request_target = abap_true.
+      SET BIT 6 OF lv_x.
+    ENDIF.
+    IF is_flags-r10 = abap_true.
+      SET BIT 5 OF lv_x.
+    ENDIF.
+    IF is_flags-negotiate_sign = abap_true.
+      SET BIT 4 OF lv_x.
+    ENDIF.
+    IF is_flags-negotiate_seal = abap_true.
+      SET BIT 3 OF lv_x.
+    ENDIF.
+    IF is_flags-negotiate_datagram = abap_true.
+      SET BIT 2 OF lv_x.
+    ENDIF.
+    IF is_flags-negotiate_lm_key = abap_true.
+      SET BIT 1 OF lv_x.
+    ENDIF.
     rv_hex(1) = lv_x.
 
     CLEAR lv_x.
-    _flag r9.
-    SET BIT 8 OF lv_x TO lv_c.
-    _flag negotiate_ntlm.
-    SET BIT 7 OF lv_x TO lv_c.
-    _flag r8.
-    SET BIT 6 OF lv_x TO lv_c.
-    _flag anonymous.
-    SET BIT 5 OF lv_x TO lv_c.
-    _flag negotiate_oem_domain_supplied.
-    SET BIT 4 OF lv_x TO lv_c.
-    _flag negotiate_oem_workstation_sup.
-    SET BIT 3 OF lv_x TO lv_c.
-    _flag r7.
-    SET BIT 2 OF lv_x TO lv_c.
-    _flag negotiate_always_sign.
-    SET BIT 1 OF lv_x TO lv_c.
+    IF is_flags-r9 = abap_true.
+      SET BIT 8 OF lv_x.
+    ENDIF.
+    IF is_flags-negotiate_ntlm = abap_true.
+      SET BIT 7 OF lv_x.
+    ENDIF.
+    IF is_flags-r8 = abap_true.
+      SET BIT 6 OF lv_x.
+    ENDIF.
+    IF is_flags-anonymous = abap_true.
+      SET BIT 5 OF lv_x.
+    ENDIF.
+    IF is_flags-negotiate_oem_domain_supplied = abap_true.
+      SET BIT 4 OF lv_x.
+    ENDIF.
+    IF is_flags-negotiate_oem_workstation_sup = abap_true.
+      SET BIT 3 OF lv_x.
+    ENDIF.
+    IF is_flags-r7 = abap_true.
+      SET BIT 2 OF lv_x.
+    ENDIF.
+    IF is_flags-negotiate_always_sign = abap_true.
+      SET BIT 1 OF lv_x.
+    ENDIF.
     rv_hex+1(1) = lv_x.
 
     CLEAR lv_x.
-    _flag target_type_domain.
-    SET BIT 8 OF lv_x TO lv_c.
-    _flag target_type_server.
-    SET BIT 7 OF lv_x TO lv_c.
-    _flag r6.
-    SET BIT 6 OF lv_x TO lv_c.
-    _flag negotiate_extended_session_sec.
-    SET BIT 5 OF lv_x TO lv_c.
-    _flag negotiate_identity.
-    SET BIT 4 OF lv_x TO lv_c.
-    _flag r5.
-    SET BIT 3 OF lv_x TO lv_c.
-    _flag request_non_nt_session_key.
-    SET BIT 2 OF lv_x TO lv_c.
-    _flag negotiate_target_info.
-    SET BIT 1 OF lv_x TO lv_c.
+    IF is_flags-target_type_domain = abap_true.
+      SET BIT 8 OF lv_x.
+    ENDIF.
+    IF is_flags-target_type_server = abap_true.
+      SET BIT 7 OF lv_x.
+    ENDIF.
+    IF is_flags-r6 = abap_true.
+      SET BIT 6 OF lv_x.
+    ENDIF.
+    IF is_flags-negotiate_extended_session_sec = abap_true.
+      SET BIT 5 OF lv_x.
+    ENDIF.
+    IF is_flags-negotiate_identity = abap_true.
+      SET BIT 4 OF lv_x.
+    ENDIF.
+    IF is_flags-r5 = abap_true.
+      SET BIT 3 OF lv_x.
+    ENDIF.
+    IF is_flags-request_non_nt_session_key = abap_true.
+      SET BIT 2 OF lv_x.
+    ENDIF.
+    IF is_flags-negotiate_target_info = abap_true.
+      SET BIT 1 OF lv_x.
+    ENDIF.
     rv_hex+2(1) = lv_x.
 
     CLEAR lv_x.
-    _flag r4.
-    SET BIT 1 OF lv_x TO lv_c.
-    _flag negotiate_version.
-    SET BIT 2 OF lv_x TO lv_c.
-    _flag r3.
-    SET BIT 3 OF lv_x TO lv_c.
-    _flag r2.
-    SET BIT 4 OF lv_x TO lv_c.
-    _flag r1.
-    SET BIT 5 OF lv_x TO lv_c.
-    _flag negotiate_128.
-    SET BIT 6 OF lv_x TO lv_c.
-    _flag negotiate_key_exch.
-    SET BIT 7 OF lv_x TO lv_c.
-    _flag negotiate_56.
-    SET BIT 8 OF lv_x TO lv_c.
+    IF is_flags-r4 = abap_true.
+      SET BIT 1 OF lv_x.
+    ENDIF.
+    IF is_flags-negotiate_version = abap_true.
+      SET BIT 2 OF lv_x.
+    ENDIF.
+    IF is_flags-r3 = abap_true.
+      SET BIT 3 OF lv_x.
+    ENDIF.
+    IF is_flags-r2 = abap_true.
+      SET BIT 4 OF lv_x.
+    ENDIF.
+    IF is_flags-r1 = abap_true.
+      SET BIT 5 OF lv_x.
+    ENDIF.
+    IF is_flags-negotiate_128 = abap_true.
+      SET BIT 6 OF lv_x.
+    ENDIF.
+    IF is_flags-negotiate_key_exch = abap_true.
+      SET BIT 7 OF lv_x.
+    ENDIF.
+    IF is_flags-negotiate_56 = abap_true.
+      SET BIT 8 OF lv_x.
+    ENDIF.
     rv_hex+3(1) = lv_x.
 
   ENDMETHOD.                    "flags_encode
@@ -636,7 +618,7 @@ CLASS lcl_reader DEFINITION FINAL.
     METHODS constructor
       IMPORTING iv_value TYPE string
                 iv_type  TYPE xstring
-      RAISING zcx_ntlm_protocol_error.
+      RAISING   zcx_ntlm_protocol_error.
 
     METHODS flags
       RETURNING
@@ -644,15 +626,15 @@ CLASS lcl_reader DEFINITION FINAL.
 
     METHODS data_raw
       RETURNING
-        VALUE(rv_data) TYPE xstring
-      RAISING zcx_ntlm_protocol_error.
+                VALUE(rv_data) TYPE xstring
+      RAISING   zcx_ntlm_protocol_error.
 
     METHODS data_str
       IMPORTING
-        iv_oem         TYPE abap_bool
+                iv_oem         TYPE abap_bool
       RETURNING
-        VALUE(rv_data) TYPE string
-      RAISING zcx_ntlm_protocol_error.
+                VALUE(rv_data) TYPE string
+      RAISING   zcx_ntlm_protocol_error.
 
     METHODS skip
       IMPORTING
@@ -817,9 +799,7 @@ CLASS lcl_writer IMPLEMENTATION.
 
 
     lv_len = xstrlen( mv_header ).
-    IF lv_len > 200.
-      BREAK-POINT.
-    ENDIF.
+    ASSERT lv_len <= 200.
     lv_header = mv_header.
     lv_offset = xstrlen( mv_header ).
     LOOP AT mt_fix ASSIGNING <ls_fix>.

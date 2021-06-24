@@ -16,22 +16,24 @@ CLASS lcl_test DEFINITION FOR TESTING
 
   PRIVATE SECTION.
 * ================
-    METHODS: type_1            FOR TESTING,
-      type_1_decode_1   FOR TESTING,
-      type_1_encode     FOR TESTING,
-      type_2_decode_1   FOR TESTING,
-      type_2_encode     FOR TESTING,
+    METHODS:
+      type_1            FOR TESTING RAISING cx_static_check,
+      type_1_decode_1   FOR TESTING RAISING cx_static_check,
+      type_1_encode     FOR TESTING RAISING cx_static_check,
+      type_2_decode_1   FOR TESTING RAISING cx_static_check,
+      type_2_encode     FOR TESTING RAISING cx_static_check,
       type_3_1          FOR TESTING RAISING cx_static_check,
       type_3_2          FOR TESTING RAISING cx_static_check,
       type_3_build      FOR TESTING RAISING cx_static_check,
-      lmv1_response     FOR TESTING,
-      ntlmv1_response   FOR TESTING,
+      lmv1_response1    FOR TESTING RAISING cx_static_check,
+      lmv1_response2    FOR TESTING RAISING cx_static_check,
+      ntlmv1_response   FOR TESTING RAISING cx_static_check,
       lmv2_response_1   FOR TESTING RAISING cx_static_check,
       lmv2_response_2   FOR TESTING RAISING cx_static_check,
       ntlmv2_response_1 FOR TESTING RAISING cx_static_check,
-      ntlm2_session_r   FOR TESTING.
+      ntlm2_session_r   FOR TESTING RAISING cx_static_check.
 
-ENDCLASS.                    "lcl_test DEFINITION
+ENDCLASS.
 
 *----------------------------------------------------------------------*
 *       CLASS lcl_test IMPLEMENTATION
@@ -82,7 +84,7 @@ CLASS lcl_test IMPLEMENTATION.
 
   ENDMETHOD.                    "ntlm2_session_r
 
-  METHOD lmv1_response.
+  METHOD lmv1_response1.
 
     DATA: lv_response TYPE xstring.
 
@@ -92,18 +94,23 @@ CLASS lcl_test IMPLEMENTATION.
       iv_challenge = '0123456789ABCDEF' ).
     cl_abap_unit_assert=>assert_equals(
       exp  = 'C337CD5CBD44FC9782A667AF6D427C6DE67C20C2D3E77C56'
-      act  = lv_response
-      quit = if_aunit_constants=>no ).
+      act  = lv_response ).
+
+  ENDMETHOD.
+
+  METHOD lmv1_response2.
+
+    DATA: lv_response TYPE xstring.
+
 
     lv_response = zcl_ntlm=>lmv1_response(
       iv_password  = 'Password'
       iv_challenge = '0123456789ABCDEF' ).
     cl_abap_unit_assert=>assert_equals(
       exp  = '98DEF7B87F88AA5DAFE2DF779688A172DEF11C7D5CCDEF13'
-      act  = lv_response
-      quit = if_aunit_constants=>no ).
+      act  = lv_response ).
 
-  ENDMETHOD.                    "lmv1_response
+  ENDMETHOD.
 
   METHOD lmv2_response_1.
 
@@ -455,7 +462,7 @@ CLASS lcl_convert_test IMPLEMENTATION.
 
   METHOD bit64_1.
 
-    DATA: lv_num TYPE db02_blid,
+    DATA: lv_num TYPE zntlm_dec_22,
           lv_hex TYPE zcl_ntlm=>ty_byte8.
 
 
@@ -469,7 +476,7 @@ CLASS lcl_convert_test IMPLEMENTATION.
 
   METHOD bit64_2.
 
-    DATA: lv_num TYPE db02_blid,
+    DATA: lv_num TYPE zntlm_dec_22,
           lv_hex TYPE zcl_ntlm=>ty_byte8.
 
 
@@ -485,7 +492,7 @@ CLASS lcl_convert_test IMPLEMENTATION.
 
   METHOD bit64_3.
 
-    DATA: lv_num TYPE db02_blid,
+    DATA: lv_num TYPE zntlm_dec_22,
           lv_hex TYPE zcl_ntlm=>ty_byte8.
 
 
@@ -501,7 +508,7 @@ CLASS lcl_convert_test IMPLEMENTATION.
 
   METHOD bit64_4.
 
-    DATA: lv_num TYPE db02_blid,
+    DATA: lv_num TYPE zntlm_dec_22,
           lv_hex TYPE zcl_ntlm=>ty_byte8.
 
 
@@ -517,7 +524,7 @@ CLASS lcl_convert_test IMPLEMENTATION.
 
   METHOD bit64_5.
 
-    DATA: lv_num TYPE db02_blid,
+    DATA: lv_num TYPE zntlm_dec_22,
           lv_hex TYPE zcl_ntlm=>ty_byte8.
 
 
