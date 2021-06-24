@@ -10,7 +10,6 @@
     "addCommonJS": true,
     "unknownTypes": "runtimeError",
     "skip": [
-      {"object": "ZCL_NTLM", "class": "lcl_test", "method": "ntlm2_session_r", "note": "CALCULATE_HASH_FOR_RAW is not a function"},
       {"object": "ZCL_NTLM", "class": "lcl_convert_test", "method": "bit64_1", "note": "DB02_BLID not found, lookup"},
       {"object": "ZCL_NTLM", "class": "lcl_convert_test", "method": "bit64_2", "note": "DB02_BLID not found, lookup"},
       {"object": "ZCL_NTLM", "class": "lcl_convert_test", "method": "bit64_3", "note": "DB02_BLID not found, lookup"},
