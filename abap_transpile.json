@@ -10,8 +10,7 @@
     "addCommonJS": true,
     "unknownTypes": "runtimeError",
     "skip": [
-      {"object": "ZCL_NTLM", "class": "lcl_convert_test", "method": "bit64_1", "note": "abap.builtin.round is not a function"},
-      {"object": "ZCL_NTLM", "class": "lcl_convert_test", "method": "bit64_2", "note": "abap.builtin.round is not a function"},
+      {"object": "ZCL_NTLM", "class": "lcl_convert_test", "method": "bit64_2", "note": "?"},
       {"object": "ZCL_NTLM", "class": "lcl_convert_test", "method": "bit64_3", "note": "?"},
       {"object": "ZCL_NTLM", "class": "lcl_convert_test", "method": "bit64_4", "note": "?"},
       {"object": "ZCL_NTLM", "class": "lcl_convert_test", "method": "bit64_5", "note": "?"}
