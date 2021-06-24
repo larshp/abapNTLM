@@ -7,7 +7,7 @@
   },
   "dependencies": [
     {
-      "url": "https://github.com/abaplint/deps",
+      "url": "https://github.com/open-abap/open-abap",
       "folder": "/deps",
       "files": "/src/**/*.*"
     }
