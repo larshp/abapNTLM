@@ -17,6 +17,7 @@ CLASS lcl_test DEFINITION FOR TESTING
   PRIVATE SECTION.
 * ================
     METHODS:
+      random            FOR TESTING,
       type_1            FOR TESTING RAISING cx_static_check,
       type_1_decode_1   FOR TESTING RAISING cx_static_check,
       type_1_encode     FOR TESTING RAISING cx_static_check,
@@ -41,6 +42,23 @@ ENDCLASS.
 *
 *----------------------------------------------------------------------*
 CLASS lcl_test IMPLEMENTATION.
+
+  METHOD random.
+* Random uses a Mersenne twister, which can repeat without being broken
+* But it should not continue repeating itself
+    DATA: lv_equals TYPE i VALUE 0.
+
+    DO 10 TIMES.
+      IF lcl_util=>random_nonce( ) = lcl_util=>random_nonce( ).
+        lv_equals = lv_equals + 1.
+      ENDIF.
+    ENDDO.
+
+    cl_abap_unit_assert=>assert_differs(
+        exp = 10
+        act = lv_equals ).
+
+  ENDMETHOD.
 
   METHOD type_1.
 
