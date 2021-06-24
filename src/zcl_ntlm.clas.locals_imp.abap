@@ -155,25 +155,24 @@ CLASS lcl_util IMPLEMENTATION.
 
   METHOD md5.
 
-    DATA: lv_xstr TYPE xstring.
+    DATA lv_empty TYPE xstring.
+    DATA lv_hash TYPE xstring.
 
+    TRY.
+        cl_abap_hmac=>calculate_hmac_for_raw(
+          EXPORTING
+            if_algorithm   = 'MD5'
+            if_key         = lv_empty
+            if_data        = iv_data
+          IMPORTING
+            ef_hmacxstring = lv_hash ).
+      CATCH cx_abap_message_digest.
+        ASSERT 1 = 2.
+    ENDTRY.
 
-    CALL FUNCTION 'CALCULATE_HASH_FOR_RAW'
-      EXPORTING
-        alg            = 'MD5'
-        data           = iv_data
-      IMPORTING
-        hashxstring    = lv_xstr
-      EXCEPTIONS
-        unknown_alg    = 1
-        param_error    = 2
-        internal_error = 3
-        OTHERS         = 4.
-    ASSERT sy-subrc = 0.
+    rv_hash = lv_hash.
 
-    rv_hash = lv_xstr.
-
-  ENDMETHOD.                    "md5
+  ENDMETHOD.
 
   METHOD random_nonce.
 
@@ -190,7 +189,7 @@ CLASS lcl_util IMPLEMENTATION.
 
     rv_data = lv_output.
 
-  ENDMETHOD.                    "random_nonce
+  ENDMETHOD.
 
   METHOD hmac_md5.
 
