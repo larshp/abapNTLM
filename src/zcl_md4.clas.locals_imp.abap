@@ -23,7 +23,7 @@ CLASS lcl_bit_flipper DEFINITION.
 ENDCLASS.
 
 
-CLASS lcl_barrel DEFINITION.
+CLASS lcl_barrel DEFINITION INHERITING FROM lcl_bit_flipper.
 
   PUBLIC SECTION.
 
@@ -45,13 +45,6 @@ CLASS lcl_barrel DEFINITION.
       mt_barrel     TYPE STANDARD TABLE OF zcl_md4=>ty_byte4,
       mt_old_barrel TYPE STANDARD TABLE OF zcl_md4=>ty_byte4,
       mv_index      TYPE i.
-
-    METHODS:
-      overflow
-        IMPORTING
-          iv_f             TYPE f
-        RETURNING
-          VALUE(rv_result) TYPE zcl_md4=>ty_byte4.
 
 ENDCLASS.
 
@@ -175,14 +168,19 @@ ENDCLASS.
 CLASS lcl_bit_flipper IMPLEMENTATION.
 
   METHOD overflow.
-    DATA: lv_f      TYPE f,
-          lv_maxint TYPE i.
+    DATA lv_f      TYPE f.
+    DATA lv_a      TYPE f.
+    DATA lv_b      TYPE f.
+    DATA lv_maxint TYPE i.
 
     lv_maxint = 2 ** 31 - 1.
 
     lv_f = iv_f.
-    IF iv_f < - lv_maxint OR iv_f > lv_maxint.
-      lv_f = ( iv_f + ( lv_maxint + 1 ) ) MOD ( 2 * ( lv_maxint + 1 ) ) - lv_maxint - 1.
+    IF iv_f < 0 - lv_maxint OR iv_f > lv_maxint.
+      lv_a = iv_f + lv_maxint + 1.
+      lv_b = 2 * ( lv_maxint + 1 ).
+      lv_f = lv_a MOD lv_b.
+      lv_f = lv_f - lv_maxint - 1.
     ENDIF.
 
     rv_result = lv_f.
@@ -218,6 +216,7 @@ ENDCLASS.
 CLASS lcl_barrel IMPLEMENTATION.
 
   METHOD constructor.
+    super->constructor( ).
 * big endian
     APPEND '67452301' TO mt_barrel.
     APPEND 'EFCDAB89' TO mt_barrel.
@@ -286,21 +285,6 @@ CLASS lcl_barrel IMPLEMENTATION.
       set( overflow( lv_f ) ).
       roll( ).
     ENDDO.
-
-  ENDMETHOD.
-
-  METHOD overflow.
-    DATA: lv_f      TYPE f,
-          lv_maxint TYPE i.
-
-    lv_maxint = 2 ** 31 - 1.
-
-    lv_f = iv_f.
-    IF iv_f < - lv_maxint OR iv_f > lv_maxint.
-      lv_f = ( iv_f + ( lv_maxint + 1 ) ) MOD ( 2 * ( lv_maxint + 1 ) ) - lv_maxint - 1.
-    ENDIF.
-
-    rv_result = lv_f.
 
   ENDMETHOD.
 
