@@ -162,7 +162,7 @@ CLASS lcl_util IMPLEMENTATION.
 
   METHOD class_constructor.
 
-    mo_random = cl_abap_random=>create( ).
+    mo_random = cl_abap_random=>create( cl_abap_random=>seed( ) ).
 
   ENDMETHOD.
 
