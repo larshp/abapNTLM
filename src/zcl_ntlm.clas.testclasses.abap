@@ -462,7 +462,7 @@ CLASS lcl_convert_test IMPLEMENTATION.
 
   METHOD bit64_1.
 
-    DATA: lv_num TYPE db02_blid,
+    DATA: lv_num TYPE zntlm_dec_22,
           lv_hex TYPE zcl_ntlm=>ty_byte8.
 
 
@@ -476,7 +476,7 @@ CLASS lcl_convert_test IMPLEMENTATION.
 
   METHOD bit64_2.
 
-    DATA: lv_num TYPE db02_blid,
+    DATA: lv_num TYPE zntlm_dec_22,
           lv_hex TYPE zcl_ntlm=>ty_byte8.
 
 
@@ -492,7 +492,7 @@ CLASS lcl_convert_test IMPLEMENTATION.
 
   METHOD bit64_3.
 
-    DATA: lv_num TYPE db02_blid,
+    DATA: lv_num TYPE zntlm_dec_22,
           lv_hex TYPE zcl_ntlm=>ty_byte8.
 
 
@@ -508,7 +508,7 @@ CLASS lcl_convert_test IMPLEMENTATION.
 
   METHOD bit64_4.
 
-    DATA: lv_num TYPE db02_blid,
+    DATA: lv_num TYPE zntlm_dec_22,
           lv_hex TYPE zcl_ntlm=>ty_byte8.
 
 
@@ -524,7 +524,7 @@ CLASS lcl_convert_test IMPLEMENTATION.
 
   METHOD bit64_5.
 
-    DATA: lv_num TYPE db02_blid,
+    DATA: lv_num TYPE zntlm_dec_22,
           lv_hex TYPE zcl_ntlm=>ty_byte8.
 
 

@@ -37,7 +37,7 @@ CLASS lcl_util DEFINITION FINAL.
     CLASS-METHODS since_epoc
       IMPORTING iv_time       TYPE t DEFAULT sy-uzeit
                 iv_date       TYPE d DEFAULT sy-datum
-      RETURNING VALUE(rv_num) TYPE db02_blid.
+      RETURNING VALUE(rv_num) TYPE zntlm_dec_22.
 
     CLASS-METHODS hmac_md5
       IMPORTING
@@ -70,7 +70,7 @@ CLASS lcl_convert DEFINITION FINAL.
   PUBLIC SECTION.
     CLASS-METHODS to_64bit
       IMPORTING
-        iv_num        TYPE db02_blid
+        iv_num        TYPE zntlm_dec_22
       RETURNING
         VALUE(rv_hex) TYPE zcl_ntlm=>ty_byte8.
     CLASS-METHODS fields_decode
@@ -228,19 +228,19 @@ CLASS lcl_util IMPLEMENTATION.
         tstmp2 = lv_tstmp2 ).
     rv_num = lv_secs * ( 10 ** 7 ).
 
-  ENDMETHOD.                    "since_epoc
+  ENDMETHOD.
 
   METHOD since_epoc_hex.
 
-    DATA: lv_lsec TYPE db02_blid.
+    DATA lv_lsec TYPE zntlm_dec_22.
 
 
     lv_lsec = since_epoc( ).
     rv_hex = lcl_convert=>to_64bit( lv_lsec ).
 
-  ENDMETHOD.                    "since_epoc
+  ENDMETHOD.
 
-ENDCLASS.                    "lcl_time IMPLEMENTATION
+ENDCLASS.
 
 *----------------------------------------------------------------------*
 *       CLASS lcl_convert IMPLMENTATION.
