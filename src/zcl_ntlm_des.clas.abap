@@ -1,26 +1,26 @@
-class ZCL_NTLM_DES definition
-  public
-  create public .
+CLASS zcl_ntlm_des DEFINITION
+  PUBLIC
+  CREATE PUBLIC .
 
-public section.
+  PUBLIC SECTION.
 
-  types:
-    ty_byte7 TYPE x LENGTH 7 .
-  types:
-    ty_byte8 TYPE x LENGTH 8 .
+    TYPES:
+      ty_byte7 TYPE x LENGTH 7 .
+    TYPES:
+      ty_byte8 TYPE x LENGTH 8 .
 
-  class-methods CLASS_CONSTRUCTOR .
-  class-methods ENCRYPT
-    importing
-      !IV_KEY type TY_BYTE8
-      !IV_PLAINTEXT type XSEQUENCE
-    returning
-      value(RV_CIPHERTEXT) type XSTRING .
-  class-methods PARITY_ADJUST
-    importing
-      !IV_BYTE7 type TY_BYTE7
-    returning
-      value(RV_BYTE8) type TY_BYTE8 .
+    CLASS-METHODS class_constructor .
+    CLASS-METHODS encrypt
+      IMPORTING
+        !iv_key              TYPE ty_byte8
+        !iv_plaintext        TYPE xsequence
+      RETURNING
+        VALUE(rv_ciphertext) TYPE xstring .
+    CLASS-METHODS parity_adjust
+      IMPORTING
+        !iv_byte7       TYPE ty_byte7
+      RETURNING
+        VALUE(rv_byte8) TYPE ty_byte8 .
   PROTECTED SECTION.
 
     TYPES:
@@ -184,7 +184,7 @@ ENDCLASS.
 CLASS ZCL_NTLM_DES IMPLEMENTATION.
 
 
-  METHOD CLASS_CONSTRUCTOR.
+  METHOD class_constructor.
     mt_e = VALUE #(
       ( 32 ) ( 1 ) ( 2 ) ( 3 ) ( 4 ) ( 5 ) ( 4 ) ( 5 )
       ( 6 ) ( 7 ) ( 8 ) ( 9 ) ( 8 ) ( 9 ) ( 10 ) ( 11 )
@@ -319,7 +319,7 @@ CLASS ZCL_NTLM_DES IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD COLUMN.
+  METHOD column.
 
     rv_column = 8 * iv_b+1(1) + 4 * iv_b+2(1) + 2 * iv_b+3(1) + iv_b+4(1).
 
@@ -329,7 +329,7 @@ CLASS ZCL_NTLM_DES IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD C_AND_D.
+  METHOD c_and_d.
 
     DATA: lv_shift TYPE i,
           lv_c_n   TYPE c LENGTH 28,
@@ -353,7 +353,7 @@ CLASS ZCL_NTLM_DES IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD ENCRYPT.
+  METHOD encrypt.
 
 * The MIT License (MIT)
 *
@@ -402,7 +402,7 @@ CLASS ZCL_NTLM_DES IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD F.
+  METHOD f.
 
     DATA: lv_e   TYPE c LENGTH 48,
           lv_s   TYPE c LENGTH 32,
@@ -463,7 +463,7 @@ CLASS ZCL_NTLM_DES IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD FROM_BITS.
+  METHOD from_bits.
 
     DATA: lv_index TYPE i,
           lv_res   TYPE x LENGTH 8.
@@ -481,7 +481,7 @@ CLASS ZCL_NTLM_DES IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD I_TO_BITS_4.
+  METHOD i_to_bits_4.
     CONSTANTS lc_bits TYPE string VALUE '0000000100100011010001010110011110001001101010111100110111101111'.
     DATA lv_index TYPE i.
 
@@ -491,7 +491,7 @@ CLASS ZCL_NTLM_DES IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD K.
+  METHOD k.
 
     DATA: lv_bits LIKE LINE OF it_bits.
 
@@ -506,7 +506,7 @@ CLASS ZCL_NTLM_DES IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD L_AND_R.
+  METHOD l_and_r.
 
     DATA: lv_l_prev TYPE c LENGTH 32,
           lv_r_prev TYPE c LENGTH 32,
@@ -537,7 +537,7 @@ CLASS ZCL_NTLM_DES IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD PARITY_ADJUST.
+  METHOD parity_adjust.
 
     DATA: lv_input  TYPE c LENGTH 56,
           lv_output TYPE c LENGTH 64,
@@ -570,7 +570,7 @@ CLASS ZCL_NTLM_DES IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD PERMUTE.
+  METHOD permute.
     DATA: lv_offset  TYPE i.
 
     LOOP AT it_permutation INTO lv_offset.
@@ -583,37 +583,37 @@ CLASS ZCL_NTLM_DES IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD PERMUTE_E.
+  METHOD permute_e.
     rv_bits = permute( it_permutation = mt_e iv_bits = iv_bits ).
   ENDMETHOD.
 
 
-  METHOD PERMUTE_IP.
+  METHOD permute_ip.
     rv_bits = permute( it_permutation = mt_ip iv_bits = iv_bits ).
   ENDMETHOD.
 
 
-  METHOD PERMUTE_IP1.
+  METHOD permute_ip1.
     rv_bits = permute( it_permutation = mt_ip1 iv_bits = iv_bits ).
   ENDMETHOD.
 
 
-  METHOD PERMUTE_P.
+  METHOD permute_p.
     rv_bits = permute( it_permutation = mt_p iv_bits = iv_bits ).
   ENDMETHOD.
 
 
-  METHOD PERMUTE_PC1.
+  METHOD permute_pc1.
     rv_bits = permute( it_permutation = mt_pc1 iv_bits = iv_bits ).
   ENDMETHOD.
 
 
-  METHOD PERMUTE_PC2.
+  METHOD permute_pc2.
     rv_bits = permute( it_permutation = mt_pc2 iv_bits = iv_bits ).
   ENDMETHOD.
 
 
-  METHOD ROW.
+  METHOD row.
 
     rv_row = 2 * iv_b(1) + iv_b+5(1).
 
@@ -623,7 +623,7 @@ CLASS ZCL_NTLM_DES IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD S1.
+  METHOD s1.
 
     DATA: lv_index TYPE i,
           lv_i     TYPE i.
@@ -636,7 +636,7 @@ CLASS ZCL_NTLM_DES IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD S2.
+  METHOD s2.
 
     DATA: lv_index TYPE i,
           lv_i     TYPE i.
@@ -649,7 +649,7 @@ CLASS ZCL_NTLM_DES IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD S3.
+  METHOD s3.
 
     DATA: lv_index TYPE i,
           lv_i     TYPE i.
@@ -662,7 +662,7 @@ CLASS ZCL_NTLM_DES IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD S4.
+  METHOD s4.
 
     DATA: lv_index TYPE i,
           lv_i     TYPE i.
@@ -675,7 +675,7 @@ CLASS ZCL_NTLM_DES IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD S5.
+  METHOD s5.
 
     DATA: lv_index TYPE i,
           lv_i     TYPE i.
@@ -688,7 +688,7 @@ CLASS ZCL_NTLM_DES IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD S6.
+  METHOD s6.
 
     DATA: lv_index TYPE i,
           lv_i     TYPE i.
@@ -701,7 +701,7 @@ CLASS ZCL_NTLM_DES IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD S7.
+  METHOD s7.
 
     DATA: lv_index TYPE i,
           lv_i     TYPE i.
@@ -714,7 +714,7 @@ CLASS ZCL_NTLM_DES IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD S8.
+  METHOD s8.
 
     DATA: lv_index TYPE i,
           lv_i     TYPE i.
@@ -727,7 +727,7 @@ CLASS ZCL_NTLM_DES IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD TO_BITS.
+  METHOD to_bits.
 
     DATA: lv_c      TYPE c LENGTH 1,
           lv_length TYPE i.
@@ -744,7 +744,7 @@ CLASS ZCL_NTLM_DES IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD XOR.
+  METHOD xor.
 
     DATA: lv_offset TYPE i.
 

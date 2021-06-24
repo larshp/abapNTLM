@@ -1,44 +1,44 @@
-class ZCL_NTLM_ARC4 definition
-  public
-  final
-  create public .
+CLASS zcl_ntlm_arc4 DEFINITION
+  PUBLIC
+  FINAL
+  CREATE PUBLIC .
 
-  public section.
+  PUBLIC SECTION.
 
 *"* public components of class ZCL_NTLM_ARC4
 *"* do not include other source files here!!!
-  class-methods DECRYPT
-    importing
-      !IV_KEY type STRING
-      !IV_CIPHERTEXT type XSTRING
-    returning
-      value(RV_PLAINTEXT) type STRING
-    raising
-      CX_STATIC_CHECK .
-  class-methods DECRYPT_HEX
-    importing
-      !IV_KEY type XSTRING
-      !IV_CIPHERTEXT type XSTRING
-    returning
-      value(RV_PLAINTEXT) type XSTRING
-    raising
-      CX_STATIC_CHECK .
-  class-methods ENCRYPT
-    importing
-      !IV_KEY type STRING
-      !IV_PLAINTEXT type STRING
-    returning
-      value(RV_CIPHERTEXT) type XSTRING
-    raising
-      CX_STATIC_CHECK .
-  class-methods ENCRYPT_HEX
-    importing
-      !IV_KEY type XSTRING
-      !IV_PLAINTEXT type XSTRING
-    returning
-      value(RV_CIPHERTEXT) type XSTRING
-    raising
-      CX_STATIC_CHECK .
+    CLASS-METHODS decrypt
+      IMPORTING
+        !iv_key             TYPE string
+        !iv_ciphertext      TYPE xstring
+      RETURNING
+        VALUE(rv_plaintext) TYPE string
+      RAISING
+        cx_static_check .
+    CLASS-METHODS decrypt_hex
+      IMPORTING
+        !iv_key             TYPE xstring
+        !iv_ciphertext      TYPE xstring
+      RETURNING
+        VALUE(rv_plaintext) TYPE xstring
+      RAISING
+        cx_static_check .
+    CLASS-METHODS encrypt
+      IMPORTING
+        !iv_key              TYPE string
+        !iv_plaintext        TYPE string
+      RETURNING
+        VALUE(rv_ciphertext) TYPE xstring
+      RAISING
+        cx_static_check .
+    CLASS-METHODS encrypt_hex
+      IMPORTING
+        !iv_key              TYPE xstring
+        !iv_plaintext        TYPE xstring
+      RETURNING
+        VALUE(rv_ciphertext) TYPE xstring
+      RAISING
+        cx_static_check .
   PROTECTED SECTION.
 *"* protected components of class ZCL_NTLM_ARC4
 *"* do not include other source files here!!!
@@ -95,7 +95,7 @@ ENDCLASS.
 CLASS ZCL_NTLM_ARC4 IMPLEMENTATION.
 
 
-  METHOD DECRYPT.
+  METHOD decrypt.
 
     DATA: lv_xstr TYPE xstring.
 
@@ -109,7 +109,7 @@ CLASS ZCL_NTLM_ARC4 IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD DECRYPT_HEX.
+  METHOD decrypt_hex.
 
     rv_plaintext = encrypt_hex(
                      iv_key       = iv_key
@@ -118,7 +118,7 @@ CLASS ZCL_NTLM_ARC4 IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD ENCRYPT.
+  METHOD encrypt.
 
 * The MIT License (MIT)
 *
@@ -149,7 +149,7 @@ CLASS ZCL_NTLM_ARC4 IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD ENCRYPT_HEX.
+  METHOD encrypt_hex.
 
     DATA: lv_k TYPE xstring.
 
@@ -165,7 +165,7 @@ CLASS ZCL_NTLM_ARC4 IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD KEYSTREAM.
+  METHOD keystream.
 
     DATA: lv_s TYPE ty_s.
 
@@ -178,7 +178,7 @@ CLASS ZCL_NTLM_ARC4 IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD KSA.
+  METHOD ksa.
 
     DATA: lv_offset TYPE i,
           lv_j      TYPE i,
@@ -206,7 +206,7 @@ CLASS ZCL_NTLM_ARC4 IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD PRGA.
+  METHOD prga.
 
     DATA: lv_x      TYPE x,
           lv_j      TYPE i,
@@ -234,7 +234,7 @@ CLASS ZCL_NTLM_ARC4 IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD TO_STRING.
+  METHOD to_string.
 
     DATA: lv_len TYPE i,
           lo_obj TYPE REF TO cl_abap_conv_in_ce.
@@ -251,7 +251,7 @@ CLASS ZCL_NTLM_ARC4 IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD TO_XSTRING.
+  METHOD to_xstring.
 
     DATA: lo_obj TYPE REF TO cl_abap_conv_out_ce.
 
@@ -264,7 +264,7 @@ CLASS ZCL_NTLM_ARC4 IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD XOR.
+  METHOD xor.
 
     DATA: lv_x      TYPE x,
           lv_offset TYPE i.
