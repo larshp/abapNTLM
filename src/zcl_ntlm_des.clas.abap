@@ -181,7 +181,7 @@ ENDCLASS.
 
 
 
-CLASS ZCL_NTLM_DES IMPLEMENTATION.
+CLASS zcl_ntlm_des IMPLEMENTATION.
 
 
   METHOD class_constructor.
@@ -521,7 +521,7 @@ CLASS ZCL_NTLM_DES IMPLEMENTATION.
 
     DO 16 TIMES.
       lv_l_n = lv_r_prev.
-      READ TABLE it_k INDEX sy-index INTO lv_k_n.
+      READ TABLE it_k INDEX sy-index INTO lv_k_n ##SUBRC_OK.
 
       lv_r_n = xor( iv_a = lv_l_prev
                     iv_b = f( iv_r = lv_r_prev
