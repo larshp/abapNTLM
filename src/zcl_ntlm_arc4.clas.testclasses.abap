@@ -1,5 +1,5 @@
 CLASS lcl_test DEFINITION DEFERRED.
-CLASS zcl_arc4 DEFINITION LOCAL FRIENDS lcl_test.
+CLASS zcl_ntlm_arc4 DEFINITION LOCAL FRIENDS lcl_test.
 
 *----------------------------------------------------------------------*
 *       CLASS lcl_Test DEFINITION
@@ -36,7 +36,7 @@ CLASS lcl_test IMPLEMENTATION.
     DATA: lv_result TYPE xstring.
 
 
-    lv_result = zcl_arc4=>to_xstring( 'Key' ).
+    lv_result = zcl_ntlm_arc4=>to_xstring( 'Key' ).
 
     cl_abap_unit_assert=>assert_equals(
         exp = '4B6579'
@@ -50,7 +50,7 @@ CLASS lcl_test IMPLEMENTATION.
     DATA: lv_ciphertext TYPE xstring.
 
 
-    lv_ciphertext = zcl_arc4=>encrypt(
+    lv_ciphertext = zcl_ntlm_arc4=>encrypt(
         iv_key       = 'Key'
         iv_plaintext = 'Plaintext' ).
 
@@ -66,7 +66,7 @@ CLASS lcl_test IMPLEMENTATION.
     DATA: lv_ciphertext TYPE xstring.
 
 
-    lv_ciphertext = zcl_arc4=>encrypt(
+    lv_ciphertext = zcl_ntlm_arc4=>encrypt(
         iv_key       = 'Wiki'
         iv_plaintext = 'pedia' ).
 
@@ -83,7 +83,7 @@ CLASS lcl_test IMPLEMENTATION.
     DATA: lv_ciphertext TYPE xstring.
 
 
-    lv_ciphertext = zcl_arc4=>encrypt(
+    lv_ciphertext = zcl_ntlm_arc4=>encrypt(
         iv_key       = 'Secret'
         iv_plaintext = 'Attack at dawn' ).
 
@@ -103,11 +103,11 @@ CLASS lcl_test IMPLEMENTATION.
           lv_ciphertext TYPE xstring.
 
 
-    lv_ciphertext = zcl_arc4=>encrypt(
+    lv_ciphertext = zcl_ntlm_arc4=>encrypt(
         iv_key       = lc_key
         iv_plaintext = lc_plaintext ).
 
-    lv_plaintext = zcl_arc4=>decrypt(
+    lv_plaintext = zcl_ntlm_arc4=>decrypt(
         iv_key        = lc_key
         iv_ciphertext = lv_ciphertext ).
 

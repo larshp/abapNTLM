@@ -1,4 +1,4 @@
-CLASS zcl_des DEFINITION
+CLASS zcl_ntlm_des DEFINITION
   PUBLIC
   CREATE PUBLIC .
 
@@ -24,7 +24,7 @@ CLASS zcl_des DEFINITION
   PROTECTED SECTION.
 
     TYPES:
-*"* protected components of class ZCL_DES
+*"* protected components of class ZCL_NTLM_DES
 *"* do not include other source files here!!!
       tty_itab TYPE STANDARD TABLE OF i WITH DEFAULT KEY .
   PRIVATE SECTION.
@@ -175,13 +175,13 @@ CLASS zcl_des DEFINITION
         !iv_b            TYPE clike
       RETURNING
         VALUE(rv_column) TYPE i .
-*"* private components of class ZCL_DES
+*"* private components of class ZCL_NTLM_DES
 *"* do not include other source files here!!!
 ENDCLASS.
 
 
 
-CLASS ZCL_DES IMPLEMENTATION.
+CLASS ZCL_NTLM_DES IMPLEMENTATION.
 
 
   METHOD class_constructor.

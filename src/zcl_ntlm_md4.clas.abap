@@ -1,11 +1,11 @@
-CLASS zcl_md4 DEFINITION
+CLASS zcl_ntlm_md4 DEFINITION
   PUBLIC
   CREATE PUBLIC .
 
   PUBLIC SECTION.
 
     TYPES:
-*"* public components of class ZCL_MD4
+*"* public components of class ZCL_NTLM_MD4
 *"* do not include other source files here!!!
       ty_byte4 TYPE x LENGTH 4 .
     TYPES:
@@ -31,13 +31,13 @@ CLASS zcl_md4 DEFINITION
       RETURNING
         VALUE(rv_xstring) TYPE xstring .
   PRIVATE SECTION.
-*"* private components of class ZCL_MD4
+*"* private components of class ZCL_NTLM_MD4
 *"* do not include other source files here!!!
 ENDCLASS.
 
 
 
-CLASS ZCL_MD4 IMPLEMENTATION.
+CLASS ZCL_NTLM_MD4 IMPLEMENTATION.
 
 
   METHOD codepage.

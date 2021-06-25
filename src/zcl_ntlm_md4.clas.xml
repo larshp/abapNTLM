@@ -3,9 +3,9 @@
  <asx:abap xmlns:asx="http://www.sap.com/abapxml" version="1.0">
   <asx:values>
    <VSEOCLASS>
-    <CLSNAME>ZCL_ARC4</CLSNAME>
+    <CLSNAME>ZCL_NTLM_MD4</CLSNAME>
     <LANGU>E</LANGU>
-    <DESCRIPT>ARC4</DESCRIPT>
+    <DESCRIPT>MD4</DESCRIPT>
     <STATE>1</STATE>
     <CLSCCINCL>X</CLSCCINCL>
     <FIXPT>X</FIXPT>

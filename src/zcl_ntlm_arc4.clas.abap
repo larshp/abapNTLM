@@ -1,12 +1,12 @@
-CLASS zcl_arc4 DEFINITION
+CLASS zcl_ntlm_arc4 DEFINITION
   PUBLIC
   FINAL
-  CREATE PUBLIC.
+  CREATE PUBLIC .
 
   PUBLIC SECTION.
-*"* public components of class ZCL_ARC4
-*"* do not include other source files here!!!
 
+*"* public components of class ZCL_NTLM_ARC4
+*"* do not include other source files here!!!
     CLASS-METHODS decrypt
       IMPORTING
         !iv_key             TYPE string
@@ -40,7 +40,7 @@ CLASS zcl_arc4 DEFINITION
       RAISING
         cx_static_check .
   PROTECTED SECTION.
-*"* protected components of class ZCL_ARC4
+*"* protected components of class ZCL_NTLM_ARC4
 *"* do not include other source files here!!!
 
     TYPES:
@@ -86,13 +86,13 @@ CLASS zcl_arc4 DEFINITION
       RETURNING
         VALUE(rv_res) TYPE xstring .
   PRIVATE SECTION.
-*"* private components of class ZCL_ARC4
+*"* private components of class ZCL_NTLM_ARC4
 *"* do not include other source files here!!!
 ENDCLASS.
 
 
 
-CLASS ZCL_ARC4 IMPLEMENTATION.
+CLASS ZCL_NTLM_ARC4 IMPLEMENTATION.
 
 
   METHOD decrypt.

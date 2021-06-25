@@ -12,13 +12,13 @@ CLASS lcl_bit_flipper DEFINITION.
         IMPORTING
           iv_f             TYPE f
         RETURNING
-          VALUE(rv_result) TYPE zcl_md4=>ty_byte4,
+          VALUE(rv_result) TYPE zcl_ntlm_md4=>ty_byte4,
       shift
         IMPORTING
-          iv_input         TYPE zcl_md4=>ty_byte4
+          iv_input         TYPE zcl_ntlm_md4=>ty_byte4
           iv_places        TYPE i
         RETURNING
-          VALUE(rv_result) TYPE zcl_md4=>ty_byte4.
+          VALUE(rv_result) TYPE zcl_ntlm_md4=>ty_byte4.
 
 ENDCLASS.
 
@@ -31,19 +31,19 @@ CLASS lcl_barrel DEFINITION INHERITING FROM lcl_bit_flipper.
       constructor,
       reset,
       roll,
-      set IMPORTING iv_word TYPE zcl_md4=>ty_byte4,
+      set IMPORTING iv_word TYPE zcl_ntlm_md4=>ty_byte4,
       get
         IMPORTING iv_index         TYPE i
-        RETURNING VALUE(rv_result) TYPE zcl_md4=>ty_byte4,
+        RETURNING VALUE(rv_result) TYPE zcl_ntlm_md4=>ty_byte4,
       snapshot,
       accumulate,
-      get_hash RETURNING VALUE(rv_result) TYPE zcl_md4=>ty_byte16.
+      get_hash RETURNING VALUE(rv_result) TYPE zcl_ntlm_md4=>ty_byte16.
 
   PRIVATE SECTION.
 
     DATA:
-      mt_barrel     TYPE STANDARD TABLE OF zcl_md4=>ty_byte4,
-      mt_old_barrel TYPE STANDARD TABLE OF zcl_md4=>ty_byte4,
+      mt_barrel     TYPE STANDARD TABLE OF zcl_ntlm_md4=>ty_byte4,
+      mt_old_barrel TYPE STANDARD TABLE OF zcl_ntlm_md4=>ty_byte4,
       mv_index      TYPE i.
 
 ENDCLASS.
@@ -56,7 +56,7 @@ CLASS lcl_buffer DEFINITION INHERITING FROM lcl_bit_flipper.
     METHODS:
       constructor IMPORTING iv_xstr TYPE xstring,
       set_block IMPORTING iv_block TYPE i,
-      get_word IMPORTING iv_word TYPE i RETURNING VALUE(rv_result) TYPE zcl_md4=>ty_byte4,
+      get_word IMPORTING iv_word TYPE i RETURNING VALUE(rv_result) TYPE zcl_ntlm_md4=>ty_byte4,
       get_blocks RETURNING VALUE(rv_result) TYPE i.
 
   PRIVATE SECTION.
@@ -99,14 +99,14 @@ CLASS lcl_hasher DEFINITION ABSTRACT INHERITING FROM lcl_bit_flipper.
         IMPORTING
           is_def           TYPE ty_hash_def
         RETURNING
-          VALUE(rv_result) TYPE zcl_md4=>ty_byte4,
+          VALUE(rv_result) TYPE zcl_ntlm_md4=>ty_byte4,
       func ABSTRACT
         IMPORTING
-          iv_x             TYPE zcl_md4=>ty_byte4
-          iv_y             TYPE zcl_md4=>ty_byte4
-          iv_z             TYPE zcl_md4=>ty_byte4
+          iv_x             TYPE zcl_ntlm_md4=>ty_byte4
+          iv_y             TYPE zcl_ntlm_md4=>ty_byte4
+          iv_z             TYPE zcl_ntlm_md4=>ty_byte4
         RETURNING
-          VALUE(rv_result) TYPE zcl_md4=>ty_byte4.
+          VALUE(rv_result) TYPE zcl_ntlm_md4=>ty_byte4.
 
 ENDCLASS.
 
@@ -235,7 +235,7 @@ CLASS lcl_barrel IMPLEMENTATION.
 
   METHOD set.
     FIELD-SYMBOLS:
-      <lv_word> TYPE zcl_md4=>ty_byte4.
+      <lv_word> TYPE zcl_ntlm_md4=>ty_byte4.
 
     READ TABLE mt_barrel
       INDEX mv_index + 1
@@ -250,7 +250,7 @@ CLASS lcl_barrel IMPLEMENTATION.
     DATA:
       lv_index TYPE i.
     FIELD-SYMBOLS:
-      <lv_word> TYPE zcl_md4=>ty_byte4.
+      <lv_word> TYPE zcl_ntlm_md4=>ty_byte4.
 
     lv_index = ( mv_index + iv_index ) MOD lines( mt_barrel ).
 
@@ -270,8 +270,8 @@ CLASS lcl_barrel IMPLEMENTATION.
 
   METHOD accumulate.
     DATA:
-      lv_val1 TYPE zcl_md4=>ty_byte4,
-      lv_val2 TYPE zcl_md4=>ty_byte4,
+      lv_val1 TYPE zcl_ntlm_md4=>ty_byte4,
+      lv_val2 TYPE zcl_ntlm_md4=>ty_byte4,
       lv_f    TYPE f.
 
     reset( ).
@@ -290,10 +290,10 @@ CLASS lcl_barrel IMPLEMENTATION.
 
   METHOD get_hash.
     DATA:
-      lv_a TYPE zcl_md4=>ty_byte4,
-      lv_b TYPE zcl_md4=>ty_byte4,
-      lv_c TYPE zcl_md4=>ty_byte4,
-      lv_d TYPE zcl_md4=>ty_byte4.
+      lv_a TYPE zcl_ntlm_md4=>ty_byte4,
+      lv_b TYPE zcl_ntlm_md4=>ty_byte4,
+      lv_c TYPE zcl_ntlm_md4=>ty_byte4,
+      lv_d TYPE zcl_ntlm_md4=>ty_byte4.
 
     reset( ).
     lv_a = get( 0 ).

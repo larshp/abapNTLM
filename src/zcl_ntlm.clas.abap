@@ -478,11 +478,11 @@ CLASS ZCL_NTLM IMPLEMENTATION.
     lv_rd1 = lv_pass.
     lv_rd2 = lv_pass+7.
 
-    lv_r1 = zcl_des=>encrypt(
-        iv_key       = zcl_des=>parity_adjust( lv_rd1 )
+    lv_r1 = zcl_ntlm_des=>encrypt(
+        iv_key       = zcl_ntlm_des=>parity_adjust( lv_rd1 )
         iv_plaintext = lc_text ).
-    lv_r2 = zcl_des=>encrypt(
-        iv_key       = zcl_des=>parity_adjust( lv_rd2 )
+    lv_r2 = zcl_ntlm_des=>encrypt(
+        iv_key       = zcl_ntlm_des=>parity_adjust( lv_rd2 )
         iv_plaintext = lc_text ).
 
     CONCATENATE lv_r1 lv_r2 INTO lv_lm_hash IN BYTE MODE.
@@ -491,14 +491,14 @@ CLASS ZCL_NTLM IMPLEMENTATION.
     lv_rd2 = lv_lm_hash+7.
     lv_rd3 = lv_lm_hash+14.
 
-    lv_r1 = zcl_des=>encrypt(
-        iv_key       = zcl_des=>parity_adjust( lv_rd1 )
+    lv_r1 = zcl_ntlm_des=>encrypt(
+        iv_key       = zcl_ntlm_des=>parity_adjust( lv_rd1 )
         iv_plaintext = iv_challenge ).
-    lv_r2 = zcl_des=>encrypt(
-        iv_key       = zcl_des=>parity_adjust( lv_rd2 )
+    lv_r2 = zcl_ntlm_des=>encrypt(
+        iv_key       = zcl_ntlm_des=>parity_adjust( lv_rd2 )
         iv_plaintext = iv_challenge ).
-    lv_r3 = zcl_des=>encrypt(
-        iv_key       = zcl_des=>parity_adjust( lv_rd3 )
+    lv_r3 = zcl_ntlm_des=>encrypt(
+        iv_key       = zcl_ntlm_des=>parity_adjust( lv_rd3 )
         iv_plaintext = iv_challenge ).
 
     CONCATENATE lv_r1 lv_r2 lv_r3 INTO rv_response IN BYTE MODE.
@@ -556,21 +556,21 @@ CLASS ZCL_NTLM IMPLEMENTATION.
     lv_md5 = lcl_util=>md5( lv_snonce ).
     lv_shash = lv_md5(8).
 
-    lv_md4 = zcl_md4=>hash( iv_string   = iv_password
+    lv_md4 = zcl_ntlm_md4=>hash( iv_string   = iv_password
                             iv_encoding = '4103' ).
 
     lv_rd1 = lv_md4.
     lv_rd2 = lv_md4+7.
     lv_rd3 = lv_md4+14.
 
-    lv_r1 = zcl_des=>encrypt(
-        iv_key       = zcl_des=>parity_adjust( lv_rd1 )
+    lv_r1 = zcl_ntlm_des=>encrypt(
+        iv_key       = zcl_ntlm_des=>parity_adjust( lv_rd1 )
         iv_plaintext = lv_shash ).
-    lv_r2 = zcl_des=>encrypt(
-        iv_key       = zcl_des=>parity_adjust( lv_rd2 )
+    lv_r2 = zcl_ntlm_des=>encrypt(
+        iv_key       = zcl_ntlm_des=>parity_adjust( lv_rd2 )
         iv_plaintext = lv_shash ).
-    lv_r3 = zcl_des=>encrypt(
-        iv_key       = zcl_des=>parity_adjust( lv_rd3 )
+    lv_r3 = zcl_ntlm_des=>encrypt(
+        iv_key       = zcl_ntlm_des=>parity_adjust( lv_rd3 )
         iv_plaintext = lv_shash ).
 
     CONCATENATE lv_r1 lv_r2 lv_r3 INTO ev_ntlm_response IN BYTE MODE.
@@ -580,7 +580,7 @@ CLASS ZCL_NTLM IMPLEMENTATION.
 
   METHOD ntlmv1_response.
 
-    DATA: lv_hash TYPE zcl_md4=>ty_byte16,
+    DATA: lv_hash TYPE zcl_ntlm_md4=>ty_byte16,
           lv_rd1  TYPE x LENGTH 7,
           lv_rd2  TYPE x LENGTH 7,
           lv_rd3  TYPE x LENGTH 7,
@@ -589,21 +589,21 @@ CLASS ZCL_NTLM IMPLEMENTATION.
           lv_r3   TYPE x LENGTH 8.
 
 
-    lv_hash = zcl_md4=>hash( iv_encoding = '4103'
-                             iv_string   = iv_password ).
+    lv_hash = zcl_ntlm_md4=>hash( iv_encoding = '4103'
+                                  iv_string   = iv_password ).
 
     lv_rd1 = lv_hash.
     lv_rd2 = lv_hash+7.
     lv_rd3 = lv_hash+14.
 
-    lv_r1 = zcl_des=>encrypt(
-        iv_key       = zcl_des=>parity_adjust( lv_rd1 )
+    lv_r1 = zcl_ntlm_des=>encrypt(
+        iv_key       = zcl_ntlm_des=>parity_adjust( lv_rd1 )
         iv_plaintext = iv_challenge ).
-    lv_r2 = zcl_des=>encrypt(
-        iv_key       = zcl_des=>parity_adjust( lv_rd2 )
+    lv_r2 = zcl_ntlm_des=>encrypt(
+        iv_key       = zcl_ntlm_des=>parity_adjust( lv_rd2 )
         iv_plaintext = iv_challenge ).
-    lv_r3 = zcl_des=>encrypt(
-        iv_key       = zcl_des=>parity_adjust( lv_rd3 )
+    lv_r3 = zcl_ntlm_des=>encrypt(
+        iv_key       = zcl_ntlm_des=>parity_adjust( lv_rd3 )
         iv_plaintext = iv_challenge ).
 
     CONCATENATE lv_r1 lv_r2 lv_r3 INTO rv_response IN BYTE MODE.
@@ -619,8 +619,8 @@ CLASS ZCL_NTLM IMPLEMENTATION.
           lv_key     TYPE xstring.
 
 
-    lv_key = zcl_md4=>hash( iv_encoding = '4103'
-                            iv_string   = iv_password ).
+    lv_key = zcl_ntlm_md4=>hash( iv_encoding = '4103'
+                                 iv_string   = iv_password ).
 
     lv_xpass = lcl_convert=>codepage_4103( to_upper( iv_username ) ).
     lv_xtarget = lcl_convert=>codepage_4103( iv_target ).
@@ -752,12 +752,12 @@ CLASS ZCL_NTLM IMPLEMENTATION.
     DATA: lv_key TYPE xstring.
 
 
-    lv_key = zcl_md4=>hash( iv_encoding = '4103'
-                            iv_string   = iv_password ).
+    lv_key = zcl_ntlm_md4=>hash( iv_encoding = '4103'
+                                 iv_string   = iv_password ).
 
-    lv_key = zcl_md4=>hash_hex( lv_key ).
+    lv_key = zcl_ntlm_md4=>hash_hex( lv_key ).
 
-    rv_session_key = zcl_arc4=>encrypt_hex(
+    rv_session_key = zcl_ntlm_arc4=>encrypt_hex(
         iv_key       = lv_key
         iv_plaintext = '55555555555555555555555555555555' ). " todo
 
