@@ -885,8 +885,6 @@ CLASS ZCL_NTLM IMPLEMENTATION.
 
   METHOD type_3_build.
 
-    DATA: lv_nonce TYPE ty_byte8.
-
     IF iv_lmv2_nonce IS INITIAL.
       iv_lmv2_nonce = lcl_util=>random_nonce( ).
     ENDIF.
