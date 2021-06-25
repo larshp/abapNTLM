@@ -119,8 +119,7 @@ CLASS lcl_test IMPLEMENTATION.
     DATA: lv_hash TYPE zcl_ntlm_md4=>ty_byte16.
 
 
-    lv_hash = zcl_ntlm_md4=>hash(
-      'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789' ).
+    lv_hash = zcl_ntlm_md4=>hash( 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789' ).
 
     cl_abap_unit_assert=>assert_equals(
         exp = '043F8582F241DB351CE627E153E7F0E4'
