@@ -254,9 +254,7 @@ CLASS lcl_convert IMPLEMENTATION.
 
   METHOD to_64bit.
 
-    DATA: lv_f     TYPE f,
-          lv_i     TYPE i,
-          lv_c     TYPE c,
+    DATA: lv_c     TYPE c LENGTH 1,
           lv_xres  TYPE x LENGTH 8,
           lv_index TYPE i,
           lv_num   LIKE iv_num.
@@ -265,13 +263,12 @@ CLASS lcl_convert IMPLEMENTATION.
     lv_num = iv_num.
 
 * hmm, this is crazy, since there are no 64 bit types in ABAP
+* INT8 was introduced in 750
     DO 64 TIMES.
       lv_index = 64 - sy-index + 1.
 
-      lv_i = lv_num MOD 2.
-      lv_c = lv_i.
-      lv_f = lv_num / 2.
-      lv_num = round( val = lv_f dec = 0 mode = cl_abap_math=>round_half_down ).
+      lv_c = lv_num MOD 2.
+      lv_num = lv_num DIV 2.
 
       SET BIT lv_index OF lv_xres TO lv_c.
     ENDDO.
