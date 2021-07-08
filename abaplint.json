@@ -63,6 +63,7 @@
     "reduce_string_templates": true,
     "selection_screen_naming": false,
     "sicf_consistency": true,
+    "unused_ddic": true,
     "sql_escape_host_variables": true,
     "try_without_catch": true,
     "unknown_types": true,
