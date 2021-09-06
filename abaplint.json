@@ -41,7 +41,9 @@
     "identical_descriptions": true,
     "intf_referencing_clas": true,
     "line_break_style": false,
-    "many_parenthesis": true,
+    "many_parentheses": true,
+    "cyclic_oo": true,
+    "pragma_placement": true,
     "max_one_method_parameter_per_line": true,
     "method_implemented_twice": true,
     "method_overwrites_builtin": false,
@@ -139,6 +141,7 @@
     "if_in_if": true,
     "implement_methods": true,
     "in_statement_indentation": {
+      "blockStatements": 0,
       "ignoreExceptions": true
     },
     "indentation": {
@@ -183,6 +186,7 @@
     "method_length": {
       "statements": 250,
       "ignoreTestClasses": false,
+      "checkForms": true,
       "errorWhenEmpty": false
     },
     "method_parameter_names": {
@@ -228,6 +232,8 @@
       "subtract": true,
       "communication": true,
       "exitFromSQL": true,
+      "callTransformation": true,
+      "sortByFS": true,
       "freeMemory": true,
       "load": true,
       "pack": true,
