@@ -5,9 +5,9 @@
   "description": "abapNTLM",
   "dependencies": {},
   "devDependencies": {
-    "@abaplint/cli": "^2.93.40",
-    "@abaplint/runtime": "^2.2.17",
-    "@abaplint/transpiler-cli": "^2.2.17"
+    "@abaplint/cli": "^2.93.95",
+    "@abaplint/runtime": "^2.3.56",
+    "@abaplint/transpiler-cli": "^2.3.56"
   },
   "scripts": {
     "lint": "abaplint",
