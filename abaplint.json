@@ -14,12 +14,14 @@
   ],
   "syntax": {
     "version": "v740sp02",
-    "errorNamespace": "^(Z|Y)",
-    "globalConstants": [],
-    "globalMacros": []
+    "errorNamespace": "^(Z|Y)"
   },
   "rules": {
     "align_parameters": false,
+    "cds_comment_style": true,
+    "change_if_to_case": true,
+    "expand_macros": true,
+    "no_external_form_calls": true,
     "cds_legacy_view": true,
     "cds_parser_error": true,
     "classic_exceptions_overlap": true,
@@ -236,6 +238,8 @@
       "refresh": true,
       "compute": true,
       "add": true,
+      "formDefinition": true,
+      "formImplementation": true,
       "subtract": true,
       "regex": true,
       "clientSpecified": true,
