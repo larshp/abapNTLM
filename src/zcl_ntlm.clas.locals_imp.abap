@@ -776,7 +776,7 @@ CLASS lcl_writer DEFINITION FINAL.
 
     DATA: mv_header  TYPE xstring,
           mv_payload TYPE xstring,
-          mt_fix     TYPE TABLE OF ty_fix.
+          mt_fix     TYPE STANDARD TABLE OF ty_fix WITH EMPTY KEY.
 
 ENDCLASS.                    "lcl_write DEFINITION
 

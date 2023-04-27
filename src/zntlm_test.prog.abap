@@ -78,7 +78,6 @@ FORM initialization.
       variant              = 'DEFAULT'
     EXCEPTIONS
       variant_not_existent = 01
-      variant_obsolete     = 02
-      ##fm_subrc_ok.
+      variant_obsolete     = 02 ##FM_SUBRC_OK.
 
-ENDFORM.                    "initialization
+ENDFORM.
