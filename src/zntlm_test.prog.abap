@@ -77,8 +77,7 @@ FORM initialization.
       report               = sy-cprog
       variant              = 'DEFAULT'
     EXCEPTIONS
-      variant_not_existent = 01
-      variant_obsolete     = 02
-      ##fm_subrc_ok.
+      variant_not_existent = 1
+      variant_obsolete     = 2 ##FM_SUBRC_OK.
 
-ENDFORM.                    "initialization
+ENDFORM.

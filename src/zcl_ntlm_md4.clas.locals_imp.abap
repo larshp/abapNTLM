@@ -42,8 +42,8 @@ CLASS lcl_barrel DEFINITION INHERITING FROM lcl_bit_flipper.
   PRIVATE SECTION.
 
     DATA:
-      mt_barrel     TYPE STANDARD TABLE OF zcl_ntlm_md4=>ty_byte4,
-      mt_old_barrel TYPE STANDARD TABLE OF zcl_ntlm_md4=>ty_byte4,
+      mt_barrel     TYPE STANDARD TABLE OF zcl_ntlm_md4=>ty_byte4 WITH EMPTY KEY,
+      mt_old_barrel TYPE STANDARD TABLE OF zcl_ntlm_md4=>ty_byte4 WITH EMPTY KEY,
       mv_index      TYPE i.
 
 ENDCLASS.
