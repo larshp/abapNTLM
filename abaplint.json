@@ -116,6 +116,8 @@
       "define": true,
       "testSeams": true,
       "defaultKey": false,
+      "exportToMemory": true,
+      "exportToDatabase": true,
       "break": true,
       "describeLines": true,
       "statics": true
@@ -316,5 +318,10 @@
     "use_new": true,
     "when_others_last": true,
     "whitespace_end": true
+  },
+  "targetRules": {
+    "prefer_pragmas": true,
+    "line_break_multiple_parameters": true,
+    "align_parameters": true
   }
 }
