@@ -23,6 +23,8 @@ CLASS zcl_ntlm_arc4 DEFINITION
         VALUE(rv_plaintext) TYPE xstring
       RAISING
         cx_static_check .
+
+
     CLASS-METHODS encrypt
       IMPORTING
         !iv_key              TYPE string
