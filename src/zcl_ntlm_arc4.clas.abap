@@ -24,7 +24,6 @@ CLASS zcl_ntlm_arc4 DEFINITION
       RAISING
         cx_static_check .
 
-
     CLASS-METHODS encrypt
       IMPORTING
         !iv_key              TYPE string
@@ -94,7 +93,7 @@ ENDCLASS.
 
 
 
-CLASS ZCL_NTLM_ARC4 IMPLEMENTATION.
+CLASS zcl_ntlm_arc4 IMPLEMENTATION.
 
 
   METHOD decrypt.
