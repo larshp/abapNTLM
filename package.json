@@ -13,7 +13,7 @@
     "lint": "abaplint",
     "unit": "rm -rf output && abap_transpile && echo RUNNING && node output/index.mjs",
     "test": "npm run lint && npm run downport && npm run unit",
-    "downport": "rm -rf downport && cp src -r downport && abaplint --fix abaplint_downport.json"
+    "downport": "rm -rf downport && cp -r src downport && abaplint --fix abaplint_downport.json"
   },
   "repository": {
     "type": "git",
