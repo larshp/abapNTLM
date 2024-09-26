@@ -18,6 +18,8 @@
   },
   "rules": {
     "fully_type_itabs": true,
+    "add_test_attributes": true,
+    "align_pseudo_comments": true,
     "no_inline_in_optional_branches": true,
     "nrob_consistency": true,
     "omit_preceding_zeros": true,
