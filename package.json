@@ -6,14 +6,13 @@
   "dependencies": {},
   "devDependencies": {
     "@abaplint/cli": "^2.113.200",
-    "@abaplint/runtime": "^2.11.89",
-    "@abaplint/transpiler-cli": "^2.11.89"
+    "@abaplint/runtime": "^2.11.91",
+    "@abaplint/transpiler-cli": "^2.11.91"
   },
   "scripts": {
     "lint": "abaplint",
     "unit": "rm -rf output && abap_transpile && echo RUNNING && node output/index.mjs",
-    "test": "npm run lint && npm run downport && npm run unit",
-    "downport": "rm -rf downport && cp -r src downport && abaplint --fix abaplint_downport.json"
+    "test": "npm run lint && npm run unit"
   },
   "repository": {
     "type": "git",
